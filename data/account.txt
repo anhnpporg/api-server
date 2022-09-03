@@ -1,0 +1,3 @@
+firebase:
+	tk: tandat112k@gmail.com
+	mk: dat123123
