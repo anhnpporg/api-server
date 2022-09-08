@@ -4,10 +4,8 @@ namespace UtNhanDrug_BE.Models.FcmNoti
 {
     public class NotificationModel
     {
-        [JsonProperty("deviceId")]
-        public string DeviceId { get; set; }
-        [JsonProperty("isAndroiodDevice")]
-        public bool IsAndroiodDevice { get; set; }
+        [JsonProperty("registrationToken")]
+        public string RegistrationToken { get; set; }
         [JsonProperty("title")]
         public string Title { get; set; }
         [JsonProperty("body")]
