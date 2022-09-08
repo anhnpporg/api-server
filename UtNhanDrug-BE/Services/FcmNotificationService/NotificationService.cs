@@ -21,9 +21,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
             ResponseModel response = new ResponseModel();
             try
             {
-                if (notificationModel.IsAndroiodDevice)
-                {
-                    /* FCM Sender (Android Device) */
+                    /* FCM Sender (Android) */
                     FcmSettings settings = new FcmSettings()
                     {
                         SenderId = _fcmNotificationSetting.SenderId,
@@ -32,7 +30,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
                     HttpClient httpClient = new HttpClient();
 
                     string authorizationKey = string.Format("keyy={0}", settings.ServerKey);
-                    string deviceToken = notificationModel.DeviceId;
+                    string deviceToken = notificationModel.RegistrationToken;
 
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorizationKey);
                     httpClient.DefaultRequestHeaders.Accept
@@ -61,14 +59,6 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
                         response.Message = fcmSendResponse.Results[0].Error;
                         return response;
                     }
-                }
-                else
-                {
-                    /* Code here for APN Sender (iOS Device) */
-                    //var apn = new ApnSender(apnSettings, httpClient);
-                    //await apn.SendAsync(notification, deviceToken);
-                }
-                return response;
             }
             catch (Exception)
             {
