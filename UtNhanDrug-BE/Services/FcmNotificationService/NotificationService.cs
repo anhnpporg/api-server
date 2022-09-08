@@ -21,7 +21,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
             ResponseModel response = new ResponseModel();
             try
             {
-                    /* FCM Sender (Android) */
+                    /* FCM Sender*/
                     FcmSettings settings = new FcmSettings()
                     {
                         SenderId = _fcmNotificationSetting.SenderId,
