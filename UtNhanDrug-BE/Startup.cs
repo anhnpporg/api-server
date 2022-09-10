@@ -61,7 +61,6 @@ namespace UtNhanDrug_BE
             services.RegisterSwaggerModule();
 
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
-            services.AddScoped<UploadFile>();
 
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IVerifyOTPService, VerifyOTPService>();
