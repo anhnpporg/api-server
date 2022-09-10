@@ -17,9 +17,11 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Configurations;
+using UtNhanDrug_BE.Helper;
 using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
+using UtNhanDrug_BE.Services.TwilioAuthentication;
 
 namespace UtNhanDrug_BE
 {
@@ -59,8 +61,10 @@ namespace UtNhanDrug_BE
             services.RegisterSwaggerModule();
 
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
+            services.AddScoped<UploadFile>();
 
             services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<IVerifyOTPService, VerifyOTPService>();
             //register fcm service
             services.AddHttpClient<FcmSender>();
             services.AddHttpClient<ApnSender>();
@@ -68,6 +72,8 @@ namespace UtNhanDrug_BE
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
+            var twilioSettingsSection = Configuration.GetSection("TwilioConfig");
+            services.Configure<TwilioConfig>(twilioSettingsSection);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
