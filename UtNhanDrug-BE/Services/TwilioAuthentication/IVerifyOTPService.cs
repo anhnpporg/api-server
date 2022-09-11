@@ -6,7 +6,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
 {
     public interface IVerifyOTPService
     {
-        public Task<VerificationResponseModel> Verification(string phoneNumber);
-        public Task<VerificationResponseModel> VerificationCheck(string phoneNumber, string code);
+        public Task<Object> Verification(string phoneNumber);
+        public Task<Object> VerificationCheck(string phoneNumber, string code);
      }
 }

@@ -5,8 +5,7 @@ namespace UtNhanDrug_BE.Models.TwilioOTP
 {
     public class VerificationResponseModel
     {
-        [JsonProperty("isSuccess")]
-        public string IsSuccess { get; set; }
+        
         [JsonProperty("to")]
         public string To { get; set; }
         [JsonProperty("valid")]
