@@ -42,6 +42,12 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                     responseModel.Status = verification.Status;
                     responseModel.Message = "Send OTP successfully";
                 }
+                else
+                {
+                    responseModel.IsSuccess = "True";
+                    responseModel.Status = verification.Status;
+                    responseModel.Message = "Send OTP fail";
+                }
             }
             catch (Exception ex)
             {
@@ -72,33 +78,44 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                     code: code,
                     pathServiceSid: _twilioConfig.ServiceSID
                 );
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_twilioConfig.AuthToken);
-                var tokenDescriptor = new SecurityTokenDescriptor
+                if (verificationCheck.Status.ToLower().Equals("approved"))
                 {
-                    Subject = new ClaimsIdentity(new[]
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var key = Encoding.ASCII.GetBytes(_twilioConfig.AuthToken);
+                    var tokenDescriptor = new SecurityTokenDescriptor
                     {
+                        Subject = new ClaimsIdentity(new[]
+                        {
                     new Claim("phone_number", phonenumber),
                     new Claim("status", verificationCheck.Status),
                     //new Claim(ClaimTypes.Role, "user")
                 }),
-                    Expires = DateTime.UtcNow.AddDays(7),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-                var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
-                var jwtToken = tokenHandler.WriteToken(token);
+                        Expires = DateTime.UtcNow.AddDays(7),
+                        SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    };
+                    var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
+                    var jwtToken = tokenHandler.WriteToken(token);
 
-                responseModel.IsSuccess = "True";
-                responseModel.Status = verificationCheck.Status;
-                responseModel.Message = jwtToken;
+                    responseModel.IsSuccess = "True";
+                    responseModel.Status = verificationCheck.Status;
+                    responseModel.Message = jwtToken;
+                }
+                else
+                {
+                    responseModel.IsSuccess = "False";
+                    responseModel.Status = verificationCheck.Status;
+                    responseModel.Message = "Verify fail";
+                }
+
+
+
                 //responseModel.To = verificationCheck.To;
                 //responseModel.Valid = (bool)verificationCheck.Valid;
                 //responseModel.Status = verificationCheck.Status;
                 //responseModel.Date_create = (DateTime)verificationCheck.DateCreated;
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 responseModel.IsSuccess = "False";
                 responseModel.Message = ex.Message.ToString();
