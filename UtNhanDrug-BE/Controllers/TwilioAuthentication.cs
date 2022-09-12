@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.TwilioOTP;
 using UtNhanDrug_BE.Services.TwilioAuthentication;
 
 namespace UtNhanDrug_BE.Controllers
@@ -31,10 +32,15 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<IActionResult> VerificationCheck(string phoneNumber, string code)
         {
             if (phoneNumber == null || code == null) return BadRequest();
+            VerificationResponseModel responseModel = new VerificationResponseModel();
             try
             {
-                var status = await _verifyOTPService.VerificationCheck(phoneNumber, code);
-                return Ok(status); 
+                responseModel = await _verifyOTPService.VerificationCheck(phoneNumber, code);
+                if (!responseModel.Status.ToLower().Equals("approved"))
+                {
+                    return BadRequest();
+                }
+                return Ok(responseModel); 
             }
             catch (Exception)
             {

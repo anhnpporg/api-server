@@ -70,8 +70,7 @@ namespace UtNhanDrug_BE
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
-            var twilioSettingsSection = Configuration.GetSection("TwilioConfig");
-            services.Configure<TwilioConfig>(twilioSettingsSection);
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

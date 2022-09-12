@@ -10,9 +10,9 @@ using UtNhanDrug_BE.Services.AuthenticationService;
 namespace UtNhanDrug_BE.Controllers
 {
     
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}")]
+    //[ApiController]
+    //[ApiVersion("1.0")]
+    //[Route("api/v{version:apiVersion}")]
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationSvc _authenticationService;
@@ -22,9 +22,9 @@ namespace UtNhanDrug_BE.Controllers
             _authenticationService = authenticationService;
         }
 
-        [AllowAnonymous]
-        [HttpPost("login")]
-        [ProducesResponseType(typeof(TokenResponse), 200)]
+        //[AllowAnonymous]
+        //[HttpPost("login")]
+        //[ProducesResponseType(typeof(TokenResponse), 200)]
         public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
         {
             if (idToken == null) return BadRequest();

@@ -15,9 +15,12 @@ namespace UtNhanDrug_BE.Configurations
             var appSettingsSection = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
+            var twilioSettingsSection = configuration.GetSection("TwilioConfig");
+            services.Configure<TwilioConfig>(twilioSettingsSection);
+
             // Map Setting to class AppSetting
-            var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var appSettings = twilioSettingsSection.Get<TwilioConfig>();
+            var key = Encoding.ASCII.GetBytes(appSettings.AuthToken);
 
             // Set Authentication to verify token
             services.AddAuthentication(x =>
