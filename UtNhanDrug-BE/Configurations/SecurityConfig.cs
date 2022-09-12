@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Configurations
 {
@@ -21,6 +22,9 @@ namespace UtNhanDrug_BE.Configurations
             // Map Setting to class AppSetting
             var appSettings = twilioSettingsSection.Get<TwilioConfig>();
             var key = Encoding.ASCII.GetBytes(appSettings.AuthToken);
+
+            //Config automapper
+            services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
             // Set Authentication to verify token
             services.AddAuthentication(x =>

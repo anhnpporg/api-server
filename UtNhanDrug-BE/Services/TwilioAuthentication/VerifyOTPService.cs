@@ -81,6 +81,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                     {
                     new Claim("phone_number", phonenumber),
                     new Claim("status", verificationCheck.Status),
+                    //new Claim(ClaimTypes.Role, "user")
                 }),
                     Expires = DateTime.UtcNow.AddDays(7),
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
