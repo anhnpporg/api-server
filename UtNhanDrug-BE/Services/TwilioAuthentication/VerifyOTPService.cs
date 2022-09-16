@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,9 +16,12 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
     public class VerifyOTPService : IVerifyOTPService
     {
         private readonly TwilioConfig _twilioConfig;
-        public VerifyOTPService(IOptions<TwilioConfig> settings)
+        private readonly IConfiguration _configuration;
+
+        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration)
         {
             _twilioConfig = settings.Value;
+            _configuration = configuration;
         }
 
         public async Task<VerificationResponseModel> Verification(string phonenumber)
@@ -81,7 +85,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                 if (verificationCheck.Status.ToLower().Equals("approved"))
                 {
                     var tokenHandler = new JwtSecurityTokenHandler();
-                    var key = Encoding.ASCII.GetBytes(_twilioConfig.AuthToken);
+                    var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
                         Subject = new ClaimsIdentity(new[]

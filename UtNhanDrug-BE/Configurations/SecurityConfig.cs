@@ -20,8 +20,8 @@ namespace UtNhanDrug_BE.Configurations
             services.Configure<TwilioConfig>(twilioSettingsSection);
 
             // Map Setting to class AppSetting
-            var appSettings = twilioSettingsSection.Get<TwilioConfig>();
-            var key = Encoding.ASCII.GetBytes(appSettings.AuthToken);
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
 
             //Config automapper
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
