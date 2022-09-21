@@ -9,7 +9,7 @@ namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}")]
+    [Route("api/v1")]
     public class TwilioAuthentication : Controller
     {
         private readonly IVerifyOTPService _verifyOTPService;
@@ -24,6 +24,10 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<IActionResult> CreateVerification(string phoneNumber)
         {
             var sid = await _verifyOTPService.Verification(phoneNumber);
+            if(sid == null)
+            {
+                return NotFound();
+            }
             return Ok(sid);
         }
         

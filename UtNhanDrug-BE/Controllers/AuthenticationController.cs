@@ -12,7 +12,7 @@ namespace UtNhanDrug_BE.Controllers
     
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}")]
+    [Route("api/v1")]
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationSvc _authenticationService;
@@ -37,7 +37,7 @@ namespace UtNhanDrug_BE.Controllers
                 if (jwtToken.Length != 0)
                     return Ok(jwtToken);
                 else
-                    return Ok(uid);
+                    return NotFound("User not register");
             }
             catch (Exception)
             {

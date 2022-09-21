@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Twilio;
 using Twilio.Rest.Verify.V2.Service;
 using UtNhanDrug_BE.Configurations;
+using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.TwilioOTP;
+using UtNhanDrug_BE.Services.CustomerService;
 
 namespace UtNhanDrug_BE.Services.TwilioAuthentication
 {
@@ -17,51 +19,64 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
     {
         private readonly TwilioConfig _twilioConfig;
         private readonly IConfiguration _configuration;
-
-        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration)
+        private readonly ICustomerSvc _customer;
+        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration, ICustomerSvc customer)
         {
             _twilioConfig = settings.Value;
             _configuration = configuration;
+            _customer = customer;
         }
 
         public async Task<VerificationResponseModel> Verification(string phonenumber)
         {
             VerificationResponseModel responseModel = new VerificationResponseModel();
-            // Find your Account SID and Auth Token at twilio.com/console
-            // and set the environment variables. See http://twil.io/secure
-            string accountSid = _twilioConfig.AccountSID;
-            string authToken = _twilioConfig.AuthToken;
-            try
+            var customer = await _customer.FindByPhoneNumber(phonenumber);
+            if(customer != null)
             {
-                TwilioClient.Init(accountSid, authToken);
+                // Find your Account SID and Auth Token at twilio.com/console
+                // and set the environment variables. See http://twil.io/secure
+                string accountSid = _twilioConfig.AccountSID;
+                string authToken = _twilioConfig.AuthToken;
+                try
+                {
+                    TwilioClient.Init(accountSid, authToken);
 
-                var verification = await VerificationResource.CreateAsync(
-                    to: phonenumber,
-                    channel: "sms",
-                    pathServiceSid: _twilioConfig.ServiceSID
-                );
-                if (verification.Status.Equals("pending"))
-                {
-                    responseModel.IsSuccess = "True";
-                    responseModel.Status = verification.Status;
-                    responseModel.Message = "Send OTP successfully";
+                    var verification = await VerificationResource.CreateAsync(
+                        to: phonenumber,
+                        channel: "sms",
+                        pathServiceSid: _twilioConfig.ServiceSID
+                    );
+                    if (verification.Status.Equals("pending"))
+                    {
+                        responseModel.IsSuccess = "True";
+                        responseModel.Status = verification.Status;
+                        responseModel.Message = "Send OTP successfully";
+                    }
+                    else
+                    {
+                        responseModel.IsSuccess = "True";
+                        responseModel.Status = verification.Status;
+                        responseModel.Message = "Send OTP fail";
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    responseModel.IsSuccess = "True";
-                    responseModel.Status = verification.Status;
-                    responseModel.Message = "Send OTP fail";
+                    responseModel.IsSuccess = "Fasle";
+                    responseModel.Message = ex.Message.ToString();
+                    responseModel.Status = "cancle";
+                    return responseModel;
                 }
             }
-            catch (Exception ex)
+            else
             {
                 responseModel.IsSuccess = "Fasle";
-                responseModel.Message = ex.Message.ToString();
+                responseModel.Message = "Customer not found";
                 responseModel.Status = "cancle";
                 return responseModel;
-            }
 
+            }
             return responseModel;
+            
         }
 
         public async Task<VerificationResponseModel> VerificationCheck(string phonenumber, string code)
@@ -72,7 +87,6 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
             // and set the environment variables. See http://twil.io/secure
             string accountSid = _twilioConfig.AccountSID;
             string authToken = _twilioConfig.AuthToken;
-
             try
             {
                 TwilioClient.Init(accountSid, authToken);
@@ -92,6 +106,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                         {
                     new Claim("phone_number", phonenumber),
                     new Claim("status", verificationCheck.Status),
+                    new Claim(ClaimTypes.Role, "CUSTOMER")
                     //new Claim(ClaimTypes.Role, "user")
                 }),
                         Expires = DateTime.UtcNow.AddDays(7),

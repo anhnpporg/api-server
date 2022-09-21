@@ -1,10 +1,14 @@
 ﻿
+using Firebase.Auth;
+using FirebaseAdmin.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
+using UtNhanDrug_BE.Services.ManagerService;
 
 namespace UtNhanDrug_BE.Services.AuthenticationService
 {
@@ -12,25 +16,32 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
     {
         private const string API_KEY = "AIzaSyB-9fD6pq0a7yjziqoxGIdHhaZEC5m2KG8";
         private readonly IConfiguration _configuration;
+        private readonly IManagerSvc _managerSvc;
 
-        public AuthenticationSvc(IConfiguration configuration)
+        public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc)
         {
             _configuration = configuration;
+            _managerSvc = managerSvc;
         }
         public string Authenticate(string uid)
         {
-            var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
-
-            if (user.Result != null)
+            var user = LoadUser(uid);
+            var isUserExits = _managerSvc.IsExitsAccount(user.Result.Email);
+            if (isUserExits.Result != null)
             {
-                var customTokenAsync = CreateCustomToken(uid, user.Result.Uid);
+                var customTokenAsync = CreateCustomToken(uid);
                 return customTokenAsync;
             }
             return "";
         }
-
-        private string CreateCustomToken(string uid, string id)
+        private async Task<UserRecord> LoadUser(string uid)
         {
+            UserRecord user = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
+            return user;
+        }
+        private string CreateCustomToken(string uid)
+        {
+
             //var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -42,7 +53,8 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 {
                     new Claim("uid", uid),
                     new Claim("email", user.Result.Email),
-                    new Claim("name", user.Result.DisplayName)
+                    new Claim("name", user.Result.DisplayName),
+                    new Claim(ClaimTypes.Role, "MANAGER")
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

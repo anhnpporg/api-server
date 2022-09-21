@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,9 +18,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Configurations;
+using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Services.AuthenticationService;
+using UtNhanDrug_BE.Services.CustomerService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
+using UtNhanDrug_BE.Services.ManagerService;
+using UtNhanDrug_BE.Services.StaffService;
 using UtNhanDrug_BE.Services.TwilioAuthentication;
 
 namespace UtNhanDrug_BE
@@ -58,13 +63,18 @@ namespace UtNhanDrug_BE
 
             // register (Swagger) Module
             services.RegisterSwaggerModule();
-
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
-
+            services.AddScoped<ICustomerSvc, CustomerSvc>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IVerifyOTPService, VerifyOTPService>();
+            services.AddTransient<IManagerSvc, ManagerSvc>();
+            services.AddTransient<IStaffService, StaffService>();
+
+            services.AddDbContext<utNhanDrugStoreManagementContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("utNhanDrug")));
+
             //register fcm service
-            services.AddHttpClient<FcmSender>();
+            services.AddHttpClient<FcmSender>(); 
             services.AddHttpClient<ApnSender>();
 
             // Register appsetting

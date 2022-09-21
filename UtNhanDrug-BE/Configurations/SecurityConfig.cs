@@ -16,6 +16,9 @@ namespace UtNhanDrug_BE.Configurations
             var appSettingsSection = configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
 
+            var efConfigSection = configuration.GetSection("EFConfig");
+            services.Configure<EFConfig>(efConfigSection);
+
             var twilioSettingsSection = configuration.GetSection("TwilioConfig");
             services.Configure<TwilioConfig>(twilioSettingsSection);
 

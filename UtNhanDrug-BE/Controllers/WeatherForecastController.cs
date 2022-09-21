@@ -10,7 +10,7 @@ namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}")]
+    [Route("api/v1")]
 
     public class WeatherForecastController : ControllerBase
     {
