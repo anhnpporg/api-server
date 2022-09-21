@@ -36,7 +36,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         public async Task<bool> CreateAccount(string email)
         {
             var exitsEmail = await _context.Managers.FirstOrDefaultAsync(x => x.Email == email);
-            if (exitsEmail == null) 
+            if (exitsEmail == null)
             {
                 var user = new User()
                 {
@@ -58,7 +58,6 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     if (isSavedStaff != 0) return true;
                 }
             }
-
             return false;
         }
 

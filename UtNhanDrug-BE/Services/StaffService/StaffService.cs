@@ -20,24 +20,29 @@ namespace UtNhanDrug_BE.Services.StaffService
 
         public async Task<bool> CreateAccount(string email)
         {
-            var user = new User()
+            var exitsEmail = await _context.Staffs.FirstOrDefaultAsync(x => x.Email == email);
+            if (exitsEmail == null)
             {
-                IsBan = false,
-                CreateDate = DateTime.Now
-            };
-            _context.Users.Add(user);
-            var isSavedUser = await _context.SaveChangesAsync();
-            if (isSavedUser != 0)
-            {
-                var staff = new Staff()
+                var user = new User()
                 {
-                    UserId = user.Id,
-                    Email = email
+                    IsBan = false,
+                    CreateDate = DateTime.Now
                 };
-                _context.Staffs.Add(staff);
-                var isSavedStaff = await _context.SaveChangesAsync();
-                if (isSavedStaff != 0) return true;
+                _context.Users.Add(user);
+                var isSavedUser = await _context.SaveChangesAsync();
+                if (isSavedUser != 0)
+                {
+                    var staff = new Staff()
+                    {
+                        UserId = user.Id,
+                        Email = email
+                    };
+                    _context.Staffs.Add(staff);
+                    var isSavedStaff = await _context.SaveChangesAsync();
+                    if (isSavedStaff != 0) return true;
+                }
             }
+
 
             return false;
         }
