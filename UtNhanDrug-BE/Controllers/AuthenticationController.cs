@@ -26,7 +26,7 @@ namespace UtNhanDrug_BE.Controllers
         [AllowAnonymous]
         [HttpPost("manager/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginManagerWithIdTokenAsync(string idToken)
+        public async Task<IActionResult> LoginManagerWithIdTokenAsync([FromHeader] string idToken)
         {
             if (idToken == null) return BadRequest();
             try
@@ -48,7 +48,7 @@ namespace UtNhanDrug_BE.Controllers
         [AllowAnonymous]
         [HttpPost("staff/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginStaffWithIdTokenAsync(string idToken)
+        public async Task<IActionResult> LoginStaffWithIdTokenAsync([FromHeader] string idToken)
         {
             if (idToken == null) return BadRequest();
             try

@@ -18,16 +18,18 @@ namespace UtNhanDrug_BE.Services.ManagerService
         {
             _context = context;
         }
-        public async Task<int> BanAccount(int id)
+        public async Task<int> BanAccount(int UserId)
         {
-            var manager = await _context.Managers.FirstOrDefaultAsync(manager => manager.Id == id);
-            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == manager.Id);
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
             if (user != null)
             {
                 user.IsBan = true;
                 user.BanDate = System.DateTime.Now;
             }
-            else throw new Exception("Not found this staff");
+            else
+            {
+                return -1;
+            }
 
             return await _context.SaveChangesAsync();
 

@@ -77,7 +77,13 @@ namespace UtNhanDrug_BE.Controllers
             return Ok("Create manager successfully");
         }
 
-        
-
+        [HttpPut("ban/{id}")]
+        [MapToApiVersion("1.0")] 
+        public async Task<ActionResult> BanAccount([FromRoute] int id)
+        {
+            var result = await _managerSvc.BanAccount(id);
+            if (result == -1) return NotFound("Not found this account");
+            return Ok("ban successfully");
+        }
     }
 }
