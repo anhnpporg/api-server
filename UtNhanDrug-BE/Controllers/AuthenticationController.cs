@@ -23,9 +23,9 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("login")]
+        [HttpPost("manager/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginWithIdTokenAsync(string idToken)
+        public async Task<IActionResult> LoginManagerWithIdTokenAsync(string idToken)
         {
             if (idToken == null) return BadRequest();
             try
@@ -33,7 +33,29 @@ namespace UtNhanDrug_BE.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(idToken);
                 string uid = decodedToken.Uid;
-                string jwtToken = _authenticationService.Authenticate(uid);
+                string jwtToken = _authenticationService.AuthenticateManager(uid);
+                if (jwtToken.Length != 0)
+                    return Ok(jwtToken);
+                else
+                    return NotFound("User not register");
+            }
+            catch (Exception)
+            {
+                return Unauthorized();
+            }
+        }
+        [AllowAnonymous]
+        [HttpPost("staff/login")]
+        [ProducesResponseType(typeof(TokenResponse), 200)]
+        public async Task<IActionResult> LoginStaffWithIdTokenAsync(string idToken)
+        {
+            if (idToken == null) return BadRequest();
+            try
+            {
+                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
+                    .VerifyIdTokenAsync(idToken);
+                string uid = decodedToken.Uid;
+                string jwtToken = _authenticationService.AuthenticateStaff(uid);
                 if (jwtToken.Length != 0)
                     return Ok(jwtToken);
                 else

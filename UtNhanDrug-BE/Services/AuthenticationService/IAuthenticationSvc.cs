@@ -2,6 +2,7 @@
 {
     public interface IAuthenticationSvc
     {
-        string Authenticate(string accessToken);
+        string AuthenticateManager(string accessToken);
+        string AuthenticateStaff(string accessToken);
     }
 }

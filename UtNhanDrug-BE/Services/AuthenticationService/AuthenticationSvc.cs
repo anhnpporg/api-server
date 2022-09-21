@@ -23,13 +23,14 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
             _configuration = configuration;
             _managerSvc = managerSvc;
         }
-        public string Authenticate(string uid)
+        //authen manager
+        public string AuthenticateManager(string uid)
         {
             var user = LoadUser(uid);
             var isUserExits = _managerSvc.IsExitsAccount(user.Result.Email);
             if (isUserExits.Result != null)
             {
-                var customTokenAsync = CreateCustomToken(uid);
+                var customTokenAsync = CreateCustomManagerToken(uid);
                 return customTokenAsync;
             }
             return "";
@@ -39,9 +40,9 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
             UserRecord user = await FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
             return user;
         }
-        private string CreateCustomToken(string uid)
+        private string CreateCustomManagerToken(string uid)
         {
-
+            var userDb = LoadUser(uid);
             //var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -52,9 +53,51 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim("uid", uid),
+                    new Claim("id", userDb.Id.ToString()),
                     new Claim("email", user.Result.Email),
                     new Claim("name", user.Result.DisplayName),
+                    new Claim("avatar", user.Result.PhotoUrl),
                     new Claim(ClaimTypes.Role, "MANAGER")
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
+            var jwtToken = tokenHandler.WriteToken(token);
+            return jwtToken;
+        }
+
+        //authen staff
+        public string AuthenticateStaff(string uid)
+        {
+            var user = LoadUser(uid);
+            var isUserExits = _managerSvc.IsExitsAccount(user.Result.Email);
+            if (isUserExits.Result != null)
+            {
+                var customTokenAsync = CreateCustomStaffToken(uid);
+                return customTokenAsync;
+            }
+            return "";
+        }
+
+        private string CreateCustomStaffToken(string uid)
+        {
+            var userDb = LoadUser(uid);
+            //var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
+            var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
+            Console.WriteLine(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim("uid", uid),
+                    new Claim("id", userDb.Id.ToString()),
+                    new Claim("email", user.Result.Email),
+                    new Claim("name", user.Result.DisplayName),
+                    new Claim("avatar", user.Result.PhotoUrl),
+                    new Claim(ClaimTypes.Role, "STAFF")
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
