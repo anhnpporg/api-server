@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.TokenModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
 
 namespace UtNhanDrug_BE.Controllers
@@ -33,8 +34,8 @@ namespace UtNhanDrug_BE.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(idToken);
                 string uid = decodedToken.Uid;
-                string jwtToken = _authenticationService.AuthenticateManager(uid);
-                if (jwtToken.Length != 0)
+                AccessTokenModel jwtToken = _authenticationService.AuthenticateManager(uid);
+                if (jwtToken.AccessToken.Length != 0)
                     return Ok(jwtToken);
                 else
                     return NotFound("User not register");
@@ -55,8 +56,8 @@ namespace UtNhanDrug_BE.Controllers
                 FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
                     .VerifyIdTokenAsync(idToken);
                 string uid = decodedToken.Uid;
-                string jwtToken = _authenticationService.AuthenticateStaff(uid);
-                if (jwtToken.Length != 0)
+                AccessTokenModel jwtToken = _authenticationService.AuthenticateStaff(uid);
+                if (jwtToken.AccessToken.Length != 0)
                     return Ok(jwtToken);
                 else
                     return NotFound("User not register");

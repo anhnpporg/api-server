@@ -13,7 +13,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
     public class ManagerSvc : IManagerSvc
     {
         private readonly utNhanDrugStoreManagementContext _context;
-
+        private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
         public ManagerSvc(utNhanDrugStoreManagementContext context)
         {
             _context = context;
@@ -42,6 +42,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     IsBan = false,
                     CreateDate = DateTime.Now,
+                    Avatar = defaultAvatar
                 };
                 _context.Users.Add(user);
                 var isSavedUser = await _context.SaveChangesAsync();

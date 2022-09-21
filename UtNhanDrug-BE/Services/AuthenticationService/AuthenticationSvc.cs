@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.TokenModel;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.StaffService;
 
@@ -20,22 +21,28 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         private readonly IManagerSvc _managerSvc;
         private readonly IStaffService _staffSvc;
 
-        public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc)
+        public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc, IStaffService staffSvc)
         {
             _configuration = configuration;
             _managerSvc = managerSvc;
+            _staffSvc = staffSvc;
         }
         //authen manager
-        public string AuthenticateManager(string uid)
+        public AccessTokenModel AuthenticateManager(string uid)
         {
+            AccessTokenModel token = new AccessTokenModel();
             var user = LoadUser(uid);
             var isUserExits = _managerSvc.IsExitsAccount(user.Result.Email);
             if (isUserExits.Result != null)
             {
                 var customTokenAsync = CreateCustomManagerToken(uid);
-                return customTokenAsync;
+                token.Message = "Successfully";
+                token.AccessToken = customTokenAsync;
+                return token;
             }
-            return "";
+            token.Message = "Fail";
+            token.AccessToken = "";
+            return token;
         }
         private async Task<UserRecord> LoadUser(string uid)
         {
@@ -71,16 +78,21 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         }
 
         //authen staff
-        public string AuthenticateStaff(string uid)
+        public AccessTokenModel AuthenticateStaff(string uid)
         {
+            AccessTokenModel token = new AccessTokenModel();
             var user = LoadUser(uid);
             var isUserExits = _staffSvc.IsExitsAccount(user.Result.Email);
             if (isUserExits.Result != null)
             {
                 var customTokenAsync = CreateCustomStaffToken(uid);
-                return customTokenAsync;
+                token.Message = "Successfully";
+                token.AccessToken = customTokenAsync;
+                return token;
             }
-            return "";
+            token.Message = "Fail";
+            token.AccessToken = "";
+            return token;
         }
 
         private string CreateCustomStaffToken(string uid)

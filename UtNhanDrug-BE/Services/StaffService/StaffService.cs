@@ -12,7 +12,7 @@ namespace UtNhanDrug_BE.Services.StaffService
     public class StaffService : IStaffService
     {
         private readonly utNhanDrugStoreManagementContext _context;
-
+        private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
         public StaffService(utNhanDrugStoreManagementContext context)
         {
             _context = context;
@@ -26,7 +26,8 @@ namespace UtNhanDrug_BE.Services.StaffService
                 var user = new User()
                 {
                     IsBan = false,
-                    CreateDate = DateTime.Now
+                    CreateDate = DateTime.Now,
+                    Avatar = defaultAvatar
                 };
                 _context.Users.Add(user);
                 var isSavedUser = await _context.SaveChangesAsync();

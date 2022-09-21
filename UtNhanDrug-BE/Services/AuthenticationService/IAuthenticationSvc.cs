@@ -1,8 +1,10 @@
-﻿namespace UtNhanDrug_BE.Services.AuthenticationService
+﻿using UtNhanDrug_BE.Models.TokenModel;
+
+namespace UtNhanDrug_BE.Services.AuthenticationService
 {
     public interface IAuthenticationSvc
     {
-        string AuthenticateManager(string accessToken);
-        string AuthenticateStaff(string accessToken);
+        AccessTokenModel AuthenticateManager(string accessToken);
+        AccessTokenModel AuthenticateStaff(string accessToken);
     }
 }
