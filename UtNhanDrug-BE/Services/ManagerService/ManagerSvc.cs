@@ -69,9 +69,8 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
             //filter
 
-            if (!string.IsNullOrEmpty(paging.keyword))
-                query = query.Where(x => x.u.Fullname.Contains(paging.keyword));
-
+            if (!string.IsNullOrEmpty(paging.Keyword))
+                query = query.Where(x => x.u.Fullname.Contains(paging.Keyword));
             //paging
             int totalRow = await query.CountAsync();
 

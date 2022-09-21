@@ -55,8 +55,8 @@ namespace UtNhanDrug_BE.Services.StaffService
 
             //filter
 
-            if (!string.IsNullOrEmpty(paging.keyword))
-                query = query.Where(x => x.u.Fullname.Contains(paging.keyword));
+            if (!string.IsNullOrEmpty(paging.Keyword))
+                query = query.Where(x => x.u.Fullname.Contains(paging.Keyword));
 
             //paging
             int totalRow = await query.CountAsync();
@@ -78,6 +78,11 @@ namespace UtNhanDrug_BE.Services.StaffService
                 Items = data
             };
             return pagedResult;
+        }
+
+        public async Task<Staff> IsExitsAccount(string email)
+        {
+            return await _context.Staffs.FirstOrDefaultAsync(staff => staff.Email == email);
         }
     }
 }

@@ -31,6 +31,10 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetManager([FromQuery] PagingModel pagingParameters)
         {
+            if(pagingParameters.Keyword == null)
+            {
+                pagingParameters.Keyword = " ";
+            }
             var manager = await _managerSvc.GetManagers(pagingParameters);
             return Ok(manager);
         }

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Services.ManagerService;
+using UtNhanDrug_BE.Services.StaffService;
 
 namespace UtNhanDrug_BE.Services.AuthenticationService
 {
@@ -17,6 +18,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         private const string API_KEY = "AIzaSyB-9fD6pq0a7yjziqoxGIdHhaZEC5m2KG8";
         private readonly IConfiguration _configuration;
         private readonly IManagerSvc _managerSvc;
+        private readonly IStaffService _staffSvc;
 
         public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc)
         {
@@ -43,6 +45,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         private string CreateCustomManagerToken(string uid)
         {
             var userDb = LoadUser(uid);
+            var isUserExits = _managerSvc.IsExitsAccount(userDb.Result.Email);
             //var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -53,7 +56,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim("uid", uid),
-                    new Claim("id", userDb.Id.ToString()),
+                    new Claim("id", isUserExits.Result.UserId.ToString()),
                     new Claim("email", user.Result.Email),
                     new Claim("name", user.Result.DisplayName),
                     new Claim("avatar", user.Result.PhotoUrl),
@@ -71,7 +74,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         public string AuthenticateStaff(string uid)
         {
             var user = LoadUser(uid);
-            var isUserExits = _managerSvc.IsExitsAccount(user.Result.Email);
+            var isUserExits = _staffSvc.IsExitsAccount(user.Result.Email);
             if (isUserExits.Result != null)
             {
                 var customTokenAsync = CreateCustomStaffToken(uid);
@@ -83,6 +86,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         private string CreateCustomStaffToken(string uid)
         {
             var userDb = LoadUser(uid);
+            var isUserExits = _staffSvc.IsExitsAccount(userDb.Result.Email);
             //var uidAdmin = _configuration.GetSection("AppSettings").GetSection("AdminUID").Value;
             var user = FirebaseAdmin.Auth.FirebaseAuth.DefaultInstance.GetUserAsync(uid);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -93,7 +97,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim("uid", uid),
-                    new Claim("id", userDb.Id.ToString()),
+                    new Claim("id", isUserExits.Result.UserId.ToString()),
                     new Claim("email", user.Result.Email),
                     new Claim("name", user.Result.DisplayName),
                     new Claim("avatar", user.Result.PhotoUrl),

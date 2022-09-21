@@ -10,6 +10,7 @@ namespace UtNhanDrug_BE.Services.StaffService
     {
         Task<PageResult<ViewStaffModel>> GetStaffs(PagingModel paging);
         Task<bool> CreateAccount(string email);
+        Task<Staff> IsExitsAccount(string email);
 
     }
 }

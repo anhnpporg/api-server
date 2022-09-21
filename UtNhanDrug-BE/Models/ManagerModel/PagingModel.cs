@@ -4,6 +4,6 @@ namespace UtNhanDrug_BE.Models.ManagerModel
 {
     public class PagingModel : PagingRequestBase
     {
-        public string keyword { get; set; }
+        public string Keyword { get; set; }
     }
 }
