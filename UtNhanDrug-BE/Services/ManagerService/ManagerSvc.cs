@@ -35,7 +35,24 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         }
 
-        public async Task<bool> CreateAccount(string email)
+        public async Task<int> UnBanAccount(int UserId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
+            if (user != null)
+            {
+                user.IsBan = false;
+                user.BanDate = System.DateTime.Now;
+            }
+            else
+            {
+                return -1;
+            }
+
+            return await _context.SaveChangesAsync();
+
+        }
+
+        public async Task<bool> CreateAccount(string email, string fullname)
         {
             var exitsEmail = await _context.Managers.FirstOrDefaultAsync(x => x.Email == email);
             if (exitsEmail == null)
@@ -44,7 +61,8 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     IsBan = false,
                     CreateDate = DateTime.Now,
-                    Avatar = defaultAvatar
+                    Avatar = defaultAvatar,
+                    Fullname = fullname
                 };
                 _context.Users.Add(user);
                 var isSavedUser = await _context.SaveChangesAsync();

@@ -18,7 +18,7 @@ namespace UtNhanDrug_BE.Services.StaffService
             _context = context;
         }
 
-        public async Task<bool> CreateAccount(string email)
+        public async Task<bool> CreateAccount(string email, string fullname)
         {
             var exitsEmail = await _context.Staffs.FirstOrDefaultAsync(x => x.Email == email);
             if (exitsEmail == null)
@@ -27,7 +27,8 @@ namespace UtNhanDrug_BE.Services.StaffService
                 {
                     IsBan = false,
                     CreateDate = DateTime.Now,
-                    Avatar = defaultAvatar
+                    Avatar = defaultAvatar,
+                    Fullname = fullname
                 };
                 _context.Users.Add(user);
                 var isSavedUser = await _context.SaveChangesAsync();

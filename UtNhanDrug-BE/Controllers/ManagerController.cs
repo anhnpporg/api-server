@@ -60,9 +60,9 @@ namespace UtNhanDrug_BE.Controllers
         [Route("createManager")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateManager([FromForm] string email)
+        public async Task<ActionResult> CreateManager([FromForm] string email, [FromForm] string fullname )
         {
-            var manager = await _managerSvc.CreateAccount(email);
+            var manager = await _managerSvc.CreateAccount(email,fullname);
             if (manager == false) return BadRequest("Email exits");
             return Ok("Create manager successfully");
         }
@@ -70,20 +70,29 @@ namespace UtNhanDrug_BE.Controllers
         [Route("createStaff")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateStaff([FromForm] string email)
+        public async Task<ActionResult> CreateStaff([FromForm] string email, [FromForm] string fullname)
         {
-            var staff = await _staffSvc.CreateAccount(email);
+            var staff = await _staffSvc.CreateAccount(email, fullname);
             if (staff == false) return BadRequest("Email exits");
             return Ok("Create manager successfully");
         }
 
-        [HttpPut("ban/{id}")]
+        [HttpPut("ban/{userId}")]
         [MapToApiVersion("1.0")] 
-        public async Task<ActionResult> BanAccount([FromRoute] int id)
+        public async Task<ActionResult> BanAccount([FromRoute] int userId)
         {
-            var result = await _managerSvc.BanAccount(id);
+            var result = await _managerSvc.BanAccount(userId);
             if (result == -1) return NotFound("Not found this account");
             return Ok("ban successfully");
+        }
+        
+        [HttpPut("unban/{userId}")]
+        [MapToApiVersion("1.0")] 
+        public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
+        {
+            var result = await _managerSvc.BanAccount(userId);
+            if (result == -1) return NotFound("Not found this account");
+            return Ok("unban successfully");
         }
     }
 }

@@ -3,6 +3,7 @@ using CorePush.Google;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,6 @@ namespace UtNhanDrug_BE
         {
             // Add Firebase Services
             AddFireBaseAsync();
-
             services.AddCors();
             // register (Authentication - JWT) Module 
             services.RegisterSecurityModule(Configuration);
@@ -63,6 +63,8 @@ namespace UtNhanDrug_BE
 
             // register (Swagger) Module
             services.RegisterSwaggerModule();
+
+            //add scope
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddScoped<ICustomerSvc, CustomerSvc>();
             services.AddTransient<INotificationService, NotificationService>();
@@ -87,9 +89,11 @@ namespace UtNhanDrug_BE
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors(x => x
-                .AllowAnyOrigin()
+                //.AllowAnyOrigin()
                 .AllowAnyMethod()
-                .AllowAnyHeader());
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true)
+                .AllowCredentials());
 
             if (env.IsDevelopment())
             {

@@ -1,6 +1,7 @@
 ﻿using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2.Responses;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;

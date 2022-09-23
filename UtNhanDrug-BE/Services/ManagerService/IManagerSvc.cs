@@ -10,9 +10,10 @@ namespace UtNhanDrug_BE.Services.ManagerService
     public interface IManagerSvc
     {
         Task<PageResult<ManagerViewModel>> GetManagers(PagingModel paging);
-        Task<bool> CreateAccount(string email);
+        Task<bool> CreateAccount(string email, string fullname);
         Task<bool> UpdateProfile(int id, UpdateUserModel model);
-        Task<int> BanAccount(int id);
+        Task<int> BanAccount(int Userid);
+        Task<int> UnBanAccount(int UserId);
         Task<Manager> IsExitsAccount(string email);
     }
 }
