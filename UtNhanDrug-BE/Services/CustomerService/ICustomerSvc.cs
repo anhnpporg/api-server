@@ -10,5 +10,6 @@ namespace UtNhanDrug_BE.Services.CustomerService
     {
         Task<PageResult<CustomerViewModel>> GetCustomers(PagingModel paging);
         Task<Customer> FindByPhoneNumber(string phoneNumber);
+        Task<bool> CreateCustomer(string phoneNumber, string fullName);
     }
 }

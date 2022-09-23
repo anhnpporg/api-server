@@ -65,7 +65,7 @@ namespace UtNhanDrug_BE.Services.StaffService
 
             var data = await query.Skip((paging.PageIndex - 1) * paging.PageSize)
                 .Take(paging.PageSize)
-                .Select(x => new ViewStaffModel()
+                .Select(x => new ViewStaffModel() 
                 {
                     Email = x.s.Email,
                     User = x.u

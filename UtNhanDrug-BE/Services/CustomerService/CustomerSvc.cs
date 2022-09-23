@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UtNhanDrug_BE.Hepper.Paging;
 using UtNhanDrug_BE.Models.ManagerModel;
+using System;
 
 namespace UtNhanDrug_BE.Services.CustomerService
 {
@@ -13,12 +14,45 @@ namespace UtNhanDrug_BE.Services.CustomerService
     {
         private readonly IMapper _mapper;
         private readonly utNhanDrugStoreManagementContext _context;
+        private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
 
         public CustomerSvc(IMapper mapper, utNhanDrugStoreManagementContext contex)
         {
             _mapper = mapper;
             _context = contex;
         }
+
+        public async Task<bool> CreateCustomer(string phoneNumber, string fullName)
+        {
+            var customer = await FindByPhoneNumber(phoneNumber);
+
+            if(customer == null)
+            {
+                var user = new User()
+                {
+                    IsBan = false,
+                    CreateDate = DateTime.Now,
+                    Avatar = defaultAvatar,
+                    Fullname = fullName
+                };
+                _context.Users.Add(user);
+                var isSavedUser = await _context.SaveChangesAsync();
+                if (isSavedUser != 0)
+                {
+                    var cus = new Customer()
+                    {
+                        PhoneNumber = phoneNumber,
+                        UserId = user.Id
+
+                    };
+                    _context.Customers.Add(cus);
+                    var isSavedStaff = await _context.SaveChangesAsync();
+                    if (isSavedStaff != 0) return true;
+                }
+            }
+            return false;
+        }
+
         public async Task<Customer> FindByPhoneNumber(string phoneNumber)
         {
             CustomerExitsModel model = new CustomerExitsModel();
