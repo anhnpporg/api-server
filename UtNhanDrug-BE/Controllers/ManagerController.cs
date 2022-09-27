@@ -94,7 +94,7 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")] 
         public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
         {
-            var result = await _managerSvc.BanAccount(userId);
+            var result = await _managerSvc.UnBanAccount(userId);
             if (result == -1) return NotFound("Not found this account");
             return Ok("unban successfully");
         }
