@@ -4,9 +4,11 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Hepper.Paging;
 using UtNhanDrug_BE.Models.ManagerModel;
+using UtNhanDrug_BE.Models.UserModel;
 using UtNhanDrug_BE.Services.CustomerService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.StaffService;
+using UtNhanDrug_BE.Services.UserService;
 
 namespace UtNhanDrug_BE.Controllers
 {
@@ -18,12 +20,14 @@ namespace UtNhanDrug_BE.Controllers
         private readonly IManagerSvc _managerSvc;
         private readonly IStaffService _staffSvc;
         private readonly ICustomerSvc _customerSvc;
+        private readonly IUserService _userService;
 
-        public ManagerController(IManagerSvc managerSvc, IStaffService staffSvc, ICustomerSvc customerSvc)
+        public ManagerController(IManagerSvc managerSvc, IStaffService staffSvc, ICustomerSvc customerSvc, IUserService userService)
         {
             _managerSvc = managerSvc;
             _staffSvc = staffSvc;
             _customerSvc = customerSvc;
+            _userService = userService;
         }
 
         [Route("pagingManager")]
@@ -93,6 +97,15 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _managerSvc.BanAccount(userId);
             if (result == -1) return NotFound("Not found this account");
             return Ok("unban successfully");
+        }
+
+        [HttpPut("update/{userId}")]
+        [MapToApiVersion("1.0")] 
+        public async Task<ActionResult> UpdateAccount([FromRoute] int userId, [FromForm] UpdateUserModel model)
+        {
+            bool result = await _userService.UpdateProfile(userId, model);
+            if (result == false) return NotFound("not found account");
+            return Ok("Update successfully");
         }
     }
 }

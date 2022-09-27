@@ -120,26 +120,5 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return await _context.Managers.FirstOrDefaultAsync(manager => manager.Email == email);
         }
 
-        public async Task<bool> UpdateProfile(int id, UpdateUserModel user)
-        {
-            var isExits = _context.Managers.FirstOrDefaultAsync(isExits => isExits.Id == id);
-            if(isExits != null)
-            {
-                var manager = await _context.Users.FirstOrDefaultAsync(manager => manager.Id == isExits.Id);
-                if(manager != null)
-                {
-                    manager.Avatar = user.Avatar;
-                    manager.UpdateDate = DateTime.Now;
-                    manager.Fullname = user.Fullname;
-                    manager.GenderId = user.GenderId;
-                    manager.PhoneNumber = user.PhoneNumber;
-                    manager.DateOfBirth = user.DateOfBirth;
-                    var isSaved = await _context.SaveChangesAsync();
-                    if(isSaved != 0) return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

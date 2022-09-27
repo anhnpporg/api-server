@@ -11,7 +11,6 @@ namespace UtNhanDrug_BE.Services.ManagerService
     {
         Task<PageResult<ManagerViewModel>> GetManagers(PagingModel paging);
         Task<bool> CreateAccount(string email, string fullname);
-        Task<bool> UpdateProfile(int id, UpdateUserModel model);
         Task<int> BanAccount(int Userid);
         Task<int> UnBanAccount(int UserId);
         Task<Manager> IsExitsAccount(string email);

@@ -21,12 +21,14 @@ using System.Threading.Tasks;
 using UtNhanDrug_BE.Configurations;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.FcmNoti;
+using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.CustomerService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.StaffService;
 using UtNhanDrug_BE.Services.TwilioAuthentication;
+using UtNhanDrug_BE.Services.UserService;
 
 namespace UtNhanDrug_BE
 {
@@ -71,6 +73,8 @@ namespace UtNhanDrug_BE
             services.AddTransient<IVerifyOTPService, VerifyOTPService>();
             services.AddTransient<IManagerSvc, ManagerSvc>();
             services.AddTransient<IStaffService, StaffService>();
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<RoleType>();
 
             services.AddDbContext<utNhanDrugStoreManagementContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("utNhanDrug")));

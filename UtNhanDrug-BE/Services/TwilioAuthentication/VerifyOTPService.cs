@@ -10,6 +10,7 @@ using Twilio;
 using Twilio.Rest.Verify.V2.Service;
 using UtNhanDrug_BE.Configurations;
 using UtNhanDrug_BE.Entities;
+using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Models.TwilioOTP;
 using UtNhanDrug_BE.Services.CustomerService;
 
@@ -20,11 +21,13 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
         private readonly TwilioConfig _twilioConfig;
         private readonly IConfiguration _configuration;
         private readonly ICustomerSvc _customer;
-        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration, ICustomerSvc customer)
+        private readonly RoleType _roleType;
+        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration, ICustomerSvc customer, RoleType roleType)
         {
             _twilioConfig = settings.Value;
             _configuration = configuration;
             _customer = customer;
+            _roleType = roleType;
         }
 
         public async Task<VerificationResponseModel> Verification(string phonenumber)
@@ -106,7 +109,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                         {
                     new Claim("phone_number", phonenumber),
                     new Claim("status", verificationCheck.Status),
-                    new Claim(ClaimTypes.Role, "CUSTOMER")
+                    new Claim(ClaimTypes.Role, _roleType.Customer)
                     //new Claim(ClaimTypes.Role, "user")
                 }),
                         Expires = DateTime.UtcNow.AddDays(7),

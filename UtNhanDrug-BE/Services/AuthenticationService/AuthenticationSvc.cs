@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Models.TokenModel;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.StaffService;
@@ -20,12 +21,14 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         private readonly IConfiguration _configuration;
         private readonly IManagerSvc _managerSvc;
         private readonly IStaffService _staffSvc;
+        private readonly RoleType _roleType;
 
-        public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc, IStaffService staffSvc)
+        public AuthenticationSvc(IConfiguration configuration, IManagerSvc managerSvc, IStaffService staffSvc, RoleType roleType)
         {
             _configuration = configuration;
             _managerSvc = managerSvc;
             _staffSvc = staffSvc;
+            _roleType = roleType;
         }
         //authen manager
         public AccessTokenModel AuthenticateManager(string uid)
@@ -67,7 +70,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                     new Claim("email", user.Result.Email),
                     new Claim("name", user.Result.DisplayName),
                     new Claim("avatar", user.Result.PhotoUrl),
-                    new Claim(ClaimTypes.Role, "MANAGER")
+                    new Claim(ClaimTypes.Role, _roleType.Manager)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -113,7 +116,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                     new Claim("email", user.Result.Email),
                     new Claim("name", user.Result.DisplayName),
                     new Claim("avatar", user.Result.PhotoUrl),
-                    new Claim(ClaimTypes.Role, "STAFF")
+                    new Claim(ClaimTypes.Role, _roleType.Staff)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
