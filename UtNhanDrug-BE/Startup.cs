@@ -23,12 +23,9 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
-using UtNhanDrug_BE.Services.CustomerService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
 using UtNhanDrug_BE.Services.ManagerService;
-using UtNhanDrug_BE.Services.StaffService;
 using UtNhanDrug_BE.Services.TwilioAuthentication;
-using UtNhanDrug_BE.Services.UserService;
 
 namespace UtNhanDrug_BE
 {
@@ -68,12 +65,9 @@ namespace UtNhanDrug_BE
 
             //add scope
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
-            services.AddScoped<ICustomerSvc, CustomerSvc>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IVerifyOTPService, VerifyOTPService>();
-            services.AddTransient<IManagerSvc, ManagerSvc>();
-            services.AddTransient<IStaffService, StaffService>();
-            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IUserSvc, UserSvc>();
             services.AddTransient<RoleType>();
 
             services.AddDbContext<utNhanDrugStoreManagementContext>(options =>

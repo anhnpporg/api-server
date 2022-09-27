@@ -20,19 +20,19 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("createVerification")]
+        [HttpPost("auth/customers/login")]
         public async Task<IActionResult> CreateVerification(string phoneNumber)
         {
             var sid = await _verifyOTPService.Verification(phoneNumber);
             if(sid == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Not found customer" });
             }
             return Ok(sid);
         }
         
         [AllowAnonymous]
-        [HttpPost("verificationCheck")]
+        [HttpPost("auth/customers/check-verify")]
         public async Task<IActionResult> VerificationCheck(string phoneNumber, string code)
         {
             if (phoneNumber == null || code == null) return BadRequest();

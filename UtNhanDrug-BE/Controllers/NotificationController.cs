@@ -17,7 +17,7 @@ namespace UtNhanDrug_BE.Controllers
             _notificationService = notificationService;
         }
 
-        [Route("send")]
+        [Route("send-notification")]
         [HttpPost]
         public async Task<IActionResult> SendNotification(NotificationModel notificationModel)
         {

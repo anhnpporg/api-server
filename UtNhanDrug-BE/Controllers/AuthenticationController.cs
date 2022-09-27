@@ -25,7 +25,7 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("manager/login")]
+        [HttpPost("auth/managers/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
         public async Task<IActionResult> LoginManagerWithIdTokenAsync([FromHeader] string idToken)
         {
@@ -39,7 +39,7 @@ namespace UtNhanDrug_BE.Controllers
                 if (jwtToken.AccessToken.Length != 0)
                     return Ok(jwtToken);
                 else
-                    return NotFound("User not register");
+                    return NotFound(new { message = "User not register" });
             }
             catch (Exception)
             {
@@ -47,7 +47,7 @@ namespace UtNhanDrug_BE.Controllers
             }
         }
         [AllowAnonymous]
-        [HttpPost("staff/login")]
+        [HttpPost("auth/staffs/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
         public async Task<IActionResult> LoginStaffWithIdTokenAsync([FromHeader] string idToken)
         {
@@ -61,7 +61,7 @@ namespace UtNhanDrug_BE.Controllers
                 if (jwtToken.AccessToken.Length != 0)
                     return Ok(jwtToken);
                 else
-                    return NotFound("User not register");
+                    return NotFound(new { message = "User not register" });
             }
             catch (Exception)
             {

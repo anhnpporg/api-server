@@ -12,7 +12,7 @@ using UtNhanDrug_BE.Configurations;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Models.TwilioOTP;
-using UtNhanDrug_BE.Services.CustomerService;
+using UtNhanDrug_BE.Services.ManagerService;
 
 namespace UtNhanDrug_BE.Services.TwilioAuthentication
 {
@@ -20,20 +20,20 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
     {
         private readonly TwilioConfig _twilioConfig;
         private readonly IConfiguration _configuration;
-        private readonly ICustomerSvc _customer;
+        private readonly IUserSvc _userSvc;
         private readonly RoleType _roleType;
-        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration, ICustomerSvc customer, RoleType roleType)
+        public VerifyOTPService(IOptions<TwilioConfig> settings, IConfiguration configuration, IUserSvc userSvc, RoleType roleType)
         {
             _twilioConfig = settings.Value;
             _configuration = configuration;
-            _customer = customer;
+            _userSvc = userSvc;
             _roleType = roleType;
         }
 
         public async Task<VerificationResponseModel> Verification(string phonenumber)
         {
             VerificationResponseModel responseModel = new VerificationResponseModel();
-            var customer = await _customer.FindByPhoneNumber(phonenumber);
+            var customer = await _userSvc.FindByPhoneNumber(phonenumber);
             if(customer != null)
             {
                 // Find your Account SID and Auth Token at twilio.com/console
@@ -99,8 +99,17 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                     code: code,
                     pathServiceSid: _twilioConfig.ServiceSID
                 );
+                var customer = await _userSvc.FindByPhoneNumber(phonenumber);
+                if (customer == null)
+                {
+                    responseModel.IsSuccess = "False";
+                    responseModel.Message = "Not found user";
+                    return responseModel;
+                }
+
                 if (verificationCheck.Status.ToLower().Equals("approved"))
                 {
+                    var isBan = _userSvc.GetStaff(customer.UserId).Result.IsBan;
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var key = Encoding.ASCII.GetBytes(_configuration.GetSection("AppSettings").GetSection("Secret").Value);
                     var tokenDescriptor = new SecurityTokenDescriptor
@@ -109,6 +118,7 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
                         {
                     new Claim("phone_number", phonenumber),
                     new Claim("status", verificationCheck.Status),
+                    new Claim("isBan", isBan.ToString()),
                     new Claim(ClaimTypes.Role, _roleType.Customer)
                     //new Claim(ClaimTypes.Role, "user")
                 }),
