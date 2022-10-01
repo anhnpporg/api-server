@@ -24,6 +24,7 @@ using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
+using UtNhanDrug_BE.Services.GenderService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.TwilioAuthentication;
 
@@ -68,6 +69,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IVerifyOTPService, VerifyOTPService>();
             services.AddTransient<IUserSvc, UserSvc>();
+            services.AddTransient<IGenderSvc, GenderSvc>();
             services.AddTransient<RoleType>();
 
             services.AddDbContext<utNhanDrugStoreManagementContext>(options =>

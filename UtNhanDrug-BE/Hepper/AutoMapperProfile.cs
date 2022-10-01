@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.CustomerModel;
+using UtNhanDrug_BE.Models.GenderModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.StaffModel;
 

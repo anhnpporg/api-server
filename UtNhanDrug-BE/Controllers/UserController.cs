@@ -11,6 +11,7 @@ using UtNhanDrug_BE.Hepper.Paging;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Models.UserModel;
+using UtNhanDrug_BE.Services.GenderService;
 using UtNhanDrug_BE.Services.ManagerService;
 
 namespace UtNhanDrug_BE.Controllers
@@ -21,10 +22,12 @@ namespace UtNhanDrug_BE.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserSvc _userSvc;
+        private readonly IGenderSvc _genderSvc;
 
-        public UserController(IUserSvc userSvc)
+        public UserController(IUserSvc userSvc, IGenderSvc genderSvc)
         {
             _userSvc = userSvc;
+            _genderSvc = genderSvc;
         }
 
 
@@ -198,6 +201,26 @@ namespace UtNhanDrug_BE.Controllers
             var user = await _userSvc.GetUserProfile(userId);
             if (user == null) return NotFound(new { message = "User not found" });
             return Ok(user);
+        }
+
+        [Route("gender")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGender()
+        {
+            var gender = await _genderSvc.GetGender();
+            if (gender == null) return BadRequest(new { message = "Not found gender" });
+            return Ok(gender);
+        }
+
+        [Route("gender/{id}")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGender([FromRoute] int id)
+        {
+            var gender = await _genderSvc.GetGender(id);
+            if (gender == null) return BadRequest(new { message = "Not found gender" });
+            return Ok(gender);
         }
     }
 }
