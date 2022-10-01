@@ -34,10 +34,6 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetManager([FromQuery] PagingModel pagingParameters)
         {
-            if(pagingParameters.Keyword == null)
-            {
-                pagingParameters.Keyword = " ";
-            }
             var manager = await _userSvc.GetManagers(pagingParameters);
             return Ok(manager);
         }
@@ -194,6 +190,14 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(manager);
         }
 
-
+        [Route("profile/{userId}")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProfile([FromRoute] int userId)
+        {
+            var user = await _userSvc.GetUserProfile(userId);
+            if (user == null) return NotFound(new { message = "User not found" });
+            return Ok(user);
+        }
     }
 }

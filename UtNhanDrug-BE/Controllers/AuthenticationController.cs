@@ -68,33 +68,5 @@ namespace UtNhanDrug_BE.Controllers
                 return Unauthorized();
             }
         }
-
-        [AllowAnonymous]
-        [HttpPost("auth/staffs/accounts/login")]
-        [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginStaffWithUsernamePasswordAsync([FromHeader] string idToken)
-        {
-            if (idToken == null) return BadRequest();
-            try
-            {
-
-                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
-                    .VerifyIdTokenAsync(idToken);
-                string uid = decodedToken.Uid;
-                AccessTokenModel jwtToken = _authenticationService.AuthenticateStaff(uid);
-                if (jwtToken.AccessToken.Length != 0)
-                    return Ok(jwtToken);
-                else
-                    return NotFound(new { message = "User not register" });
-            }
-            catch (Exception)
-            {
-                return Unauthorized();
-            }
-        }
-
-
-
-
     }
 }

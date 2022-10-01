@@ -32,11 +32,6 @@ namespace UtNhanDrug_BE.Services.TwilioAuthentication
 
         public async Task<VerificationResponseModel> Verification(string phonenumber)
         {
-
-            var auth = new Firebase.Auth.FirebaseAuthProvider(new Firebase.Auth.FirebaseConfig("AIzaSyB-9fD6pq0a7yjziqoxGIdHhaZEC5m2KG8"));
-            var users = await auth.SignInWithEmailAndPasswordAsync("admin@gmail.com", "123456");
-            var uid = users.User;
-
             VerificationResponseModel responseModel = new VerificationResponseModel();
             var customer = await _userSvc.FindByPhoneNumber(phonenumber);
             if(customer != null)

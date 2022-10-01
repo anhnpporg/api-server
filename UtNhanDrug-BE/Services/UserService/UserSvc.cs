@@ -350,5 +350,45 @@ namespace UtNhanDrug_BE.Services.ManagerService
             }
             return null;
         }
+
+        public async Task<UserViewModel> GetUserProfile(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserId == userId);
+            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserId == userId);
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
+
+            UserViewModel u = new UserViewModel()
+            {
+                Fullname = user.Fullname,
+                Avatar = user.Avatar,
+                PhoneNumber = user.PhoneNumber,
+                UpdateDate = user.UpdateDate,
+                CreateDate = user.CreateDate,
+                DateOfBirth = user.DateOfBirth,
+                IsBan = user.IsBan,
+                BanDate = user.BanDate,
+                GenderId = user.GenderId
+            };
+
+            if(manager != null)
+            {
+                u.Email = manager.Email;
+                return u;
+            }else if(staff != null)
+            {
+                u.Email = staff.Email;
+                return u;
+            }
+            else if(customer != null)
+            {
+                u.PhoneNumber = customer.PhoneNumber;
+                u.Email = "";
+                return u;
+            }
+
+            return null;
+        }
     }
 }

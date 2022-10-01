@@ -43,10 +43,10 @@ namespace UtNhanDrug_BE.Configurations
                 {
                     Scheme = "bearer",
                     BearerFormat = "JWT",
-                    Name = "JWT Authentication",
+                    Name = "Authentication",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Description = "Put **_ONLY_** your token on textbox below!",
+                    Description = "Put **_ONLY_** your token on textbox below!\n Name = Authentication",
                     Reference = new OpenApiReference
                     {
                         Id = JwtBearerDefaults.AuthenticationScheme,

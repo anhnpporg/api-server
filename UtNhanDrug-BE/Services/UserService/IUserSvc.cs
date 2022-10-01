@@ -26,5 +26,6 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<UserViewModel> GetStaff(int userId);
         Task<UserViewModel> GetCustomer(int userId);
         Task<UserViewModel> GetManager(int userId);
+        Task<UserViewModel> GetUserProfile(int userId);
     }
 }
