@@ -4,8 +4,6 @@ namespace UtNhanDrug_BE.Models.FcmNoti
 {
     public class NotificationModel
     {
-        [JsonProperty("registrationToken")]
-        public string RegistrationToken { get; set; }
         [JsonProperty("title")]
         public string Title { get; set; }
         [JsonProperty("body")]

@@ -12,6 +12,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
     public class NotificationService : INotificationService
     {
         private readonly FcmNotificationSetting _fcmNotificationSetting;
+        private readonly String tokenDevice = "eE2bKSwCPJt52AZaOclYpO:APA91bHlQfi1sTUz7OuEiLl_r6BMYm9oYRjkgKxUU00isxZoKVIUuTmdTq4z5WgVl1sPvZpOdCOodpo-OCwru1pPylFqFJ9D3cOuTR6WjD1ysLWsoj_ggftJmmma5DjNxiyWIbnKPTsz";
         public NotificationService(IOptions<FcmNotificationSetting> settings)
         {
             _fcmNotificationSetting = settings.Value;
@@ -30,7 +31,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
                     HttpClient httpClient = new HttpClient();
 
                     string authorizationKey = string.Format("keyy={0}", settings.ServerKey);
-                    string deviceToken = notificationModel.RegistrationToken;
+                    string deviceToken = tokenDevice;
 
                     httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorizationKey);
                     httpClient.DefaultRequestHeaders.Accept
