@@ -2,7 +2,6 @@
 using System;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Entities;
-using UtNhanDrug_BE.Hepper.Paging;
 using UtNhanDrug_BE.Models.UserModel;
 using System.Linq;
 using System.Collections.Generic;
@@ -10,26 +9,25 @@ using UtNhanDrug_BE.Models.ManagerModel;
 using AutoMapper;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.StaffModel;
+using UtNhanDrug_BE.Hepper.HashingAlgorithms;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ManagerService
 {
     public class UserSvc : IUserSvc
     {
-        private readonly utNhanDrugStoreManagementContext _context;
-        private readonly IMapper _mapper;
+        private readonly ut_nhan_drug_store_databaseContext _context;
         private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
-        public UserSvc(utNhanDrugStoreManagementContext context, IMapper mapper)
+        public UserSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
         public async Task<int> BanAccount(int UserId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(user => user.Id == UserId);
             if (user != null)
             {
-                user.IsBan = true;
-                user.BanDate = System.DateTime.Now;
+                user.IsActive = false;
             }
             else
             {
@@ -42,11 +40,10 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         public async Task<int> UnBanAccount(int UserId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(user => user.Id == UserId);
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(user => user.Id == UserId);
             if (user != null)
             {
-                user.IsBan = false;
-                user.BanDate = System.DateTime.Now;
+                user.IsActive = true;
             }
             else
             {
@@ -57,338 +54,297 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         }
 
-        public async Task<bool> CreateAccount(string email, string fullname)
-        {
-            var exitsEmail = await _context.Managers.FirstOrDefaultAsync(x => x.Email == email);
-            if (exitsEmail == null)
-            {
-                var user = new User()
-                {
-                    IsBan = false,
-                    CreateDate = DateTime.Now,
-                    Avatar = defaultAvatar,
-                    Fullname = fullname
-                };
-                _context.Users.Add(user);
-                var isSavedUser = await _context.SaveChangesAsync();
-                if (isSavedUser != 0)
-                {
-                    var manager = new Manager()
-                    {
-                        Email = email,
-                        UserId = user.Id
-
-                    };
-                    _context.Managers.Add(manager);
-                    var isSavedStaff = await _context.SaveChangesAsync();
-                    if (isSavedStaff != 0) return true;
-                }
-            }
-            return false;
-        }
-
-        public async Task<PageResult<ManagerViewModel>> GetManagers(PagingModel paging)
+        public async Task<List<ManagerViewModel>> GetManagers()
         {
             var query = from m in _context.Managers
-                        join u in _context.Users on m.UserId equals u.Id
+                        join u in _context.UserAccounts on m.UserAccountId equals u.Id
                         select new { u, m };
 
-            //filter
-
-            if (!string.IsNullOrEmpty(paging.Keyword))
-                query = query.Where(x => x.u.Fullname.Contains(paging.Keyword));
-            //paging
-            int totalRow = await query.CountAsync();
-
-            var data = await query.Skip((paging.PageIndex - 1) * paging.PageSize)
-                .Take(paging.PageSize)
+            var data = await query
                 .Select(x => new ManagerViewModel()
                 {
-                    Email = x.m.Email,
-                    IsAdmin = x.m.IsAdmin,
-                    User = x.u,
+                    UserId = x.u.Id,
+                    Fullname = x.u.FullName,
+                    CreatedAt = x.u.CreatedAt,
+                    IsActive = x.u.IsActive
                 }).ToListAsync();
 
-            // select and projection
-            var pagedResult = new PageResult<ManagerViewModel>()
-            {
-                TotalRecord = totalRow,
-                PageSize = paging.PageSize,
-                PageIndex = paging.PageIndex,
-                Items = data
-            };
-            return pagedResult;
+            return data;
         }
-
-        public async Task<Manager> IsExitsAccount(string email)
-        {
-            return await _context.Managers.FirstOrDefaultAsync(manager => manager.Email == email);
-        }
-
-        public async Task<bool> UpdateProfile(int userId, UpdateUserModel model)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            if (user != null)
-            {
-                user = _mapper.Map<User>(model);
-                var isSaved = await _context.SaveChangesAsync();
-                if (isSaved != 0) return true;
-            }
-
-            return false;
-        }
-
-        public async Task<bool> CreateCustomer(string phoneNumber, string fullName)
-        {
-            var customer = await FindByPhoneNumber(phoneNumber);
-
-            if (customer == null)
-            {
-                var user = new User()
-                {
-                    IsBan = false,
-                    CreateDate = DateTime.Now,
-                    Avatar = defaultAvatar,
-                    Fullname = fullName
-                };
-                _context.Users.Add(user);
-                var isSavedUser = await _context.SaveChangesAsync();
-                if (isSavedUser != 0)
-                {
-                    var cus = new Customer()
-                    {
-                        PhoneNumber = phoneNumber,
-                        UserId = user.Id
-
-                    };
-                    _context.Customers.Add(cus);
-                    var isSavedStaff = await _context.SaveChangesAsync();
-                    if (isSavedStaff != 0) return true;
-                }
-            }
-            return false;
-        }
-
-        public async Task<Customer> FindByPhoneNumber(string phoneNumber)
-        {
-            CustomerExitsModel model = new CustomerExitsModel();
-            Customer customer = _mapper.Map<Customer>(model);
-            customer = await _context.Customers.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
-            return customer;
-        }
-
-        public async Task<PageResult<CustomerViewModel>> GetCustomers(PagingModel paging)
+        public async Task<List<CustomerViewModel>> GetCustomers()
         {
             var query = from c in _context.Customers
-                        join u in _context.Users on c.UserId equals u.Id
+                        join u in _context.UserAccounts on c.UserAccountId equals u.Id
                         select new { u, c };
 
-            //filter
-
-            if (!string.IsNullOrEmpty(paging.Keyword))
-                query = query.Where(x => x.u.Fullname.Contains(paging.Keyword));
-
-            //paging
-            int totalRow = await query.CountAsync();
-
-            var data = await query.Skip((paging.PageIndex - 1) * paging.PageSize)
-                .Take(paging.PageSize)
+            var data = await query
                 .Select(x => new CustomerViewModel()
                 {
+                    UserId = x.u.Id,
+                    Fullname = x.u.FullName,
                     PhoneNumber = x.c.PhoneNumber,
-                    User = x.u
+                    CreatedAt = x.u.CreatedAt,
+                    IsActive = x.u.IsActive
                 }).ToListAsync();
+            return data;
+        }
+        public async Task<List<ViewStaffModel>> GetStaffs()
+        {
+            var query = from s in _context.Staffs
+                        join u in _context.UserAccounts on s.UserAccountId equals u.Id
+                        select new { u, s };
 
-            // select and projection
-            var pagedResult = new PageResult<CustomerViewModel>()
-            {
-                TotalRecord = totalRow,
-                PageSize = paging.PageSize,
-                PageIndex = paging.PageIndex,
-                Items = data
-            };
-            return pagedResult;
+            var data = await query
+                .Select(x => new ViewStaffModel()
+                {
+                    UserId = x.u.Id,
+                    Fullname = x.u.FullName,
+                    PhoneNumber = x.s.PhoneNumber,
+                    DateOfBirth = x.s.DateOfBirth,
+                    IsMale = x.s.IsMale,
+                    Avatar = x.s.Avatar,
+                    CreatedAt = x.u.CreatedAt,
+                    IsActive = x.u.IsActive
+                }).ToListAsync();
+            return data;
         }
 
-        public async Task<bool> CreateStaff(string email, string fullname)
+        public async Task<bool> UpdateStaffProfile(int userId, UpdateStaffModel model)
         {
-            var exitsEmail = await _context.Staffs.FirstOrDefaultAsync(x => x.Email == email);
-            if (exitsEmail == null)
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+
+            if(user != null && staff != null)
             {
-                var user = new User()
-                {
-                    IsBan = false,
-                    CreateDate = DateTime.Now,
-                    Avatar = defaultAvatar,
-                    Fullname = fullname
-                };
-                _context.Users.Add(user);
-                var isSavedUser = await _context.SaveChangesAsync();
-                if (isSavedUser != 0)
-                {
-                    var staff = new Staff()
-                    {
-                        UserId = user.Id,
-                        Email = email
-                    };
-                    _context.Staffs.Add(staff);
-                    var isSavedStaff = await _context.SaveChangesAsync();
-                    if (isSavedStaff != 0) return true;
-                }
+                user.FullName = model.Fullname;
+                staff.Avatar = model.Avatar;
+                staff.IsMale = model.IsMale;
+                staff.DateOfBirth = model.Dob;
+                staff.PhoneNumber = model.PhoneNumber;
+                var result = await _context.SaveChangesAsync();
+                if(result > 0) return true;
             }
-
-
             return false;
         }
 
-        public async Task<PageResult<ViewStaffModel>> GetStaffs(PagingModel paging)
+        //public async Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model)
+        //{
+        //    return false;
+        //}
+
+        public async Task<bool> CreateCustomer(CreateCustomerModel model)
         {
-            var query = from s in _context.Staffs
-                        join u in _context.Users on s.UserId equals u.Id
-                        select new { u, s };
-
-            //filter
-
-            if (!string.IsNullOrEmpty(paging.Keyword))
-                query = query.Where(x => x.u.Fullname.Contains(paging.Keyword));
-
-            //paging
-            int totalRow = await query.CountAsync();
-
-            var data = await query.Skip((paging.PageIndex - 1) * paging.PageSize)
-                .Take(paging.PageSize)
-                .Select(x => new ViewStaffModel()
-                {
-                    Email = x.s.Email,
-                    User = x.u
-                }).ToListAsync();
-
-            // select and projection
-            var pagedResult = new PageResult<ViewStaffModel>()
+            var isExits = await FindCustomer(model.PhoneNumber);
+            if (isExits != true)
             {
-                TotalRecord = totalRow,
-                PageSize = paging.PageSize,
-                PageIndex = paging.PageIndex,
-                Items = data
+                var userId = await CreateUser(model.Fullname);
+                if (userId != 0)
+                {
+                    var customer = new Customer()
+                    {
+                        PhoneNumber = model.PhoneNumber,
+                        UserAccountId = userId
+                    };
+                    _context.Customers.Add(customer);
+                    var result = await _context.SaveChangesAsync();
+                    if (result != 0) return true;
+                }
+            }
+            return false;
+
+        }
+
+        private async Task<int> CreateUser(string fullname)
+        {
+            var user = new UserAccount()
+            {
+                FullName = fullname,
             };
-            return pagedResult;
+            _context.UserAccounts.Add(user);
+            var result = await _context.SaveChangesAsync();
+            if (result != 0) return user.Id;
+            return 0;
         }
 
-        public async Task<Staff> IsExitsStaff(string email)
+        private async Task<bool> FindCustomer(string phoneNumber)
         {
-            return await _context.Staffs.FirstOrDefaultAsync(staff => staff.Email == email);
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
+            if (customer != null) return true;
+            return false;
         }
 
-        public async Task<UserViewModel> GetManager(int userId)
+        public async Task<bool> CreateStaff(CreateStaffModel model)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserId == userId);
-            if (user != null & manager != null)
+            var isExits = await FindStaff(model.LoginName);
+            if (isExits == false)
             {
-                UserViewModel model = new UserViewModel()
+                var userId = await CreateUser(model.Fullname);
+                if (userId != 0)
                 {
-                    Avatar = user.Avatar,
-                    BanDate = user.BanDate,
-                    CreateDate = user.CreateDate,
-                    DateOfBirth = user.DateOfBirth,
-                    Email = manager.Email,
-                    Fullname = user.Fullname,
-                    GenderId = user.GenderId,
-                    IsBan = user.IsBan,
-                    PhoneNumber = user.PhoneNumber,
-                    UpdateDate = user.UpdateDate
-                };
-                return model;
+                    string passwordEncode;
+                    Random rnd = new Random();
+                    int hashingId = rnd.Next(1, 3);
+                    if (hashingId == 1)
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(model.Password);
+                    }
+                    else if (hashingId == 2)
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(model.Password);
+                    }
+                    else
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(model.Password);
+                    }
+                    String avatar;
+                    if(model.Avatar != null)
+                    {
+                        avatar = model.Avatar;
+                    }
+                    else
+                    {
+                        avatar = defaultAvatar;
+                    }
+                    var userLoginData = await CreateUserLoginData(userId, model.LoginName, passwordEncode, hashingId, model.EmailAddressRecovery);
+                    if (userLoginData != false)
+                    {
+                        Staff s = new Staff()
+                        {
+                            UserAccountId = userId,
+                            Avatar = avatar,
+                            DateOfBirth = model.Dob,
+                            IsMale = model.IsMale,
+                            PhoneNumber = model.PhoneNumber,
+                        };
+                        _context.Staffs.Add(s);
+                        var result = await _context.SaveChangesAsync();
+                        if (result != 0) return true;
+                    }
+                }
             }
-            return null;
-        }
-        
-        public async Task<UserViewModel> GetCustomer(int userId)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
-            if (user != null & customer != null)
-            {
-                UserViewModel model = new UserViewModel()
-                {
-                    Avatar = user.Avatar,
-                    BanDate = user.BanDate,
-                    CreateDate = user.CreateDate,
-                    DateOfBirth = user.DateOfBirth,
-                    Email = "",
-                    Fullname = user.Fullname,
-                    GenderId = user.GenderId,
-                    IsBan = user.IsBan,
-                    PhoneNumber = user.PhoneNumber,
-                    UpdateDate = user.UpdateDate
-                };
-                return model;
-            }
-            return null;
-        }
-        
-        public async Task<UserViewModel> GetStaff(int userId)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserId == userId);
-            if (user != null & staff != null)
-            {
-                UserViewModel model = new UserViewModel()
-                {
-                    Avatar = user.Avatar,
-                    BanDate = user.BanDate,
-                    CreateDate = user.CreateDate,
-                    DateOfBirth = user.DateOfBirth,
-                    Email = staff.Email,
-                    Fullname = user.Fullname,
-                    GenderId = user.GenderId,
-                    IsBan = user.IsBan,
-                    PhoneNumber = user.PhoneNumber,
-                    UpdateDate = user.UpdateDate
-                };
-                return model;
-            }
-            return null;
+            return false;
         }
 
-        public async Task<UserViewModel> GetUserProfile(int userId)
+        private async Task<bool> FindStaff(string loginName)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var staff = await _context.UserLoginData.FirstOrDefaultAsync(x => x.LoginName == loginName);
+            if (staff != null) return true;
+            return false;
+        }
 
-            var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserId == userId);
-            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserId == userId);
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserId == userId);
-
-            UserViewModel u = new UserViewModel()
+        private async Task<bool> CreateUserLoginData(int userId, string loginName, string passwordEncode, int hashAlgorithmsId, string emailAddressRecovery)
+        {
+            int emailValidationStatusId;
+            if (emailAddressRecovery == null)
             {
-                Fullname = user.Fullname,
-                Avatar = user.Avatar,
-                PhoneNumber = user.PhoneNumber,
-                UpdateDate = user.UpdateDate,
-                CreateDate = user.CreateDate,
-                DateOfBirth = user.DateOfBirth,
-                IsBan = user.IsBan,
-                BanDate = user.BanDate,
-                GenderId = user.GenderId
+                emailValidationStatusId = 1;
+            }
+            else
+            {
+                emailValidationStatusId = 2;
+            }
+            UserLoginDatum u = new UserLoginDatum()
+            {
+                UserAccountId = userId,
+                LoginName = loginName,
+                PasswordHash = passwordEncode,
+                HashingAlgorithmId = hashAlgorithmsId,
+                EmailAddressRecovery = emailAddressRecovery,
+                EmailValidationStatusId = emailValidationStatusId,
+
             };
+            _context.UserLoginData.Add(u);
 
-            if(manager != null)
-            {
-                u.Email = manager.Email;
-                return u;
-            }else if(staff != null)
-            {
-                u.Email = staff.Email;
-                return u;
-            }
-            else if(customer != null)
-            {
-                u.PhoneNumber = customer.PhoneNumber;
-                u.Email = "";
-                return u;
-            }
+            var result = await _context.SaveChangesAsync();
+            if (result != 0) return true;
+            return false;
+        }
 
+        public async Task<object> GetUserProfile(int userId)
+        {
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if(user == null) return null;
+            //filter user
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserAccountId == user.Id);
+            var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+
+            if (customer != null)
+            {
+                CustomerViewModel model = new CustomerViewModel()
+                {
+                    UserId = userId,
+                    CreatedAt = user.CreatedAt,
+                    Fullname = user.FullName,
+                    PhoneNumber = customer.PhoneNumber,
+                    IsActive = user.IsActive
+                };
+
+                return model;
+            }
+            else if (manager != null)
+            {
+                ManagerViewModel model = new ManagerViewModel()
+                {
+                    CreatedAt = user.CreatedAt,
+                    Fullname = user.FullName,
+                    UserId = userId,
+                    IsActive = user.IsActive
+                };
+                return model;
+            }
+            else if (staff != null)
+            {
+                ViewStaffModel model = new ViewStaffModel()
+                {
+                    UserId = userId,
+                    PhoneNumber = staff.PhoneNumber,
+                    Avatar = staff.Avatar,
+                    CreatedAt = user.CreatedAt,
+                    DateOfBirth = staff.DateOfBirth,
+                    Fullname = user.FullName,
+                    IsMale = staff.IsMale,
+                    IsActive = user.IsActive
+                };
+                return model;
+            }
             return null;
+        }
+
+        public async Task<bool> CheckUser(int userId)
+        {
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+            if (user != null) return true;
+            return false;
+        }
+
+        public async Task<bool> RecoveryPassword(int userId, RecoveryPasswordModel model)
+        {
+            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            if (userLogin != null)
+            {
+                string passwordEncode;
+                Random rnd = new Random();
+                int hashingId = rnd.Next(1, 3);
+                if (hashingId == 1)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(model.NewPassword);
+                }
+                else if (hashingId == 2)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(model.NewPassword);
+                }
+                else
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(model.NewPassword);
+                }
+                userLogin.HashingAlgorithmId = hashingId;
+                userLogin.PasswordHash = passwordEncode;
+                var result = await _context.SaveChangesAsync();
+                if (result > 0) return true;
+            }
+            return false;
         }
     }
 }

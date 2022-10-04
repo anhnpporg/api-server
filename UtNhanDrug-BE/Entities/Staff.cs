@@ -8,9 +8,12 @@ namespace UtNhanDrug_BE.Entities
     public partial class Staff
     {
         public int Id { get; set; }
-        public int UserId { get; set; }
-        public string Email { get; set; }
+        public int UserAccountId { get; set; }
+        public string Avatar { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string PhoneNumber { get; set; }
+        public bool IsMale { get; set; }
 
-        public virtual User User { get; set; }
+        public virtual UserAccount UserAccount { get; set; }
     }
 }

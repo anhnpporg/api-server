@@ -3,30 +3,21 @@ using CorePush.Google;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using UtNhanDrug_BE.Configurations;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
-using UtNhanDrug_BE.Services.GenderService;
 using UtNhanDrug_BE.Services.ManagerService;
-using UtNhanDrug_BE.Services.TwilioAuthentication;
 
 namespace UtNhanDrug_BE
 {
@@ -53,7 +44,7 @@ namespace UtNhanDrug_BE
                 o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
 
-            
+
             services.AddApiVersioning(x =>
             {
                 x.DefaultApiVersion = new ApiVersion(1, 0);
@@ -65,24 +56,23 @@ namespace UtNhanDrug_BE
             services.RegisterSwaggerModule();
 
             //add scope
+
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddTransient<INotificationService, NotificationService>();
-            services.AddTransient<IVerifyOTPService, VerifyOTPService>();
             services.AddTransient<IUserSvc, UserSvc>();
-            services.AddTransient<IGenderSvc, GenderSvc>();
             services.AddTransient<RoleType>();
 
-            services.AddDbContext<utNhanDrugStoreManagementContext>(options =>
+            services.AddDbContext<ut_nhan_drug_store_databaseContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("utNhanDrug")));
 
             //register fcm service
-            services.AddHttpClient<FcmSender>(); 
+            services.AddHttpClient<FcmSender>();
             services.AddHttpClient<ApnSender>();
 
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

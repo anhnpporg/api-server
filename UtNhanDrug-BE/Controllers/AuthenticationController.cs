@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.TokenModel;
+using UtNhanDrug_BE.Models.UserModel;
 using UtNhanDrug_BE.Services.AuthenticationService;
 
 namespace UtNhanDrug_BE.Controllers
@@ -23,50 +24,13 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("auth/managers/login")]
+        [HttpPost("auth/user/login")]
         [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginManagerWithIdTokenAsync([FromHeader] string idToken)
+        public async Task<IActionResult> LoginByUsernamePassword([FromForm]LoginModel model)
         {
-            if (idToken == null) return BadRequest();
-            try
-            {
-                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
-                    .VerifyIdTokenAsync(idToken);
-                string uid = decodedToken.Uid;
-                AccessTokenModel jwtToken = _authenticationService.AuthenticateManager(uid);
-                if (jwtToken.AccessToken.Length != 0)
-                    return Ok(jwtToken);
-                else
-                    return NotFound(new { message = "User not register" });
-            }
-            catch (Exception)
-            {
-                return Unauthorized();
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost("auth/staffs/login")]
-        [ProducesResponseType(typeof(TokenResponse), 200)]
-        public async Task<IActionResult> LoginStaffWithIdTokenAsync([FromHeader] string idToken)
-        {
-            if (idToken == null) return BadRequest();
-            try
-            {
-                
-                FirebaseToken decodedToken = await FirebaseAuth.DefaultInstance
-                    .VerifyIdTokenAsync(idToken);
-                string uid = decodedToken.Uid;
-                AccessTokenModel jwtToken = _authenticationService.AuthenticateStaff(uid);
-                if (jwtToken.AccessToken.Length != 0)
-                    return Ok(jwtToken);
-                else
-                    return NotFound(new { message = "User not register" });
-            }
-            catch (Exception)
-            {
-                return Unauthorized();
-            }
+            var result = await _authenticationService.Authenticate(model);
+            if(result.AccessToken == null) return BadRequest(model);
+            return Ok(result);
         }
     }
 }

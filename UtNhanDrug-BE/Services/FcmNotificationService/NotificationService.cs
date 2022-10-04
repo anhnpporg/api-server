@@ -22,44 +22,46 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
             ResponseModel response = new ResponseModel();
             try
             {
-                    /* FCM Sender*/
-                    FcmSettings settings = new FcmSettings()
-                    {
-                        SenderId = _fcmNotificationSetting.SenderId,
-                        ServerKey = _fcmNotificationSetting.ServerKey
-                    };
-                    HttpClient httpClient = new HttpClient();
+                /* FCM Sender*/
+                FcmSettings settings = new FcmSettings()
+                {
+                    SenderId = _fcmNotificationSetting.SenderId,
+                    ServerKey = _fcmNotificationSetting.ServerKey
+                };
+                HttpClient httpClient = new HttpClient();
 
-                    string authorizationKey = string.Format("keyy={0}", settings.ServerKey);
-                    string deviceToken = tokenDevice;
+                string authorizationKey = string.Format("keyy={0}", settings.ServerKey);
+                string deviceToken = tokenDevice;
 
-                    httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorizationKey);
-                    httpClient.DefaultRequestHeaders.Accept
-                            .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorizationKey);
+                httpClient.DefaultRequestHeaders.Accept
+                        .Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                DataPayload dataPayload = new DataPayload()
+                {
+                    Title = notificationModel.Title,
+                    Body = notificationModel.Body
+                };
+                GoogleNotification notification = new GoogleNotification()
+                {
+                    Data = dataPayload,
+                    Notification = dataPayload
+                };
 
-                    DataPayload dataPayload = new DataPayload();
-                    dataPayload.Title = notificationModel.Title;
-                    dataPayload.Body = notificationModel.Body;
+                var fcm = new FcmSender(settings, httpClient);
+                var fcmSendResponse = await fcm.SendAsync(deviceToken, notification);
 
-                    GoogleNotification notification = new GoogleNotification();
-                    notification.Data = dataPayload;
-                    notification.Notification = dataPayload;
-
-                    var fcm = new FcmSender(settings, httpClient);
-                    var fcmSendResponse = await fcm.SendAsync(deviceToken, notification);
-
-                    if (fcmSendResponse.IsSuccess())
-                    {
-                        response.IsSuccess = true;
-                        response.Message = "Notification sent successfully";
-                        return response;
-                    }
-                    else
-                    {
-                        response.IsSuccess = false;
-                        response.Message = fcmSendResponse.Results[0].Error;
-                        return response;
-                    }
+                if (fcmSendResponse.IsSuccess())
+                {
+                    response.IsSuccess = true;
+                    response.Message = "Notification sent successfully";
+                    return response;
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.Message = fcmSendResponse.Results[0].Error;
+                    return response;
+                }
             }
             catch (Exception)
             {

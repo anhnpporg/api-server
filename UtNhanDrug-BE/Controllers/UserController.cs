@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Hepper.Paging;
+using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.RoleModel;
+using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Models.UserModel;
-using UtNhanDrug_BE.Services.GenderService;
 using UtNhanDrug_BE.Services.ManagerService;
 
 namespace UtNhanDrug_BE.Controllers
@@ -22,120 +22,135 @@ namespace UtNhanDrug_BE.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserSvc _userSvc;
-        private readonly IGenderSvc _genderSvc;
 
-        public UserController(IUserSvc userSvc, IGenderSvc genderSvc)
+        public UserController(IUserSvc userSvc)
         {
             _userSvc = userSvc;
-            _genderSvc = genderSvc;
         }
 
 
-        [Authorize(Roles = "ADMIN, MANAGER")]
+        [Authorize(Roles = "MANAGER")]
         [Route("managers")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetManager([FromQuery] PagingModel pagingParameters)
+        public async Task<ActionResult> GetManager()
         {
-            var manager = await _userSvc.GetManagers(pagingParameters);
+            var manager = await _userSvc.GetManagers();
             return Ok(manager);
         }
 
-        [Authorize(Roles = "ADMIN, MANAGER")]
+        [Authorize(Roles = "MANAGER")]
         [Route("customers")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetCustomer([FromQuery] PagingModel pagingParameters)
+        public async Task<ActionResult> GetCustomer()
         {
-            var customer = await _userSvc.GetCustomers(pagingParameters);
+            var customer = await _userSvc.GetCustomers();
             return Ok(customer);
         }
 
-        [Authorize(Roles = "ADMIN, MANAGER")]
+        [Authorize(Roles = "MANAGER")]
         [Route("staffs")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetStaff([FromQuery] PagingModel pagingParameters)
+        public async Task<ActionResult> GetStaff()
         {
-            var staff = await _userSvc.GetStaffs(pagingParameters);
+            var staff = await _userSvc.GetStaffs();
             return Ok(staff);
         }
 
-        [Authorize(Roles = "ADMIN")]
-        [Route("managers")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateManager([FromForm] string email, [FromForm] string fullname )
-        {
-            var manager = await _userSvc.CreateAccount(email,fullname);
-            if (manager == false) return BadRequest(new { message = "Email exits" });
-            return Ok(new { message = "Create manager successfully" });
-        }
-
-        [Authorize(Roles = "ADMIN, MANAGER")]
+        [Authorize(Roles = "MANAGER")]
         [Route("staffs")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateStaff([FromForm] string email, [FromForm] string fullname)
+        public async Task<ActionResult> CreateStaff([FromForm] CreateStaffModel model)
         {
-            var staff = await _userSvc.CreateStaff(email, fullname);
-            if (staff == false) return BadRequest(new { message = "Email exits" });
+            if (model.Password != model.PasswordConfirm) return BadRequest(new { message = "Confirm password incorrect" });
+            var staff = await _userSvc.CreateStaff(model);
+            if (staff == false) return BadRequest(new { message = "LoginName exits" });
             return Ok(new { message = "Create manager successfully" });
         }
 
-        [Authorize(Roles = "ADMIN")]
+
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("users/password/{userId}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> RecoveryPassword([FromRoute] int userId, [FromForm] RecoveryPasswordModel model)
+        {
+            var user = await _userSvc.CheckUser(userId);
+            if (user == false) return NotFound(new { message = "Not found login name" });
+            if (model.NewPassword.Trim() != model.ConfirmPassword.Trim()) return BadRequest(new { message = "Confirm password incorect" });
+            var result = await _userSvc.RecoveryPassword(userId, model);
+            if (result == false) return BadRequest(new { message = "Change password fail" });
+            return Ok(new { message = "Change password successfully" });
+        }
+
+        [Authorize(Roles = "MANAGER")]
         [HttpPut("users/ban/{userId}")]
-        [MapToApiVersion("1.0")] 
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> BanAccount([FromRoute] int userId)
         {
             var result = await _userSvc.BanAccount(userId);
             if (result == -1) return NotFound(new { message = "Not found this account" });
+            if (result == 0) return BadRequest(new { message = "Ban fail" });
             return Ok();
         }
 
-        [Authorize(Roles = "ADMIN")]
+        [Authorize(Roles = "MANAGER")]
         [HttpPut("users/unban/{userId}")]
-        [MapToApiVersion("1.0")] 
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
         {
             var result = await _userSvc.UnBanAccount(userId);
             if (result == -1) return NotFound(new { message = "Not found this account" });
-            if (result == 0) return BadRequest(new { message = "Update fail" });
+            if (result == 0) return BadRequest(new { message = "Ban fail" });
             return Ok(new { message = "unban successfully" });
         }
 
-        [Authorize(Roles = "ADMIN, MANAGER")]
-        [HttpPut("users/{userId}")]
-        [MapToApiVersion("1.0")] 
-        public async Task<ActionResult> UpdateAccount([FromRoute] int userId, [FromForm] UpdateUserModel model)
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("staffs/{userId}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> UpdateStaffAccount([FromRoute] int userId,   [FromForm] UpdateStaffModel model)
         {
-            bool result = await _userSvc.UpdateProfile(userId, model);
-            if (result == false) return NotFound(new { message = "Not found account" });
+            var user = await _userSvc.CheckUser(userId);
+            if (user == false) return NotFound(new { message = "Not found account" });
+            bool result = await _userSvc.UpdateStaffProfile(userId, model);
+            if (result == false) return BadRequest(new { message = "Update fail"});
             return Ok(new { message = "Update successfully" });
         }
+        
+        //[Authorize(Roles = "MANAGER")]
+        //[HttpPut("managers/{userId}")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> UpdateManagerAccount([FromRoute] int userId, [FromForm] UpdateManagerModel model)
+        //{
+        //    bool result = await _userSvc.UpdateManagerProfile(userId, model);
+        //    if (result == false) return NotFound(new { message = "Not found account" });
+        //    return Ok(new { message = "Update successfully" });
+        //}
 
-        [Authorize(Roles = "ADMIN, MANAGER, STAFF")]
+        [Authorize(Roles = "MANAGER, STAFF")]
         [Route("customers")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateCustomer([FromForm] string phoneNumber, [FromForm] string fullname)
+        public async Task<ActionResult> CreateCustomer([FromForm] CreateCustomerModel model)
         {
-            var customer = await _userSvc.CreateCustomer(phoneNumber, fullname);
+            var customer = await _userSvc.CreateCustomer(model);
             if (customer == false) return BadRequest(new { message = "Phone number is exits" });
             return Ok(new { message = "Create customer successfully" });
         }
 
-        [Route("auth/customers/profile")]
+        [Route("auth/user/profile")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetCustomerProfile()
+        public async Task<ActionResult> GetUserProfile()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -143,56 +158,12 @@ namespace UtNhanDrug_BE.Controllers
             }
 
 
-            var customer = await _userSvc.GetCustomer(userId);
-            if (customer == null) return NotFound(new { message = "Not found user" });
-            return Ok(customer);
-        }
-
-        [Route("auth/staffs/profile")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetStaffProfile()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[1].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "You are not login" });
-            }
-
-
-            var staff = await _userSvc.GetStaff(userId);
-            if (staff == null) return NotFound(new { message = "Not found user" });
-            return Ok(staff);
-        }
-
-        [Route("auth/managers/profile")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetManagerProfile()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[1].Value);
-            }catch (Exception)
-            {
-                return BadRequest(new { message = "You are not login" });
-            }
-            
-
-            var manager = await _userSvc.GetManager(userId);
+            var manager = await _userSvc.GetUserProfile(userId);
             if (manager == null) return NotFound(new { message = "Not found user" });
             return Ok(manager);
         }
 
+        [Authorize(Roles = "MANAGER")]
         [Route("profile/{userId}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -201,26 +172,6 @@ namespace UtNhanDrug_BE.Controllers
             var user = await _userSvc.GetUserProfile(userId);
             if (user == null) return NotFound(new { message = "User not found" });
             return Ok(user);
-        }
-
-        [Route("gender")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetGender()
-        {
-            var gender = await _genderSvc.GetGender();
-            if (gender == null) return BadRequest(new { message = "Not found gender" });
-            return Ok(gender);
-        }
-
-        [Route("gender/{id}")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetGender([FromRoute] int id)
-        {
-            var gender = await _genderSvc.GetGender(id);
-            if (gender == null) return BadRequest(new { message = "Not found gender" });
-            return Ok(gender);
         }
     }
 }

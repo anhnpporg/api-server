@@ -1,10 +1,13 @@
-﻿using UtNhanDrug_BE.Models.TokenModel;
+﻿using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.TokenModel;
+using UtNhanDrug_BE.Models.UserModel;
 
 namespace UtNhanDrug_BE.Services.AuthenticationService
 {
     public interface IAuthenticationSvc
     {
-        AccessTokenModel AuthenticateManager(string accessToken);
-        AccessTokenModel AuthenticateStaff(string accessToken);
+        //Task<AccessTokenModel> Authenticate(string accessToken);
+        Task<AccessTokenModel> Authenticate(LoginModel model);
+
     }
 }

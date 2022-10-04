@@ -20,14 +20,10 @@ namespace UtNhanDrug_BE.Configurations
             services.Configure<EFConfig>(efConfigSection);
 
             var twilioSettingsSection = configuration.GetSection("TwilioConfig");
-            services.Configure<TwilioConfig>(twilioSettingsSection);
 
             // Map Setting to class AppSetting
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-
-            //Config automapper
-            services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
             // Set Authentication to verify token
             services.AddAuthentication(x =>

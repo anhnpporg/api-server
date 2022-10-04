@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Entities;
-using UtNhanDrug_BE.Hepper.Paging;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.StaffModel;
@@ -11,21 +10,18 @@ namespace UtNhanDrug_BE.Services.ManagerService
 {
     public interface IUserSvc
     {
-        Task<PageResult<ManagerViewModel>> GetManagers(PagingModel paging);
-        Task<bool> CreateAccount(string email, string fullname);
+        Task<List<ManagerViewModel>> GetManagers();
+        Task<List<ViewStaffModel>> GetStaffs();
+        Task<List<CustomerViewModel>> GetCustomers();
         Task<int> BanAccount(int Userid);
         Task<int> UnBanAccount(int UserId);
-        Task<Manager> IsExitsAccount(string email);
-        Task<bool> UpdateProfile(int userId, UpdateUserModel model);
-        Task<PageResult<CustomerViewModel>> GetCustomers(PagingModel paging);
-        Task<Customer> FindByPhoneNumber(string phoneNumber);
-        Task<bool> CreateCustomer(string phoneNumber, string fullName);
-        Task<PageResult<ViewStaffModel>> GetStaffs(PagingModel paging);
-        Task<bool> CreateStaff(string email, string fullname);
-        Task<Staff> IsExitsStaff(string email);
-        Task<UserViewModel> GetStaff(int userId);
-        Task<UserViewModel> GetCustomer(int userId);
-        Task<UserViewModel> GetManager(int userId);
-        Task<UserViewModel> GetUserProfile(int userId);
+        Task<bool> UpdateStaffProfile(int userId, UpdateStaffModel model);
+        //Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model);
+        Task<bool> CreateCustomer(CreateCustomerModel model);
+        Task<bool> CreateStaff(CreateStaffModel model);
+        Task<object> GetUserProfile(int userId);
+        Task<bool> CheckUser(int userId);
+        Task<bool> RecoveryPassword(int userId, RecoveryPasswordModel model);
+
     }
 }

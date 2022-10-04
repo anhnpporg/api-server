@@ -11,23 +11,20 @@ namespace UtNhanDrug_BE.Entities
         {
             Customers = new HashSet<Customer>();
             Managers = new HashSet<Manager>();
+            UserLoginData = new HashSet<UserLoginDatum>();
+            UserLoginDataExternals = new HashSet<UserLoginDataExternal>();
             staff = new HashSet<Staff>();
         }
 
         public int Id { get; set; }
         public string Fullname { get; set; }
-        public DateTime? CreateDate { get; set; }
-        public DateTime? UpdateDate { get; set; }
-        public string Avatar { get; set; }
-        public string PhoneNumber { get; set; }
-        public int? GenderId { get; set; }
-        public DateTime? DateOfBirth { get; set; }
-        public bool IsBan { get; set; }
-        public DateTime? BanDate { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
 
-        public virtual Gender Gender { get; set; }
         public virtual ICollection<Customer> Customers { get; set; }
         public virtual ICollection<Manager> Managers { get; set; }
+        public virtual ICollection<UserLoginDatum> UserLoginData { get; set; }
+        public virtual ICollection<UserLoginDataExternal> UserLoginDataExternals { get; set; }
         public virtual ICollection<Staff> staff { get; set; }
     }
 }

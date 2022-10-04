@@ -5,8 +5,10 @@ namespace UtNhanDrug_BE.Models.CustomerModel
 {
     public class CustomerViewModel
     {
+        public int UserId { get; set; }
         public string PhoneNumber { get; set; }
-
-        public virtual User User { get; set; }
+        public string Fullname { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool? IsActive { get; set; }
     }
 }
