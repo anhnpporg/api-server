@@ -4,6 +4,7 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.StaffModel;
+using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Models.UserModel;
 
 namespace UtNhanDrug_BE.Services.ManagerService
@@ -16,12 +17,21 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<int> BanAccount(int Userid);
         Task<int> UnBanAccount(int UserId);
         Task<bool> UpdateStaffProfile(int userId, UpdateStaffModel model);
+        Task<bool> ChangePassword(int userId, ChangePasswordModel model);
         //Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model);
         Task<bool> CreateCustomer(CreateCustomerModel model);
         Task<bool> CreateStaff(CreateStaffModel model);
         Task<object> GetUserProfile(int userId);
         Task<bool> CheckUser(int userId);
         Task<bool> RecoveryPassword(int userId, RecoveryPasswordModel model);
+        Task<TokenVerifyResponse> CreateTokenVerifyEmail(int userId);
+        Task<bool> CheckTokenVerifyEmail(int userId, TokenVerifyModel model);
+        Task<int> CheckEmail(int userId);
+        Task<bool> CheckPassword(int userId, string password);
+        Task<bool> CheckTimeVerifyEmail(int userId);
+        Task<TokenVerifyResponse> CreateTokenVerifyPassword(int userId);
+        Task<bool> CheckVerifyPassword(int userId, string token);
+        Task<bool> CheckTimeVerifyPassword(int userId);
 
     }
 }
