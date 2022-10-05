@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.CustomerModel;
-using UtNhanDrug_BE.Models.ManagerModel;
-using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Models.UserModel;
@@ -40,7 +37,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(manager);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize(Roles = "MANAGER, STAFF")]
         [Route("customers")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -60,6 +57,41 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(staff);
         }
 
+        [Authorize]
+        [Route("auth/user/profile")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetUserProfile()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+
+
+            var manager = await _userSvc.GetUserProfile(userId);
+            if (manager == null) return NotFound(new { message = "Not found user" });
+            return Ok(manager);
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [Route("profile/{userId}")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProfile([FromRoute] int userId)
+        {
+            var user = await _userSvc.GetUserProfile(userId);
+            if (user == null) return NotFound(new { message = "User not found" });
+            return Ok(user);
+        }
+
         [Authorize(Roles = "MANAGER")]
         [Route("staffs")]
         [HttpPost]
@@ -70,6 +102,100 @@ namespace UtNhanDrug_BE.Controllers
             var staff = await _userSvc.CreateStaff(model);
             if (staff == false) return BadRequest(new { message = "LoginName exits" });
             return Ok(new { message = "Create manager successfully" });
+        }
+
+        [Authorize(Roles = "MANAGER, STAFF")]
+        [Route("customers")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> CreateCustomer([FromForm] CreateCustomerModel model)
+        {
+            var customer = await _userSvc.CreateCustomer(model);
+            if (customer == false) return BadRequest(new { message = "Phone number is exits" });
+            return Ok(new { message = "Create customer successfully" });
+        }
+
+        [Authorize]
+        [Route("token-verify-email")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> CreateTokenVerifyEmail()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+
+            var checkExits = await _userSvc.CheckEmail(userId);
+            if (checkExits == 1) return BadRequest(new { message = "Account not have an email" });
+            if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
+
+            var token = await _userSvc.CreateTokenVerifyEmail(userId);
+            if (token == null) return BadRequest(new { message = "Create token fail" });
+            return Ok(token);
+        }
+
+        [Authorize]
+        [Route("token-verify-password")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> CreateTokenVerifyPassword()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+            var user = await _userSvc.CheckUser(userId);
+            if (user == false) return NotFound(new { message = "Not found user" });
+            var token = await _userSvc.CreateTokenVerifyPassword(userId);
+            if (token == null) return BadRequest(new { message = "Create token fail" });
+            return Ok(token);
+        }
+
+        [Authorize]
+        [Route("verify-email")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> VerifyEmail([FromForm] TokenVerifyModel model)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+            // check email
+            var checkExits = await _userSvc.CheckEmail(userId);
+            if (checkExits == 1) return BadRequest(new { message = "Account not have an email" });
+            if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
+
+            //check time
+            var checkTime = await _userSvc.CheckTimeVerifyEmail(userId);
+            if (checkTime == false) return BadRequest(new { message = "Verification code expired" });
+
+            //check result
+            var result = await _userSvc.CheckTokenVerifyEmail(userId, model);
+            if (result == false) return BadRequest(new { message = "Verification fail" });
+            return Ok(new { message = "Verification sucessfully" });
         }
 
 
@@ -120,7 +246,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "Update successfully" });
         }
         
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("accounts/reset-password/")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> ChangePassword([FromForm] ChangePasswordModel model)
@@ -149,14 +275,14 @@ namespace UtNhanDrug_BE.Controllers
             var checkTime = await _userSvc.CheckTimeVerifyPassword(userId);
             if (checkTime == false) return BadRequest(new { message = "Password recovery code expired" });
             //check password recovery token
-            var checkToken = await _userSvc.CheckVerifyPassword(userId, model.tokenRecovery);
+            var checkToken = await _userSvc.CheckVerifyPassword(userId, model.TokenRecovery);
             if (checkToken == false) return BadRequest(new { message = "Token recovery password incorrect" });
             //check change password
             bool result = await _userSvc.ChangePassword(userId, model);
             if (result == false) return BadRequest(new { message = "Change password fail" });
             return Ok(new { message = "Change password successfully" });
         }
-        
+
         //[Authorize(Roles = "MANAGER")]
         //[HttpPut("managers/{userId}")]
         //[MapToApiVersion("1.0")]
@@ -167,81 +293,10 @@ namespace UtNhanDrug_BE.Controllers
         //    return Ok(new { message = "Update successfully" });
         //}
 
-        [Authorize(Roles = "MANAGER, STAFF")]
-        [Route("customers")]
-        [HttpPost]
+        [Authorize(Roles = "STAFF")]
+        [HttpPut("staffs/profile")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateCustomer([FromForm] CreateCustomerModel model)
-        {
-            var customer = await _userSvc.CreateCustomer(model);
-            if (customer == false) return BadRequest(new { message = "Phone number is exits" });
-            return Ok(new { message = "Create customer successfully" });
-        }
-
-        [Route("auth/user/profile")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetUserProfile()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[0].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "You are not login" });
-            }
-
-
-            var manager = await _userSvc.GetUserProfile(userId);
-            if (manager == null) return NotFound(new { message = "Not found user" });
-            return Ok(manager);
-        }
-
-        [Authorize(Roles = "MANAGER")]
-        [Route("profile/{userId}")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetProfile([FromRoute] int userId)
-        {
-            var user = await _userSvc.GetUserProfile(userId);
-            if (user == null) return NotFound(new { message = "User not found" });
-            return Ok(user);
-        }
-
-        [Route("token-verify-email")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateTokenVerifyEmail()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[0].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "You are not login" });
-            }
-
-            var checkExits = await _userSvc.CheckEmail(userId);
-            if (checkExits == 1) return BadRequest(new { message = "Account not have an email"});
-            if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
-
-            var token = await _userSvc.CreateTokenVerifyEmail(userId);
-            if (token == null) return BadRequest(new { message = "Create token fail" });
-            return Ok(token);
-        }
-
-        [Route("token-verify-password")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateTokenVerifyPassword()
+        public async Task<ActionResult> UpdateStaffAccount( [FromForm] string email)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -255,41 +310,10 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Not found user" });
-            var token = await _userSvc.CreateTokenVerifyPassword(userId);
-            if (token == null) return BadRequest(new { message = "Create token fail" });
-            return Ok(token);
-        }
-
-        [Route("verify-email")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> VerifyEmail([FromForm] TokenVerifyModel model)
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[0].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "You are not login" });
-            }
-            // check email
-            var checkExits = await _userSvc.CheckEmail(userId);
-            if (checkExits == 1) return BadRequest(new { message = "Account not have an email" });
-            if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
-
-            //check time
-            var checkTime = await _userSvc.CheckTimeVerifyEmail(userId);
-            if (checkTime == false) return BadRequest(new { message = "Verification code expired" }); 
-
-            //check result
-            var result = await _userSvc.CheckTokenVerifyEmail(userId, model);
-            if (result == false) return BadRequest(new { message = "Verification fail" });
-            return Ok(new { message = "Verification sucessfully" });
+            if (user == false) return NotFound(new { message = "Not found account" });
+            bool result = await _userSvc.UpdateEmail(userId, email);
+            if (result == false) return BadRequest(new { message = "Update fail" });
+            return Ok(new { message = "Update successfully" });
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.StaffModel;
@@ -32,6 +31,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<TokenVerifyResponse> CreateTokenVerifyPassword(int userId);
         Task<bool> CheckVerifyPassword(int userId, string token);
         Task<bool> CheckTimeVerifyPassword(int userId);
+        Task<bool> UpdateEmail(int userId, string email);
 
     }
 }

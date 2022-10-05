@@ -6,7 +6,6 @@ using UtNhanDrug_BE.Models.UserModel;
 using System.Linq;
 using System.Collections.Generic;
 using UtNhanDrug_BE.Models.ManagerModel;
-using AutoMapper;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Hepper.HashingAlgorithms;
@@ -114,7 +113,6 @@ namespace UtNhanDrug_BE.Services.ManagerService
         {
             var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
             var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             string avatar;
             if(model.Avatar == null)
             {
@@ -124,28 +122,16 @@ namespace UtNhanDrug_BE.Services.ManagerService
             {
                 avatar = model.Avatar;
             }
-            int EmailValidationStatusId;
-            if (userData.EmailAddressRecovery.Equals(model.EmailAddressRecovery) && userData.EmailValidationStatusId == 3)
-            {
-                EmailValidationStatusId = 3;
-            }
-            else if(userData.EmailAddressRecovery == null && model.EmailAddressRecovery == null)
-            {
-                EmailValidationStatusId = 1;
-            }
-            else
-            {
-                EmailValidationStatusId = 2;
-            }
-            if(user != null && staff != null && userData != null)
+
+            var updateEmail = await UpdateEmail(userId, model.EmailAddressRecovery);
+
+            if(user != null && staff != null)
             {
                 user.FullName = model.Fullname;
                 staff.Avatar = avatar;
                 staff.IsMale = model.IsMale;
                 staff.DateOfBirth = model.Dob;
                 staff.PhoneNumber = model.PhoneNumber;
-                userData.EmailAddressRecovery = model.EmailAddressRecovery;
-                userData.EmailValidationStatusId = EmailValidationStatusId;
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -497,6 +483,33 @@ namespace UtNhanDrug_BE.Services.ManagerService
             var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             {
                 if (userData.PasswordRecoveryToken == token) return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> UpdateEmail(int userId, string email)
+        {
+            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+
+            int EmailValidationStatusId;
+            if (userData.EmailAddressRecovery.Equals(email.Trim()) && userData.EmailValidationStatusId == 3)
+            {
+                EmailValidationStatusId = 3;
+            }
+            else if (userData.EmailAddressRecovery == null && email.Trim() == null)
+            {
+                EmailValidationStatusId = 1;
+            }
+            else
+            {
+                EmailValidationStatusId = 2;
+            }
+            if(userData != null)
+            {
+                userData.EmailAddressRecovery = email.Trim();
+                userData.EmailValidationStatusId = EmailValidationStatusId;
+                await _context.SaveChangesAsync();
+                return true;
             }
             return false;
         }
