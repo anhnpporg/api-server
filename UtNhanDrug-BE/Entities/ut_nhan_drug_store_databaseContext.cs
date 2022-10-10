@@ -17,12 +17,19 @@ namespace UtNhanDrug_BE.Entities
         {
         }
 
+        public virtual DbSet<ActiveSubstance> ActiveSubstances { get; set; }
+        public virtual DbSet<Brand> Brands { get; set; }
+        public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Customer> Customers { get; set; }
+        public virtual DbSet<DosageUnit> DosageUnits { get; set; }
         public virtual DbSet<EmailValidationStatus> EmailValidationStatuses { get; set; }
         public virtual DbSet<ExternalProvider> ExternalProviders { get; set; }
         public virtual DbSet<HashingAlgorithm> HashingAlgorithms { get; set; }
         public virtual DbSet<Manager> Managers { get; set; }
+        public virtual DbSet<Product> Products { get; set; }
+        public virtual DbSet<ProductActiveSubstance> ProductActiveSubstances { get; set; }
         public virtual DbSet<Staff> Staffs { get; set; }
+        public virtual DbSet<Unit> Units { get; set; }
         public virtual DbSet<UserAccount> UserAccounts { get; set; }
         public virtual DbSet<UserLoginDataExternal> UserLoginDataExternals { get; set; }
         public virtual DbSet<UserLoginDatum> UserLoginData { get; set; }
@@ -38,6 +45,129 @@ namespace UtNhanDrug_BE.Entities
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            modelBuilder.Entity<ActiveSubstance>(entity =>
+            {
+                entity.ToTable("active_substances");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("updated_at");
+
+                entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+                entity.HasOne(d => d.CreatedByNavigation)
+                    .WithMany(p => p.ActiveSubstanceCreatedByNavigations)
+                    .HasForeignKey(d => d.CreatedBy)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__active_su__creat__10566F31");
+
+                entity.HasOne(d => d.UpdatedByNavigation)
+                    .WithMany(p => p.ActiveSubstanceUpdatedByNavigations)
+                    .HasForeignKey(d => d.UpdatedBy)
+                    .HasConstraintName("FK__active_su__updat__114A936A");
+            });
+
+            modelBuilder.Entity<Brand>(entity =>
+            {
+                entity.ToTable("brands");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("updated_at");
+
+                entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+                entity.HasOne(d => d.CreatedByNavigation)
+                    .WithMany(p => p.BrandCreatedByNavigations)
+                    .HasForeignKey(d => d.CreatedBy)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__brands__created___71D1E811");
+
+                entity.HasOne(d => d.UpdatedByNavigation)
+                    .WithMany(p => p.BrandUpdatedByNavigations)
+                    .HasForeignKey(d => d.UpdatedBy)
+                    .HasConstraintName("FK__brands__updated___72C60C4A");
+            });
+
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.ToTable("categories");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("updated_at");
+
+                entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+                entity.HasOne(d => d.CreatedByNavigation)
+                    .WithMany(p => p.CategoryCreatedByNavigations)
+                    .HasForeignKey(d => d.CreatedBy)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__categorie__creat__778AC167");
+
+                entity.HasOne(d => d.UpdatedByNavigation)
+                    .WithMany(p => p.CategoryUpdatedByNavigations)
+                    .HasForeignKey(d => d.UpdatedBy)
+                    .HasConstraintName("FK__categorie__updat__787EE5A0");
+            });
 
             modelBuilder.Entity<Customer>(entity =>
             {
@@ -64,6 +194,18 @@ namespace UtNhanDrug_BE.Entities
                     .HasForeignKey<Customer>(d => d.UserAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__customers__user___440B1D61");
+            });
+
+            modelBuilder.Entity<DosageUnit>(entity =>
+            {
+                entity.ToTable("dosage_units");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("name");
             });
 
             modelBuilder.Entity<EmailValidationStatus>(entity =>
@@ -128,6 +270,133 @@ namespace UtNhanDrug_BE.Entities
                     .HasConstraintName("FK__managers__user_a__3B75D760");
             });
 
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.ToTable("products");
+
+                entity.HasIndex(e => e.Barcode, "UQ__products__C16E36F83E5A2D0C")
+                    .IsUnique();
+
+                entity.HasIndex(e => e.DrugRegistrationNumber, "UQ__products__EF7E09095E2CC137")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Barcode)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("barcode");
+
+                entity.Property(e => e.BrandId).HasColumnName("brand_id");
+
+                entity.Property(e => e.CategoryId).HasColumnName("category_id");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.CreatedBy).HasColumnName("created_by");
+
+                entity.Property(e => e.Dosage)
+                    .HasColumnType("decimal(5, 2)")
+                    .HasColumnName("dosage");
+
+                entity.Property(e => e.DosageUnitId).HasColumnName("dosage_unit_id");
+
+                entity.Property(e => e.DrugRegistrationNumber)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("drug_registration_number");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasColumnName("is_active")
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.MinimumQuantity)
+                    .HasColumnName("minimum_quantity")
+                    .HasDefaultValueSql("((30))");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(250)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.Price)
+                    .HasColumnType("smallmoney")
+                    .HasColumnName("price");
+
+                entity.Property(e => e.UnitId).HasColumnName("unit_id");
+
+                entity.Property(e => e.UpdatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("updated_at");
+
+                entity.Property(e => e.UpdatedBy).HasColumnName("updated_by");
+
+                entity.HasOne(d => d.Brand)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.BrandId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__products__brand___01142BA1");
+
+                entity.HasOne(d => d.Category)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.CategoryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__products__catego__02084FDA");
+
+                entity.HasOne(d => d.CreatedByNavigation)
+                    .WithMany(p => p.ProductCreatedByNavigations)
+                    .HasForeignKey(d => d.CreatedBy)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__products__create__0A9D95DB");
+
+                entity.HasOne(d => d.DosageUnit)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.DosageUnitId)
+                    .HasConstraintName("FK__products__dosage__05D8E0BE");
+
+                entity.HasOne(d => d.Unit)
+                    .WithMany(p => p.Products)
+                    .HasForeignKey(d => d.UnitId)
+                    .HasConstraintName("FK__products__unit_i__06CD04F7");
+
+                entity.HasOne(d => d.UpdatedByNavigation)
+                    .WithMany(p => p.ProductUpdatedByNavigations)
+                    .HasForeignKey(d => d.UpdatedBy)
+                    .HasConstraintName("FK__products__update__0B91BA14");
+            });
+
+            modelBuilder.Entity<ProductActiveSubstance>(entity =>
+            {
+                entity.ToTable("product_active_substance");
+
+                entity.HasIndex(e => new { e.ProductId, e.ActiveSubstanceId }, "UQ__product___12D3DF52AB12EDDE")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.ActiveSubstanceId).HasColumnName("active_substance_id");
+
+                entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+                entity.HasOne(d => d.ActiveSubstance)
+                    .WithMany(p => p.ProductActiveSubstances)
+                    .HasForeignKey(d => d.ActiveSubstanceId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__product_a__activ__160F4887");
+
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.ProductActiveSubstances)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__product_a__produ__151B244E");
+            });
+
             modelBuilder.Entity<Staff>(entity =>
             {
                 entity.ToTable("staffs");
@@ -161,6 +430,18 @@ namespace UtNhanDrug_BE.Entities
                     .HasForeignKey<Staff>(d => d.UserAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__staffs__user_acc__3F466844");
+            });
+
+            modelBuilder.Entity<Unit>(entity =>
+            {
+                entity.ToTable("units");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("name");
             });
 
             modelBuilder.Entity<UserAccount>(entity =>

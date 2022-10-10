@@ -10,7 +10,7 @@ namespace UtNhanDrug_BE.Entities
         public int Id { get; set; }
         public int UserAccountId { get; set; }
         public string Avatar { get; set; }
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }
         public bool IsMale { get; set; }
 
