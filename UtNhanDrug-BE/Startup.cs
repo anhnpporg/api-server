@@ -19,11 +19,13 @@ using UtNhanDrug_BE.Services.ActiveSubstanceService;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.BrandService;
 using UtNhanDrug_BE.Services.CategoryService;
+using UtNhanDrug_BE.Services.DiseaseService;
 using UtNhanDrug_BE.Services.DosageUnitService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
+using UtNhanDrug_BE.Services.SamplePrescriptionService;
 using UtNhanDrug_BE.Services.UnitService;
 
 namespace UtNhanDrug_BE
@@ -74,6 +76,8 @@ namespace UtNhanDrug_BE
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
+            services.AddTransient<ISamplePrescriptionSvc, SamplePrescriptionSvc>();
+            services.AddTransient<IDiseaseSvc, DiseaseSvc>();
             services.AddTransient<RoleType>();
 
             services.AddDbContext<ut_nhan_drug_store_databaseContext>(options =>

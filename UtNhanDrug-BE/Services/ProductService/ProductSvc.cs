@@ -5,6 +5,7 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.ProductModel;
 using System.Linq;
 using System;
+using UtNhanDrug_BE.Hepper.GenaralBarcode;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -29,7 +30,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             Product product = new Product()
             {
                 DrugRegistrationNumber = model.DrugRegistrationNumber,
-                Barcode = model.Barcode,
+                Barcode = GenaralBarcode.CreateBarcode(),
                 Name = model.Name,
                 BrandId = model.BrandId,
                 CategoryId = model.CategoryId,
@@ -122,7 +123,6 @@ namespace UtNhanDrug_BE.Services.ProductService
             if (product != null)
             {  
                product.DrugRegistrationNumber = model.DrugRegistrationNumber;
-               product.Barcode = model.Barcode;
                product.Name = model.Name;
                product.BrandId = model.BrandId;
                product.CategoryId = model.CategoryId;

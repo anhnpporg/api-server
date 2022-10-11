@@ -5,7 +5,6 @@ namespace UtNhanDrug_BE.Models.ProductModel
     public class UpdateProductModel
     {
         public string DrugRegistrationNumber { get; set; }
-        public string Barcode { get; set; }
         public string Name { get; set; }
         public int BrandId { get; set; }
         public int CategoryId { get; set; }

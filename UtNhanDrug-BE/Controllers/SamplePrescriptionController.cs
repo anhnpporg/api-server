@@ -6,49 +6,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Models.CategoryModel;
-using UtNhanDrug_BE.Services.CategoryService;
+using UtNhanDrug_BE.Models.SamplePrescriptionModel;
+using UtNhanDrug_BE.Services.SamplePrescriptionService;
 
 namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v1/product-management")]
-    public class CategoryController : ControllerBase
+    public class SamplePrescriptionController : ControllerBase
     {
-        private readonly ICategorySvc _categorySvc;
-        public CategoryController(ICategorySvc categorySvc)
+        private readonly ISamplePrescriptionSvc _spSvc;
+        public SamplePrescriptionController(ISamplePrescriptionSvc spSvc)
         {
-            _categorySvc = categorySvc;
+            _spSvc = spSvc;
         }
 
-        //CONTROLLER CATEGORY
         [Authorize(Roles = "MANAGER")]
-        [Route("categories")]
+        [Route("sample-prescriptions")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetAllCategory()
+        public async Task<ActionResult> GetAllSamplePrescription()
         {
-            var categories = await _categorySvc.GetAllCategory();
-            return Ok(categories);
+            var result = await _spSvc.GetAllSamplePrescription();
+            return Ok(result);
         }
 
         [Authorize(Roles = "MANAGER")]
-        [Route("categories/{id}")]
+        [Route("sample-prescriptions/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetCategoryById([FromRoute] int id)
+        public async Task<ActionResult> GetSamplePrescriptionById([FromRoute] int id)
         {
-            var category = await _categorySvc.GetCategoryById(id);
-            if (category == null) return NotFound(new { message = "Not found this category" });
-            return Ok(category);
+            var result = await _spSvc.GetSamplePrescriptionById(id);
+            if (result == null) return NotFound(new { message = "Not found this sample prescriptions" });
+            return Ok(result);
         }
 
         [Authorize(Roles = "MANAGER")]
-        [Route("categories")]
+        [Route("sample-prescriptions")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateCategory([FromForm] CreateCategoryModel model)
+        public async Task<ActionResult> CreatePrescription([FromForm] CreateSamplePrescriptionModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -61,15 +60,15 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _categorySvc.CreateCategory(userId, model);
-            if (!result) return BadRequest(new { message = "Create category fail" });
+            var result = await _spSvc.CreateSamplePrescription(userId, model);
+            if (!result) return BadRequest(new { message = "Create sample prescriptions fail" });
             return Ok(new { message = "create successfully" });
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPut("categories/{id}")]
+        [HttpPut("sample-prescriptions/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateCategory([FromRoute] int id, [FromForm] UpdateCategoryModel model)
+        public async Task<ActionResult> UpdateSamplePrescription([FromRoute] int id, [FromForm] UpdateSamplePrescriptionModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -82,17 +81,17 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _categorySvc.CheckCategory(id);
-            if (!isExit) return NotFound(new { message = "Not found this category" });
-            var result = await _categorySvc.UpdateCategory(id, userId, model);
+            var isExit = await _spSvc.CheckSamplePrescription(id);
+            if (!isExit) return NotFound(new { message = "Not found this sample prescriptions" });
+            var result = await _spSvc.UpdateSamplePrescription(id, userId, model);
             if (!result) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "update succesfully" });
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPatch("categories/{id}")]
+        [HttpPatch("sample-prescriptions/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> DeleteCategory([FromRoute] int id)
+        public async Task<ActionResult> DeleteSamplePrescription([FromRoute] int id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -106,9 +105,9 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _categorySvc.CheckCategory(id);
-            if (!isExit) return NotFound(new { message = "Not found this category" });
-            var result = await _categorySvc.DeleteCategory(id, userId);
+            var isExit = await _spSvc.CheckSamplePrescription(id);
+            if (!isExit) return NotFound(new { message = "Not found this sample prescriptions" });
+            var result = await _spSvc.DeleteSamplePrescription(id, userId);
             if (!result) return BadRequest(new { message = "Delete fail" });
             return Ok(new { message = "Delete successfully" });
         }

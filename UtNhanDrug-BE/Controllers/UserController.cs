@@ -213,28 +213,6 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPut("users/ban/{userId}")]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> BanAccount([FromRoute] int userId)
-        {
-            var result = await _userSvc.BanAccount(userId);
-            if (result == -1) return NotFound(new { message = "Not found this account" });
-            if (result == 0) return BadRequest(new { message = "Ban fail" });
-            return Ok(new { message = "Ban successfully" });
-        }
-
-        [Authorize(Roles = "MANAGER")]
-        [HttpPut("users/unban/{userId}")]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
-        {
-            var result = await _userSvc.UnBanAccount(userId);
-            if (result == -1) return NotFound(new { message = "Not found this account" });
-            if (result == 0) return BadRequest(new { message = "Ban fail" });
-            return Ok(new { message = "Unban successfully" });
-        }
-
-        [Authorize(Roles = "MANAGER")]
         [HttpPut("staffs/{userId}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateStaffAccount([FromRoute] int userId,   [FromForm] UpdateStaffModel model)
@@ -314,6 +292,28 @@ namespace UtNhanDrug_BE.Controllers
             bool result = await _userSvc.UpdateEmail(userId, email);
             if (result == false) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "Update successfully" });
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [HttpPatch("users/ban/{userId}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> BanAccount([FromRoute] int userId)
+        {
+            var result = await _userSvc.BanAccount(userId);
+            if (result == -1) return NotFound(new { message = "Not found this account" });
+            if (result == 0) return BadRequest(new { message = "Ban fail" });
+            return Ok(new { message = "Ban successfully" });
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [HttpPatch("users/unban/{userId}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
+        {
+            var result = await _userSvc.UnBanAccount(userId);
+            if (result == -1) return NotFound(new { message = "Not found this account" });
+            if (result == 0) return BadRequest(new { message = "Ban fail" });
+            return Ok(new { message = "Unban successfully" });
         }
     }
 }

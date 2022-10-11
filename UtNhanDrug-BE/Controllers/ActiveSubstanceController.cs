@@ -89,7 +89,7 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpDelete("active-substances/{id}")]
+        [HttpPatch("active-substances/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteBrand([FromRoute] int id)
         {

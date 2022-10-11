@@ -6,49 +6,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Models.CategoryModel;
-using UtNhanDrug_BE.Services.CategoryService;
+using UtNhanDrug_BE.Models.DiseaseModel;
+using UtNhanDrug_BE.Services.DiseaseService;
 
 namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v1/product-management")]
-    public class CategoryController : ControllerBase
+    public class DiseaseController : ControllerBase
     {
-        private readonly ICategorySvc _categorySvc;
-        public CategoryController(ICategorySvc categorySvc)
+        private readonly IDiseaseSvc _diseaseSvc;
+        public DiseaseController(IDiseaseSvc diseaseSvc)
         {
-            _categorySvc = categorySvc;
+            _diseaseSvc = diseaseSvc;
         }
 
-        //CONTROLLER CATEGORY
         [Authorize(Roles = "MANAGER")]
-        [Route("categories")]
+        [Route("diseases")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetAllCategory()
+        public async Task<ActionResult> GetAllDisease()
         {
-            var categories = await _categorySvc.GetAllCategory();
-            return Ok(categories);
+            var disease = await _diseaseSvc.GetAllDisease();
+            return Ok(disease);
         }
 
         [Authorize(Roles = "MANAGER")]
-        [Route("categories/{id}")]
+        [Route("diseases/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetCategoryById([FromRoute] int id)
+        public async Task<ActionResult> GetDiseaseById([FromRoute] int id)
         {
-            var category = await _categorySvc.GetCategoryById(id);
-            if (category == null) return NotFound(new { message = "Not found this category" });
-            return Ok(category);
+            var disease = await _diseaseSvc.GetDiseaseById(id);
+            if (disease == null) return NotFound(new { message = "Not found this disease" });
+            return Ok(disease);
         }
 
         [Authorize(Roles = "MANAGER")]
-        [Route("categories")]
+        [Route("diseases")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateCategory([FromForm] CreateCategoryModel model)
+        public async Task<ActionResult> CreateDisease([FromForm] CreateDiseaseModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -61,15 +60,15 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _categorySvc.CreateCategory(userId, model);
-            if (!result) return BadRequest(new { message = "Create category fail" });
+            var result = await _diseaseSvc.CreateDisease(userId, model);
+            if (!result) return BadRequest(new { message = "Create disease fail" });
             return Ok(new { message = "create successfully" });
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPut("categories/{id}")]
+        [HttpPut("diseases/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateCategory([FromRoute] int id, [FromForm] UpdateCategoryModel model)
+        public async Task<ActionResult> UpdateDisease([FromRoute] int id, [FromForm] UpdateDiseaseModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -82,17 +81,17 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _categorySvc.CheckCategory(id);
-            if (!isExit) return NotFound(new { message = "Not found this category" });
-            var result = await _categorySvc.UpdateCategory(id, userId, model);
+            var isExit = await _diseaseSvc.CheckDisease(id);
+            if (!isExit) return NotFound(new { message = "Not found this disease" });
+            var result = await _diseaseSvc.UpdateDisease(id, userId, model);
             if (!result) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "update succesfully" });
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPatch("categories/{id}")]
+        [HttpPatch("diseases/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> DeleteCategory([FromRoute] int id)
+        public async Task<ActionResult> DeleteDisease([FromRoute] int id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -106,9 +105,9 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _categorySvc.CheckCategory(id);
-            if (!isExit) return NotFound(new { message = "Not found this category" });
-            var result = await _categorySvc.DeleteCategory(id, userId);
+            var isExit = await _diseaseSvc.CheckDisease(id);
+            if (!isExit) return NotFound(new { message = "Not found this disease" });
+            var result = await _diseaseSvc.DeleteDisease(id, userId);
             if (!result) return BadRequest(new { message = "Delete fail" });
             return Ok(new { message = "Delete successfully" });
         }

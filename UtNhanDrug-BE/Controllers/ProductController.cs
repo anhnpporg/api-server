@@ -89,7 +89,7 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpDelete("products/{id}")]
+        [HttpPatch("products/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteProduct([FromRoute] int id)
         {
