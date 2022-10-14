@@ -47,19 +47,18 @@ namespace UtNhanDrug_BE.Services.ProductActiveSubstanceService
             return list;
         }
 
-        public async Task<ViewPASModel> GetPASById(int id)
+        public async Task<List<ViewPASModel>> GetPASById(int productId)
         {
-            var result = await _context.ProductActiveSubstances.FirstOrDefaultAsync(x => x.Id == id);
-            if (result != null)
+            var query = from pas in _context.ProductActiveSubstances
+                        where pas.ProductId == productId
+                        select new { pas };
+            var list = await query.Select(x => new ViewPASModel()
             {
-                return new ViewPASModel()
-                {
-                    Id = result.Id,
-                    ProductId = result.ProductId,
-                    ActiveSubstanceId = result.ActiveSubstanceId
-                };
-            }
-            return null;
+                Id = x.pas.Id,
+                ProductId = x.pas.ProductId,
+                ActiveSubstanceId = x.pas.ActiveSubstanceId
+            }).ToListAsync();
+            return list;
         }
 
         public async Task<bool> UpdatePAS(int id, UpdatePASModel model)

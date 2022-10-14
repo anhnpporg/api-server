@@ -13,7 +13,7 @@ namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/product-management")]
+    [Route("api/v1/sale-management")]
     public class SamplePrescriptionController : ControllerBase
     {
         private readonly ISamplePrescriptionSvc _spSvc;

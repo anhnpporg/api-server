@@ -11,16 +11,20 @@ using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Hepper.HashingAlgorithms;
 using UtNhanDrug_BE.Hepper;
 using UtNhanDrug_BE.Models.UserLoginModel;
+using UtNhanDrug_BE.Services.EmailSenderService;
+using UtNhanDrug_BE.Models.EmailModel;
 
 namespace UtNhanDrug_BE.Services.ManagerService
 {
     public class UserSvc : IUserSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly ISenderService _senderService;
         private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
-        public UserSvc(ut_nhan_drug_store_databaseContext context)
+        public UserSvc(ut_nhan_drug_store_databaseContext context, ISenderService senderService)
         {
             _context = context;
+            _senderService = senderService;
         }
         public async Task<int> BanAccount(int UserId)
         {
@@ -65,6 +69,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     UserId = x.u.Id,
                     Fullname = x.u.FullName,
+                    Email = x.u.UserLoginDatum.EmailAddressRecovery,
                     CreatedAt = x.u.CreatedAt,
                     IsActive = x.u.IsActive
                 }).ToListAsync();
@@ -94,11 +99,13 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         join u in _context.UserAccounts on s.UserAccountId equals u.Id
                         select new { u, s };
 
+
             var data = await query
                 .Select(x => new ViewStaffModel()
                 {
                     UserId = x.u.Id,
                     Fullname = x.u.FullName,
+                    Email = x.u.UserLoginDatum.EmailAddressRecovery,
                     PhoneNumber = x.s.PhoneNumber,
                     DateOfBirth = x.s.DateOfBirth,
                     IsMale = x.s.IsMale,
@@ -291,6 +298,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         public async Task<object> GetUserProfile(int userId)
         {
             var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
 
             if(user == null) return null;
             //filter user
@@ -317,6 +325,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     CreatedAt = user.CreatedAt,
                     Fullname = user.FullName,
+                    Email = userLogin.EmailAddressRecovery,
                     UserId = userId,
                     IsActive = user.IsActive
                 };
@@ -332,6 +341,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     CreatedAt = user.CreatedAt,
                     DateOfBirth = staff.DateOfBirth,
                     Fullname = user.FullName,
+                    Email = userLogin.EmailAddressRecovery,
                     IsMale = staff.IsMale,
                     IsActive = user.IsActive
                 };
@@ -383,11 +393,18 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 userLogin.ConfirmationToken = KeyGenerator.GetUniqueKey(6);
                 userLogin.TokenGenerationTime = DateTime.Now;
                 var result = await _context.SaveChangesAsync();
-                if (result > 0) return new TokenVerifyResponse()
+                if (result > 0)
                 {
-                    Token = userLogin.ConfirmationToken,
-                    CreateAt = userLogin.TokenGenerationTime
-                };
+                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification email", userLogin.ConfirmationToken);
+                    await _senderService.SendEmail(message);
+
+                    return new TokenVerifyResponse()
+                    {
+                        Token = userLogin.ConfirmationToken,
+                        CreateAt = userLogin.TokenGenerationTime
+                    };
+                }
+                
             }
             return null;
         }
@@ -469,11 +486,17 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 userLogin.PasswordRecoveryToken = KeyGenerator.GetUniqueKey(6);
                 userLogin.RecoveryTokenTime = DateTime.Now;
                 var result = await _context.SaveChangesAsync();
-                if (result > 0) return new TokenVerifyResponse()
+                if (result > 0) 
                 {
-                    Token = userLogin.PasswordRecoveryToken,
-                    CreateAt = userLogin.RecoveryTokenTime
-                };
+                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification password", userLogin.PasswordRecoveryToken);
+                    await _senderService.SendEmail(message);
+
+                    return new TokenVerifyResponse()
+                    {
+                        Token = userLogin.PasswordRecoveryToken,
+                        CreateAt = userLogin.RecoveryTokenTime
+                    };
+                } 
             }
             return null;
         }

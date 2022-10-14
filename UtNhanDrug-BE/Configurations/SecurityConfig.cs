@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Configurations
 {
@@ -18,6 +17,11 @@ namespace UtNhanDrug_BE.Configurations
 
             var efConfigSection = configuration.GetSection("EFConfig");
             services.Configure<EFConfig>(efConfigSection);
+            //Register email sender
+            var emailConfig = configuration
+                .GetSection("EmailConfiguration")
+                .Get<EmailConfiguration>();
+            services.AddSingleton(emailConfig);
 
             var twilioSettingsSection = configuration.GetSection("TwilioConfig");
 

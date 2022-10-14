@@ -2,7 +2,7 @@
 
 namespace UtNhanDrug_BE.Models.ActiveSubstanceModel
 {
-    public class ViewActiveSubstanceModel
+    public class ViewProductActiveSubstanceModel
     {
         public int Id { get; set; }
         public string Name { get; set; }

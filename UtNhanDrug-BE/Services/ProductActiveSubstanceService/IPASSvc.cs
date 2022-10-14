@@ -8,7 +8,7 @@ namespace UtNhanDrug_BE.Services.ProductActiveSubstanceService
     {
         Task<bool> CreatePAS(CreatePASModel model);
         Task<bool> UpdatePAS(int id, UpdatePASModel model);
-        Task<ViewPASModel> GetPASById(int id);
+        Task<List<ViewPASModel>> GetPASById(int productId);
         Task<List<ViewPASModel>> GetAllPAS();
         Task<bool> CheckPAS(int id);
     }

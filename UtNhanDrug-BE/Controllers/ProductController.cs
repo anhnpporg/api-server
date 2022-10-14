@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
 
 namespace UtNhanDrug_BE.Controllers
@@ -17,9 +18,11 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
-        public ProductController(IProductSvc productSvc)
+        private readonly IPASSvc _pasSvc;
+        public ProductController(IProductSvc productSvc, IPASSvc pasSvc)
         {
             _productSvc = productSvc;
+            _pasSvc = pasSvc;
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -29,6 +32,12 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllProduct()
         {
             var products = await _productSvc.GetAllProduct();
+            foreach (var product in products)
+            {
+                var pas = await _pasSvc.GetPASById(product.Id);
+                product.ProductActiveSubstance = pas;
+            }
+            
             return Ok(products);
         }
 

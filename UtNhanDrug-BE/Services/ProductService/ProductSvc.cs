@@ -6,6 +6,9 @@ using UtNhanDrug_BE.Models.ProductModel;
 using System.Linq;
 using System;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
+using UtNhanDrug_BE.Models.ProductActiveSubstance;
+using UtNhanDrug_BE.Models.ActiveSubstanceModel;
+using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -39,12 +42,28 @@ namespace UtNhanDrug_BE.Services.ProductService
                 DosageUnitId = model.DosageUnitId,
                 UnitId = model.UnitId,
                 Price = model.Price,
+                
                 CreatedAt = DateTime.Now,
                 CreatedBy = userId
             };
             _context.Products.Add(product);
             var result = await _context.SaveChangesAsync();
-            if (result > 0) return true;
+            if (result > 0)
+            {
+                
+                foreach (var p in model.ActiveSubstances)
+                {
+                    ProductActiveSubstance pas = new ProductActiveSubstance()
+                    {
+                        ProductId = product.Id,
+                        ActiveSubstanceId = p
+                    };
+                    product.ProductActiveSubstances.Add(pas);
+                }
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            
             return false;
         }
 
@@ -64,8 +83,9 @@ namespace UtNhanDrug_BE.Services.ProductService
         {
             var query = from p in _context.Products
                         select p;
+            
 
-            var result = await query.Select(p => new ViewProductModel()
+            var result = await query.Select( p => new ViewProductModel()
             {
                 Id = p.Id,
                 DrugRegistrationNumber = p.DrugRegistrationNumber,

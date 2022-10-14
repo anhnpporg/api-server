@@ -49,12 +49,12 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
             return false;
         }
 
-        public async Task<ViewActiveSubstanceModel> GetActiveSubstanceById(int id)
+        public async Task<ViewProductActiveSubstanceModel> GetActiveSubstanceById(int id)
         {
             var activeSubstance = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Id == id);
             if (activeSubstance != null)
             {
-                ViewActiveSubstanceModel result = new ViewActiveSubstanceModel()
+                ViewProductActiveSubstanceModel result = new ViewProductActiveSubstanceModel()
                 {
                     Id = activeSubstance.Id,
                     Name = activeSubstance.Name,
@@ -69,12 +69,12 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
             return null;
         }
 
-        public async Task<List<ViewActiveSubstanceModel>> GetAllActiveSubstance()
+        public async Task<List<ViewProductActiveSubstanceModel>> GetAllActiveSubstance()
         {
             var query = from b in _context.ActiveSubstances
                         select b;
 
-            var result = await query.Select(a => new ViewActiveSubstanceModel()
+            var result = await query.Select(a => new ViewProductActiveSubstanceModel()
             {
                 Id = a.Id,
                 Name = a.Name,

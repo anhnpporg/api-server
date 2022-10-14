@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using UtNhanDrug_BE.Models.ProductActiveSubstance;
 
 namespace UtNhanDrug_BE.Models.ProductModel
 {
@@ -14,6 +16,7 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public decimal? Dosage { get; set; }
         public int? DosageUnitId { get; set; }
         public int? UnitId { get; set; }
+        public List<ViewPASModel> ProductActiveSubstance { get; set; }
         public decimal Price { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }

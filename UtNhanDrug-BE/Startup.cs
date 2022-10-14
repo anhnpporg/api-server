@@ -21,6 +21,7 @@ using UtNhanDrug_BE.Services.BrandService;
 using UtNhanDrug_BE.Services.CategoryService;
 using UtNhanDrug_BE.Services.DiseaseService;
 using UtNhanDrug_BE.Services.DosageUnitService;
+using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
@@ -63,7 +64,7 @@ namespace UtNhanDrug_BE
 
             // register (Swagger) Module
             services.RegisterSwaggerModule();
-
+            
             //add scope
 
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
@@ -78,6 +79,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<IProductSvc, ProductSvc>();
             services.AddTransient<ISamplePrescriptionSvc, SamplePrescriptionSvc>();
             services.AddTransient<IDiseaseSvc, DiseaseSvc>();
+            services.AddTransient<ISenderService, SenderService>();
             services.AddTransient<RoleType>();
 
             services.AddDbContext<ut_nhan_drug_store_databaseContext>(options =>
@@ -90,6 +92,7 @@ namespace UtNhanDrug_BE
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
+            
 
         }
 

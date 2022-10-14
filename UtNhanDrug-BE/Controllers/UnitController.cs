@@ -39,27 +39,27 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(unit);
         }
 
-        [Authorize(Roles = "MANAGER")]
-        [Route("units")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateUnit([FromForm] CreateUnitModel model)
-        {
-            var result = await _unitSvc.CreateUnit(model);
-            if (!result) return BadRequest(new { message = "Create dosage unit fail" });
-            return Ok(new { message = "create successfully" });
-        }
+        //[Authorize(Roles = "MANAGER")]
+        //[Route("units")]
+        //[HttpPost]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> CreateUnit([FromForm] CreateUnitModel model)
+        //{
+        //    var result = await _unitSvc.CreateUnit(model);
+        //    if (!result) return BadRequest(new { message = "Create dosage unit fail" });
+        //    return Ok(new { message = "create successfully" });
+        //}
 
-        [Authorize(Roles = "MANAGER")]
-        [HttpPut("units/{id}")]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateUnit([FromRoute] int id, [FromForm] UpdateUnitModel model)
-        {
-            var isExit = await _unitSvc.CheckUnit(id);
-            if (!isExit) return NotFound(new { message = "Not found this unit" });
-            var result = await _unitSvc.UpdateUnit(id, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
-        }
+        //[Authorize(Roles = "MANAGER")]
+        //[HttpPut("units/{id}")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> UpdateUnit([FromRoute] int id, [FromForm] UpdateUnitModel model)
+        //{
+        //    var isExit = await _unitSvc.CheckUnit(id);
+        //    if (!isExit) return NotFound(new { message = "Not found this unit" });
+        //    var result = await _unitSvc.UpdateUnit(id, model);
+        //    if (!result) return BadRequest(new { message = "Update fail" });
+        //    return Ok(new { message = "update succesfully" });
+        //}
     }
 }

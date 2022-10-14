@@ -44,27 +44,27 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(dosageUnit);
         }
 
-        [Authorize(Roles = "MANAGER")]
-        [Route("dosage-units")]
-        [HttpPost]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateDosageUnit([FromForm] CreateDosageUnitModel model)
-        {
-            var result = await _dosageUnitSvc.CreateDosageUnit(model);
-            if (!result) return BadRequest(new { message = "Create dosage unit fail" });
-            return Ok(new { message = "create successfully" });
-        }
+        //[Authorize(Roles = "MANAGER")]
+        //[Route("dosage-units")]
+        //[HttpPost]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> CreateDosageUnit([FromForm] CreateDosageUnitModel model)
+        //{
+        //    var result = await _dosageUnitSvc.CreateDosageUnit(model);
+        //    if (!result) return BadRequest(new { message = "Create dosage unit fail" });
+        //    return Ok(new { message = "create successfully" });
+        //}
 
-        [Authorize(Roles = "MANAGER")]
-        [HttpPut("dosage-units/{id}")]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateDosageUnit([FromRoute] int id, [FromForm] UpdateDosageUnitModel model)
-        {
-            var isExit = await _dosageUnitSvc.CheckDosageUnit(id);
-            if (!isExit) return NotFound(new { message = "Not found this dosage unit" });
-            var result = await _dosageUnitSvc.UpdateDosageUnit(id, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
-        }
+        //[Authorize(Roles = "MANAGER")]
+        //[HttpPut("dosage-units/{id}")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> UpdateDosageUnit([FromRoute] int id, [FromForm] UpdateDosageUnitModel model)
+        //{
+        //    var isExit = await _dosageUnitSvc.CheckDosageUnit(id);
+        //    if (!isExit) return NotFound(new { message = "Not found this dosage unit" });
+        //    var result = await _dosageUnitSvc.UpdateDosageUnit(id, model);
+        //    if (!result) return BadRequest(new { message = "Update fail" });
+        //    return Ok(new { message = "update succesfully" });
+        //}
     }
 }
