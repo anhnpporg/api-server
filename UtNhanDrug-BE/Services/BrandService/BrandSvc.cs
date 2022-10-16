@@ -5,6 +5,7 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.BrandModel;
 using System.Linq;
 using System;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.BrandService
 {
@@ -100,6 +101,51 @@ namespace UtNhanDrug_BE.Services.BrandService
             var brand = await _context.Brands.FirstOrDefaultAsync(x => x.Id == brandId);
             if (brand != null) return true;
             return false;
+        }
+
+        public async Task<List<ViewProductModel>> GetListProduct(int brandId)
+        {
+            var query = from p in _context.Products
+                        where p.BrandId == brandId
+                        select p;
+
+            var data = await query.Select(p => new ViewProductModel()
+            {
+                Id = p.Id,
+                DrugRegistrationNumber = p.DrugRegistrationNumber,
+                Barcode = p.Barcode,
+                Name = p.Name,
+                Brand = new ViewModel()
+                {
+                    Id = p.Brand.Id,
+                    Name = p.Brand.Name
+                },
+                Category = new ViewModel()
+                {
+                    Id = p.Category.Id,
+                    Name = p.Category.Name
+                },
+                MinimumQuantity = p.MinimumQuantity,
+                Dosage = p.Dosage,
+                DosageUnit = new ViewModel()
+                {
+                    Id = p.DosageUnit.Id,
+                    Name = p.DosageUnit.Name
+                },
+                Unit = new ViewModel()
+                {
+                    Id = p.Unit.Id,
+                    Name = p.Unit.Name
+                },
+                Price = p.Price,
+                CreatedAt = p.CreatedAt,
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
+                IsActive = p.IsActive,
+            }).ToListAsync();
+
+            return data;
         }
     }
 }

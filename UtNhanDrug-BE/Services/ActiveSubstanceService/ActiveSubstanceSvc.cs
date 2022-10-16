@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using System.Linq;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 {
@@ -86,6 +87,50 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
             }).ToListAsync();
 
             return result;
+        }
+
+        public async Task<List<ViewProductModel>> GetListProducts(int activeSubstanceId)
+        {
+            var query = from a in _context.ProductActiveSubstances
+                        where a.ActiveSubstanceId == activeSubstanceId
+                        select a;
+            var data = await query.Select(p => new ViewProductModel()
+            {
+                Id = p.Product.Id,
+                DrugRegistrationNumber = p.Product.DrugRegistrationNumber,
+                Barcode = p.Product.Barcode,
+                Name = p.Product.Name,
+                Brand = new ViewModel()
+                {
+                    Id = p.Product.Brand.Id,
+                    Name = p.Product.Brand.Name
+                },
+                Category = new ViewModel()
+                {
+                    Id = p.Product.Category.Id,
+                    Name = p.Product.Category.Name
+                },
+                MinimumQuantity = p.Product.MinimumQuantity,
+                Dosage = p.Product.Dosage,
+                DosageUnit = new ViewModel()
+                {
+                    Id = p.Product.DosageUnit.Id,
+                    Name = p.Product.DosageUnit.Name
+                },
+                Unit = new ViewModel()
+                {
+                    Id = p.Product.Unit.Id,
+                    Name = p.Product.Unit.Name
+                },
+                Price = p.Product.Price,
+                CreatedAt = p.Product.CreatedAt,
+                CreatedBy = p.Product.CreatedBy,
+                UpdatedAt = p.Product.UpdatedAt,
+                UpdatedBy = p.Product.UpdatedBy,
+                IsActive = p.Product.IsActive,
+            }).ToListAsync();
+
+            return data;
         }
 
         public async Task<bool> UpdateActiveSubstance(int id, int userId, UpdateActiveSubstanceModel model)

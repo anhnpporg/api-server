@@ -9,6 +9,7 @@ using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using UtNhanDrug_BE.Models.ProductActiveSubstance;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
+using UtNhanDrug_BE.Models.BrandModel;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -33,8 +34,8 @@ namespace UtNhanDrug_BE.Services.ProductService
             Product product = new Product()
             {
                 DrugRegistrationNumber = model.DrugRegistrationNumber,
-                Barcode = GenaralBarcode.CreateBarcode(),
                 Name = model.Name,
+                Barcode = "####",
                 BrandId = model.BrandId,
                 CategoryId = model.CategoryId,
                 MinimumQuantity = model.MinimumQuantity,
@@ -50,7 +51,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var result = await _context.SaveChangesAsync();
             if (result > 0)
             {
-                
+                product.Barcode = GenaralBarcode.CreateEan13(product.Id+"");
                 foreach (var p in model.ActiveSubstances)
                 {
                     ProductActiveSubstance pas = new ProductActiveSubstance()
@@ -91,21 +92,50 @@ namespace UtNhanDrug_BE.Services.ProductService
                 DrugRegistrationNumber = p.DrugRegistrationNumber,
                 Barcode = p.Barcode,
                 Name = p.Name,
-                BrandId = p.BrandId,
-                CategoryId = p.CategoryId,
+                Brand = new ViewModel()
+                {
+                    Id = p.Brand.Id,
+                    Name = p.Brand.Name
+                },
+                Category = new ViewModel()
+                    {
+                    Id = p.Category.Id,
+                    Name = p.Category.Name
+                },
                 MinimumQuantity = p.MinimumQuantity,
                 Dosage = p.Dosage,
-                DosageUnitId = p.DosageUnitId,
-                UnitId = p.UnitId,
+                DosageUnit = new ViewModel()
+                {
+                    Id = p.DosageUnit.Id,
+                    Name = p.DosageUnit.Name
+                },
+                Unit = new ViewModel()
+                {
+                    Id = p.Unit.Id,
+                    Name = p.Unit.Name
+                },
                 Price = p.Price,
                 CreatedAt = p.CreatedAt,
                 CreatedBy = p.CreatedBy,
                 UpdatedAt = p.UpdatedAt,
                 UpdatedBy = p.UpdatedBy,
-                IsActive = p.IsActive
+                IsActive = p.IsActive,
             }).ToListAsync();
 
             return result;
+        }
+
+        public async Task<List<ViewModel>> GetListActiveSubstances(int productId)
+        {
+            var query = from pas in _context.ProductActiveSubstances
+                        where pas.ProductId == productId
+                        select pas;
+            var data = await query.Select(x => new ViewModel()
+            {
+                Id = x.ActiveSubstance.Id,
+                Name = x.ActiveSubstance.Name
+            }).ToListAsync();
+            return data;
         }
 
         public async Task<ViewProductModel> GetProductById(int id)
@@ -119,12 +149,28 @@ namespace UtNhanDrug_BE.Services.ProductService
                     DrugRegistrationNumber = product.DrugRegistrationNumber,
                     Barcode = product.Barcode,
                     Name = product.Name,
-                    BrandId = product.BrandId,
-                    CategoryId = product.CategoryId,
+                    Brand = new ViewModel() 
+                    {
+                        Id = product.Brand.Id,
+                        Name = product.Brand.Name
+                    },
+                    Category = new ViewModel()
+                    {
+                        Id = product.Category.Id,
+                        Name = product.Category.Name
+                    },
                     MinimumQuantity = product.MinimumQuantity,
                     Dosage = product.Dosage,
-                    DosageUnitId = product.DosageUnitId,
-                    UnitId = product.UnitId,
+                    DosageUnit = new ViewModel()
+                    {
+                        Id = product.DosageUnit.Id,
+                        Name = product.DosageUnit.Name
+                    },
+                    Unit = new ViewModel()
+                    {
+                        Id = product.Unit.Id,
+                        Name = product.Unit.Name
+                    },
                     Price = product.Price,
                     CreatedAt = product.CreatedAt,
                     CreatedBy = product.CreatedBy,

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.CategoryModel;
 using System.Linq;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.CategoryService
 {
@@ -87,6 +88,51 @@ namespace UtNhanDrug_BE.Services.CategoryService
                 return result;
             }
             return null;
+        }
+
+        public async Task<List<ViewProductModel>> GetListProduct(int categoryId)
+        {
+            var query = from p in _context.Products
+                        where p.CategoryId == categoryId
+                        select p;
+
+            var data = await query.Select(p => new ViewProductModel()
+            {
+                Id = p.Id,
+                DrugRegistrationNumber = p.DrugRegistrationNumber,
+                Barcode = p.Barcode,
+                Name = p.Name,
+                Brand = new ViewModel()
+                {
+                    Id = p.Brand.Id,
+                    Name = p.Brand.Name
+                },
+                Category = new ViewModel()
+                {
+                    Id = p.Category.Id,
+                    Name = p.Category.Name
+                },
+                MinimumQuantity = p.MinimumQuantity,
+                Dosage = p.Dosage,
+                DosageUnit = new ViewModel()
+                {
+                    Id = p.DosageUnit.Id,
+                    Name = p.DosageUnit.Name
+                },
+                Unit = new ViewModel()
+                {
+                    Id = p.Unit.Id,
+                    Name = p.Unit.Name
+                },
+                Price = p.Price,
+                CreatedAt = p.CreatedAt,
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
+                IsActive = p.IsActive,
+            }).ToListAsync();
+
+            return data;
         }
 
         public async Task<bool> UpdateCategory(int categoryId, int userId, UpdateCategoryModel model)

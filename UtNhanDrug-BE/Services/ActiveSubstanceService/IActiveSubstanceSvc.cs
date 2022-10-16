@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 {
@@ -12,5 +13,6 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
         Task<ViewProductActiveSubstanceModel> GetActiveSubstanceById(int brandId);
         Task<List<ViewProductActiveSubstanceModel>> GetAllActiveSubstance();
         Task<bool> CheckActiveSubstance(int brandId);
+        Task<List<ViewProductModel>> GetListProducts(int activeSubstanceId);
     }
 }

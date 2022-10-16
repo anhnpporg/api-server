@@ -8,18 +8,21 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using UtNhanDrug_BE.Services.ActiveSubstanceService;
+using UtNhanDrug_BE.Services.ProductService;
 
 namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/product-management")]
+    [Route("api/v1/active-substance-management")]
     public class ActiveSubstanceController : ControllerBase
     {
         private readonly IActiveSubstanceSvc _activeSubstanceSvc;
-        public ActiveSubstanceController(IActiveSubstanceSvc activeSubstanceSvc)
+        private readonly IProductSvc _productSvc;
+        public ActiveSubstanceController(IActiveSubstanceSvc activeSubstanceSvc, IProductSvc productSvc)
         {
             _activeSubstanceSvc = activeSubstanceSvc;
+            _productSvc = productSvc;
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -30,6 +33,22 @@ namespace UtNhanDrug_BE.Controllers
         {
             var result = await _activeSubstanceSvc.GetAllActiveSubstance();
             return Ok(result);
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [Route("active-substances/{id}/products")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProducts([FromRoute] int id)
+        {
+            var products = await _activeSubstanceSvc.GetListProducts(id);
+            foreach (var product in products)
+            {
+                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                product.ActiveSubstances = activeSubstance;
+            }
+
+            return Ok(products);
         }
 
         [Authorize(Roles = "MANAGER")]

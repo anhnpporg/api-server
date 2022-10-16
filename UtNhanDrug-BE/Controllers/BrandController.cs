@@ -9,18 +9,21 @@ using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BrandModel;
 using UtNhanDrug_BE.Models.CategoryModel;
 using UtNhanDrug_BE.Services.BrandService;
+using UtNhanDrug_BE.Services.ProductService;
 
 namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/product-management")]
+    [Route("api/v1/brand-management")]
     public class BrandController : ControllerBase
     {
         private readonly IBrandSvc _brandSvc;
-        public BrandController(IBrandSvc brandSvc)
+        private readonly IProductSvc _productSvc;
+        public BrandController(IBrandSvc brandSvc, IProductSvc productSvc)
         {
             _brandSvc = brandSvc;
+            _productSvc = productSvc;
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -31,6 +34,22 @@ namespace UtNhanDrug_BE.Controllers
         {
             var brands = await _brandSvc.GetAllBrand();
             return Ok(brands);
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [Route("brands/{id}/products")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProducts([FromRoute] int id)
+        {
+            var products = await _brandSvc.GetListProduct(id);
+            foreach (var product in products)
+            {
+                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                product.ActiveSubstances = activeSubstance;
+            }
+
+            return Ok(products);
         }
 
         [Authorize(Roles = "MANAGER")]

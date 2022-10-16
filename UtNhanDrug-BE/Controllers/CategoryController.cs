@@ -8,18 +8,21 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.CategoryModel;
 using UtNhanDrug_BE.Services.CategoryService;
+using UtNhanDrug_BE.Services.ProductService;
 
 namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/product-management")]
+    [Route("api/v1/categorie-management")]
     public class CategoryController : ControllerBase
     {
         private readonly ICategorySvc _categorySvc;
-        public CategoryController(ICategorySvc categorySvc)
+        private readonly IProductSvc _productSvc;
+        public CategoryController(ICategorySvc categorySvc, IProductSvc productSvc)
         {
             _categorySvc = categorySvc;
+            _productSvc = productSvc;
         }
 
         //CONTROLLER CATEGORY
@@ -31,6 +34,22 @@ namespace UtNhanDrug_BE.Controllers
         {
             var categories = await _categorySvc.GetAllCategory();
             return Ok(categories);
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [Route("categories/{id}/products")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProducts([FromRoute] int id)
+        {
+            var products = await _categorySvc.GetListProduct(id);
+            foreach (var product in products)
+            {
+                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                product.ActiveSubstances = activeSubstance;
+            }
+
+            return Ok(products);
         }
 
         [Authorize(Roles = "MANAGER")]

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.CategoryModel;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.CategoryService
 {
@@ -12,5 +13,6 @@ namespace UtNhanDrug_BE.Services.CategoryService
         Task<ViewCategoryModel> GetCategoryById(int brandId);
         Task<List<ViewCategoryModel>> GetAllCategory();
         Task<bool> CheckCategory(int brandId);
+        Task<List<ViewProductModel>> GetListProduct(int categoryId);
     }
 }

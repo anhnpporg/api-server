@@ -18,11 +18,9 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
-        private readonly IPASSvc _pasSvc;
-        public ProductController(IProductSvc productSvc, IPASSvc pasSvc)
+        public ProductController(IProductSvc productSvc)
         {
             _productSvc = productSvc;
-            _pasSvc = pasSvc;
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -34,10 +32,10 @@ namespace UtNhanDrug_BE.Controllers
             var products = await _productSvc.GetAllProduct();
             foreach (var product in products)
             {
-                var pas = await _pasSvc.GetPASById(product.Id);
-                product.ProductActiveSubstance = pas;
+                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                product.ActiveSubstances = activeSubstance;
             }
-            
+
             return Ok(products);
         }
 

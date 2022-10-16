@@ -12,5 +12,6 @@ namespace UtNhanDrug_BE.Services.ProductService
         Task<ViewProductModel> GetProductById(int brandId);
         Task<List<ViewProductModel>> GetAllProduct();
         Task<bool> CheckProduct(int brandId);
+        Task<List<ViewModel>> GetListActiveSubstances(int productId);
     }
 }

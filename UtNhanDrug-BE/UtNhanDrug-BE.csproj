@@ -7,6 +7,10 @@
 		<AllowUntrustedCertificate>true</AllowUntrustedCertificate>
 		<EnvironmentName>Production</EnvironmentName>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="..\.editorconfig" Link=".editorconfig" />
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
 		<PackageReference Include="CorePush" Version="3.1.1" />
@@ -23,6 +27,7 @@
 		</PackageReference>
 		<PackageReference Include="NETCore.MailKit" Version="2.1.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Spire.Barcode" Version="6.8.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />

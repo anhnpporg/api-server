@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BrandModel;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.BrandService
 {
@@ -12,5 +13,6 @@ namespace UtNhanDrug_BE.Services.BrandService
         Task<ViewBrandModel> GetBrandById(int brandId);
         Task<List<ViewBrandModel>> GetAllBrand();
         Task<bool> CheckBrand(int brandId);
+        Task<List<ViewProductModel>> GetListProduct(int brandId);
     }
 }
