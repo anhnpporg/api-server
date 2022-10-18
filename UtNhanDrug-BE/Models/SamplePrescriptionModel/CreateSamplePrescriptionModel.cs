@@ -3,6 +3,6 @@
     public class CreateSamplePrescriptionModel
     {
         public int DiseaseId { get; set; }
-        public decimal? CustomerWeight { get; set; }
+        public string Name { get; set; }
     }
 }

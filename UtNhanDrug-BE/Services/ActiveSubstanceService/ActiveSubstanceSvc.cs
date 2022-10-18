@@ -6,6 +6,7 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using System.Linq;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 {
@@ -96,7 +97,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                         select a;
             var data = await query.Select(p => new ViewProductModel()
             {
-                Id = p.Product.Id,
+                Id = p.ProductId,
                 DrugRegistrationNumber = p.Product.DrugRegistrationNumber,
                 Barcode = p.Product.Barcode,
                 Name = p.Product.Name,
@@ -105,28 +106,37 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                     Id = p.Product.Brand.Id,
                     Name = p.Product.Brand.Name
                 },
-                Category = new ViewModel()
+                Shelf = new ViewModel()
                 {
-                    Id = p.Product.Category.Id,
-                    Name = p.Product.Category.Name
+                    Id = p.Product.Shelf.Id,
+                    Name = p.Product.Shelf.Name
                 },
                 MinimumQuantity = p.Product.MinimumQuantity,
-                Dosage = p.Product.Dosage,
-                DosageUnit = new ViewModel()
+                StockStrength = p.Product.StockStrength,
+                StockStrengthUnit = new ViewModel()
                 {
-                    Id = p.Product.DosageUnit.Id,
-                    Name = p.Product.DosageUnit.Name
+                    Id = p.Product.StockStrengthUnit.Id,
+                    Name = p.Product.StockStrengthUnit.Name
                 },
-                Unit = new ViewModel()
+                RouteOfAdministration = new ViewModel()
                 {
-                    Id = p.Product.Unit.Id,
-                    Name = p.Product.Unit.Name
+                    Id = p.Product.RouteOfAdministration.Id,
+                    Name = p.Product.RouteOfAdministration.Name
                 },
-                Price = p.Product.Price,
+                IsMedicine = p.Product.IsMedicine,
+                IsConsignment = p.Product.IsConsignment,
                 CreatedAt = p.Product.CreatedAt,
-                CreatedBy = p.Product.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.Product.CreatedByNavigation.UserAccount.Id,
+                    Name = p.Product.CreatedByNavigation.UserAccount.FullName
+                },
                 UpdatedAt = p.Product.UpdatedAt,
-                UpdatedBy = p.Product.UpdatedBy,
+                UpdatedBy = new ViewModel()
+                {
+                    Id = p.Product.UpdatedByNavigation.UserAccount.Id,
+                    Name = p.Product.UpdatedByNavigation.UserAccount.FullName
+                },
                 IsActive = p.Product.IsActive,
             }).ToListAsync();
 

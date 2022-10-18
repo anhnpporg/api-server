@@ -10,7 +10,7 @@ namespace UtNhanDrug_BE.Entities
         public int Id { get; set; }
         public string FullName { get; set; }
         public bool? IsActive { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public virtual Customer Customer { get; set; }
         public virtual Manager Manager { get; set; }

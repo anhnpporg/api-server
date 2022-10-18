@@ -6,6 +6,7 @@ using UtNhanDrug_BE.Models.BrandModel;
 using System.Linq;
 using System;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.BrandService
 {
@@ -68,9 +69,11 @@ namespace UtNhanDrug_BE.Services.BrandService
                     Name = brand.Name,
                     IsActive = brand.IsActive,
                     CreatedAt = brand.CreatedAt,
-                    CreatedBy = brand.CreatedBy,
-                    UpdatedAt = brand.UpdatedAt,
-                    UpdatedBy = brand.UpdatedBy
+                    CreatedBy = new ViewModel()
+                    {
+                        Id = brand.CreatedByNavigation.Id,
+                        Name = brand.CreatedByNavigation.UserAccount.FullName
+                    },
                 };
                 return result;
             }
@@ -87,9 +90,11 @@ namespace UtNhanDrug_BE.Services.BrandService
                 Id = b.Id,
                 Name = b.Name,
                 CreatedAt = b.CreatedAt,
-                CreatedBy = b.CreatedBy,
-                UpdatedAt = b.UpdatedAt,
-                UpdatedBy = b.UpdatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = b.CreatedByNavigation.Id,
+                    Name = b.CreatedByNavigation.UserAccount.FullName
+                },
                 IsActive = b.IsActive,
             }).ToListAsync();
 
@@ -120,28 +125,31 @@ namespace UtNhanDrug_BE.Services.BrandService
                     Id = p.Brand.Id,
                     Name = p.Brand.Name
                 },
-                Category = new ViewModel()
+                Shelf = new ViewModel()
                 {
-                    Id = p.Category.Id,
-                    Name = p.Category.Name
+                    Id = p.Shelf.Id,
+                    Name = p.Shelf.Name
                 },
                 MinimumQuantity = p.MinimumQuantity,
-                Dosage = p.Dosage,
-                DosageUnit = new ViewModel()
+                StockStrength = p.StockStrength,
+                StockStrengthUnit = new ViewModel()
                 {
-                    Id = p.DosageUnit.Id,
-                    Name = p.DosageUnit.Name
+                    Id = p.StockStrengthUnit.Id,
+                    Name = p.StockStrengthUnit.Name
                 },
-                Unit = new ViewModel()
+                RouteOfAdministration = new ViewModel()
                 {
-                    Id = p.Unit.Id,
-                    Name = p.Unit.Name
+                    Id = p.RouteOfAdministration.Id,
+                    Name = p.RouteOfAdministration.Name
                 },
-                Price = p.Price,
+                IsMedicine = p.IsMedicine,
+                IsConsignment = p.IsConsignment,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = p.CreatedBy,
-                UpdatedAt = p.UpdatedAt,
-                UpdatedBy = p.UpdatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.UserAccount.Id,
+                    Name = p.CreatedByNavigation.UserAccount.FullName
+                },
                 IsActive = p.IsActive,
             }).ToListAsync();
 

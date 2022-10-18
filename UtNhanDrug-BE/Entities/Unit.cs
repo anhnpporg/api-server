@@ -9,12 +9,14 @@ namespace UtNhanDrug_BE.Entities
     {
         public Unit()
         {
-            Products = new HashSet<Product>();
+            GoodsReceiptNotes = new HashSet<GoodsReceiptNote>();
+            ProductUnits = new HashSet<ProductUnit>();
         }
 
         public int Id { get; set; }
         public string Name { get; set; }
 
-        public virtual ICollection<Product> Products { get; set; }
+        public virtual ICollection<GoodsReceiptNote> GoodsReceiptNotes { get; set; }
+        public virtual ICollection<ProductUnit> ProductUnits { get; set; }
     }
 }

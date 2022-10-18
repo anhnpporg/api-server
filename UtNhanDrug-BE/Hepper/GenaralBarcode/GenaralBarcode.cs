@@ -19,12 +19,10 @@ namespace UtNhanDrug_BE.Hepper.GenaralBarcode
                 temp = "0" + temp;
             } while (temp.Length < 12);
             int sum = 0;
-            int digit = 0;
-
             // Calculate the checksum digit here.
             for (int i = temp.Length; i >= 1; i--)
             {
-                digit = Convert.ToInt32(temp.Substring(i - 1, 1));
+                int digit = Convert.ToInt32(temp.Substring(i - 1, 1));
                 // This appears to be backwards but the 
                 // EAN-13 checksum must be calculated
                 // this way to be compatible with UPC-A.

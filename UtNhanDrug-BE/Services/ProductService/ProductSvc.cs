@@ -6,10 +6,7 @@ using UtNhanDrug_BE.Models.ProductModel;
 using System.Linq;
 using System;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
-using UtNhanDrug_BE.Models.ProductActiveSubstance;
-using UtNhanDrug_BE.Models.ActiveSubstanceModel;
-using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
-using UtNhanDrug_BE.Models.BrandModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -37,14 +34,13 @@ namespace UtNhanDrug_BE.Services.ProductService
                 Name = model.Name,
                 Barcode = "####",
                 BrandId = model.BrandId,
-                CategoryId = model.CategoryId,
+                ShelfId = model.ShelfId,
                 MinimumQuantity = model.MinimumQuantity,
-                Dosage = model.Dosage,
-                DosageUnitId = model.DosageUnitId,
-                UnitId = model.UnitId,
-                Price = model.Price,
-                
-                CreatedAt = DateTime.Now,
+                StockStrength = model.StockStrength,
+                StockStrengthUnitId = model.StockStrengthUnitId,
+                RouteOfAdministrationId = model.RouteOfAdministrationId,
+                IsMedicine = model.IsMedicine,
+                IsConsignment = model.IsConsignment,
                 CreatedBy = userId
             };
             _context.Products.Add(product);
@@ -52,6 +48,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             if (result > 0)
             {
                 product.Barcode = GenaralBarcode.CreateEan13(product.Id+"");
+                await _context.SaveChangesAsync();
                 foreach (var p in model.ActiveSubstances)
                 {
                     ProductActiveSubstance pas = new ProductActiveSubstance()
@@ -97,28 +94,31 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Id = p.Brand.Id,
                     Name = p.Brand.Name
                 },
-                Category = new ViewModel()
-                    {
-                    Id = p.Category.Id,
-                    Name = p.Category.Name
+                Shelf = new ViewModel()
+                {
+                    Id = p.Shelf.Id,
+                    Name = p.Shelf.Name
                 },
                 MinimumQuantity = p.MinimumQuantity,
-                Dosage = p.Dosage,
-                DosageUnit = new ViewModel()
+                StockStrength = p.StockStrength,
+                StockStrengthUnit = new ViewModel()
                 {
-                    Id = p.DosageUnit.Id,
-                    Name = p.DosageUnit.Name
+                    Id = p.StockStrengthUnit.Id,
+                    Name = p.StockStrengthUnit.Name
                 },
-                Unit = new ViewModel()
+                RouteOfAdministration = new ViewModel()
                 {
-                    Id = p.Unit.Id,
-                    Name = p.Unit.Name
+                    Id = p.RouteOfAdministration.Id,
+                    Name = p.RouteOfAdministration.Name
                 },
-                Price = p.Price,
+                IsMedicine = p.IsMedicine,
+                IsConsignment = p.IsConsignment,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = p.CreatedBy,
-                UpdatedAt = p.UpdatedAt,
-                UpdatedBy = p.UpdatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.Id,
+                    Name = p.CreatedByNavigation.UserAccount.FullName
+                },
                 IsActive = p.IsActive,
             }).ToListAsync();
 
@@ -139,7 +139,7 @@ namespace UtNhanDrug_BE.Services.ProductService
         }
 
         public async Task<ViewProductModel> GetProductById(int id)
-        {
+        {   
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
             if (product != null)
             {
@@ -149,34 +149,37 @@ namespace UtNhanDrug_BE.Services.ProductService
                     DrugRegistrationNumber = product.DrugRegistrationNumber,
                     Barcode = product.Barcode,
                     Name = product.Name,
-                    Brand = new ViewModel() 
+                    Brand = new ViewModel()
                     {
                         Id = product.Brand.Id,
                         Name = product.Brand.Name
                     },
-                    Category = new ViewModel()
+                    Shelf = new ViewModel()
                     {
-                        Id = product.Category.Id,
-                        Name = product.Category.Name
+                        Id = product.Shelf.Id,
+                        Name = product.Shelf.Name
                     },
                     MinimumQuantity = product.MinimumQuantity,
-                    Dosage = product.Dosage,
-                    DosageUnit = new ViewModel()
+                    StockStrength = product.StockStrength,
+                    StockStrengthUnit = new ViewModel()
                     {
-                        Id = product.DosageUnit.Id,
-                        Name = product.DosageUnit.Name
+                        Id = product.StockStrengthUnit.Id,
+                        Name = product.StockStrengthUnit.Name
                     },
-                    Unit = new ViewModel()
+                    RouteOfAdministration = new ViewModel()
                     {
-                        Id = product.Unit.Id,
-                        Name = product.Unit.Name
+                        Id = product.RouteOfAdministration.Id,
+                        Name = product.RouteOfAdministration.Name
                     },
-                    Price = product.Price,
+                    IsMedicine = product.IsMedicine,
+                    IsConsignment = product.IsConsignment,
                     CreatedAt = product.CreatedAt,
-                    CreatedBy = product.CreatedBy,
-                    UpdatedAt = product.UpdatedAt,
-                    UpdatedBy = product.UpdatedBy,
-                    IsActive = product.IsActive
+                    CreatedBy = new ViewModel()
+                    {
+                        Id = product.CreatedByNavigation.UserAccount.Id,
+                        Name = product.CreatedByNavigation.UserAccount.FullName
+                    },
+                    IsActive = product.IsActive,
                 };
                 return result;
             }
@@ -188,17 +191,19 @@ namespace UtNhanDrug_BE.Services.ProductService
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
             if (product != null)
             {  
-               product.DrugRegistrationNumber = model.DrugRegistrationNumber;
-               product.Name = model.Name;
-               product.BrandId = model.BrandId;
-               product.CategoryId = model.CategoryId;
-               product.MinimumQuantity = model.MinimumQuantity;
-               product.Dosage = model.Dosage;
-               product.DosageUnitId = model.DosageUnitId;
-               product.UnitId = model.UnitId;
-               product.Price = model.Price;
-               product.UpdatedAt = DateTime.Now;
-               product.UpdatedBy = userId;
+                product.DrugRegistrationNumber = model.DrugRegistrationNumber;
+                product.Name = model.Name;
+                product.BrandId = model.BrandId;
+                product.ShelfId = model.ShelfId;
+                product.MinimumQuantity = model.MinimumQuantity;
+                product.StockStrength = model.StockStrength;
+                product.StockStrengthUnitId = model.StockStrengthUnitId;
+                product.RouteOfAdministrationId = model.RouteOfAdministrationId;
+                product.IsMedicine = model.IsMedicine;
+                product.IsConsignment = model.IsConsignment;
+                product.IsActive = model.IsActive;
+                product.UpdatedAt = DateTime.Now;
+                product.UpdatedBy = userId;
 
                 await _context.SaveChangesAsync();
                 return true;

@@ -18,15 +18,18 @@ using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.ActiveSubstanceService;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.BrandService;
-using UtNhanDrug_BE.Services.CategoryService;
+using UtNhanDrug_BE.Services.ConsignmentService;
 using UtNhanDrug_BE.Services.DiseaseService;
-using UtNhanDrug_BE.Services.DosageUnitService;
 using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
+using UtNhanDrug_BE.Services.GoodsReceiptNoteService;
 using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
+using UtNhanDrug_BE.Services.ProductUnitService;
 using UtNhanDrug_BE.Services.SamplePrescriptionService;
+using UtNhanDrug_BE.Services.ShelfService;
+using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.UnitService;
 
 namespace UtNhanDrug_BE
@@ -71,8 +74,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IUserSvc, UserSvc>();
             services.AddTransient<IBrandSvc, BrandSvc>();
-            services.AddTransient<ICategorySvc, CategorySvc>();
-            services.AddTransient<IDosageUnitSvc, DosageUnitSvc>();
+            services.AddTransient<IShelfSvc, ShelfSvc>();
             services.AddTransient<IUnitSvc, UnitSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
@@ -80,6 +82,10 @@ namespace UtNhanDrug_BE
             services.AddTransient<ISamplePrescriptionSvc, SamplePrescriptionSvc>();
             services.AddTransient<IDiseaseSvc, DiseaseSvc>();
             services.AddTransient<ISenderService, SenderService>();
+            services.AddTransient<IGRNSvc, GRNSvc>();
+            services.AddTransient<IProductUnitSvc, ProductUnitSvc>();
+            services.AddTransient<IConsignmentSvc, ConsignmentSvc>();
+            services.AddTransient<ISupplierSvc, SupplierSvc>();
             services.AddTransient<RoleType>();
 
             services.AddDbContext<ut_nhan_drug_store_databaseContext>(options =>

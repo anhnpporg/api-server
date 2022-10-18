@@ -7,7 +7,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BrandModel;
-using UtNhanDrug_BE.Models.CategoryModel;
 using UtNhanDrug_BE.Services.BrandService;
 using UtNhanDrug_BE.Services.ProductService;
 

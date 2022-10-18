@@ -5,6 +5,7 @@ using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.SamplePrescriptionModel;
 using System.Linq;
 using System;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.SamplePrescriptionService
 {
@@ -29,7 +30,7 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
             SamplePrescription sp = new SamplePrescription()
             {
                 DiseaseId = model.DiseaseId,
-                CustomerWeight = model.CustomerWeight,
+                Name = model.Name,
                 CreatedBy = userId,
             };
             _context.SamplePrescriptions.Add(sp);
@@ -58,12 +59,24 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
             var result = await query.Select(b => new ViewSamplePrescriptionModel()
             {
                 Id = b.Id,
-                DiseaseId = b.DiseaseId,
-                CustomerWeight = b.CustomerWeight,
+                Disease = new ViewModel()
+                {
+                    Id = b.Disease.Id,
+                    Name = b.Disease.Name
+                },
+                Name = b.Name,
                 CreatedAt = b.CreatedAt,
-                CreatedBy = b.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = b.CreatedByNavigation.UserAccount.Id,
+                    Name = b.CreatedByNavigation.UserAccount.FullName
+                },
                 UpdatedAt = b.UpdatedAt,
-                UpdatedBy = b.UpdatedBy,
+                UpdatedBy = new ViewModel()
+                {
+                    Id = b.UpdatedByNavigation.UserAccount.Id,
+                    Name = b.UpdatedByNavigation.UserAccount.FullName
+                },
                 IsActive = b.IsActive,
             }).ToListAsync();
 
@@ -78,13 +91,25 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
                 ViewSamplePrescriptionModel result = new ViewSamplePrescriptionModel()
                 {
                     Id = sp.Id,
-                    DiseaseId = sp.DiseaseId,
-                    CustomerWeight = sp.CustomerWeight,
+                    Disease = new ViewModel()
+                    {
+                        Id = sp.Disease.Id,
+                        Name = sp.Disease.Name
+                    },
+                    Name = sp.Name,
                     IsActive = sp.IsActive,
                     CreatedAt = sp.CreatedAt,
-                    CreatedBy = sp.CreatedBy,
+                    CreatedBy = new ViewModel()
+                    {
+                        Id = sp.CreatedByNavigation.UserAccount.Id,
+                        Name = sp.CreatedByNavigation.UserAccount.FullName
+                    },
                     UpdatedAt = sp.UpdatedAt,
-                    UpdatedBy = sp.UpdatedBy
+                    UpdatedBy = new ViewModel()
+                    {
+                        Id = sp.UpdatedByNavigation.UserAccount.Id,
+                        Name = sp.UpdatedByNavigation.UserAccount.FullName
+                    }
                 };
                 return result;
             }
@@ -97,7 +122,8 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
             if (sp != null)
             {
                 sp.DiseaseId = model.DiseaseId;
-                sp.CustomerWeight = model.CustomerWeight;
+                sp.Name = model.Name;
+                sp.IsActive = model.IsActive;
                 sp.UpdatedAt = DateTime.Now;
                 sp.UpdatedBy = userId;
                 await _context.SaveChangesAsync();

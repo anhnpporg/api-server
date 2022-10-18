@@ -9,7 +9,10 @@ namespace UtNhanDrug_BE.Entities
     {
         public Product()
         {
+            Consignments = new HashSet<Consignment>();
             ProductActiveSubstances = new HashSet<ProductActiveSubstance>();
+            ProductUnits = new HashSet<ProductUnit>();
+            SamplePrescriptionDetails = new HashSet<SamplePrescriptionDetail>();
         }
 
         public int Id { get; set; }
@@ -17,12 +20,13 @@ namespace UtNhanDrug_BE.Entities
         public string Barcode { get; set; }
         public string Name { get; set; }
         public int BrandId { get; set; }
-        public int CategoryId { get; set; }
+        public int ShelfId { get; set; }
         public int MinimumQuantity { get; set; }
-        public decimal? Dosage { get; set; }
-        public int? DosageUnitId { get; set; }
-        public int? UnitId { get; set; }
-        public decimal Price { get; set; }
+        public decimal? StockStrength { get; set; }
+        public int? StockStrengthUnitId { get; set; }
+        public int? RouteOfAdministrationId { get; set; }
+        public bool IsMedicine { get; set; }
+        public bool IsConsignment { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedBy { get; set; }
@@ -30,11 +34,14 @@ namespace UtNhanDrug_BE.Entities
         public int? UpdatedBy { get; set; }
 
         public virtual Brand Brand { get; set; }
-        public virtual Category Category { get; set; }
         public virtual Manager CreatedByNavigation { get; set; }
-        public virtual DosageUnit DosageUnit { get; set; }
-        public virtual Unit Unit { get; set; }
+        public virtual RouteOfAdministration RouteOfAdministration { get; set; }
+        public virtual Shelf Shelf { get; set; }
+        public virtual StockStrengthUnit StockStrengthUnit { get; set; }
         public virtual Manager UpdatedByNavigation { get; set; }
+        public virtual ICollection<Consignment> Consignments { get; set; }
         public virtual ICollection<ProductActiveSubstance> ProductActiveSubstances { get; set; }
+        public virtual ICollection<ProductUnit> ProductUnits { get; set; }
+        public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetails { get; set; }
     }
 }

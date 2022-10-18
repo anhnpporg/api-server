@@ -7,8 +7,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ProductModel;
-using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
+using UtNhanDrug_BE.Services.ProductUnitService;
 
 namespace UtNhanDrug_BE.Controllers
 {
@@ -18,9 +18,11 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
-        public ProductController(IProductSvc productSvc)
+        private readonly IProductUnitSvc _productUnitSvc;
+        public ProductController(IProductSvc productSvc, IProductUnitSvc productUnitSvc)
         {
             _productSvc = productSvc;
+            _productUnitSvc = productUnitSvc;
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -34,7 +36,10 @@ namespace UtNhanDrug_BE.Controllers
             {
                 var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
                 product.ActiveSubstances = activeSubstance;
+                var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                product.ProductUnits = productUnits;
             }
+            
 
             return Ok(products);
         }

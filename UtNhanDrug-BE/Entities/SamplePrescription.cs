@@ -7,9 +7,14 @@ namespace UtNhanDrug_BE.Entities
 {
     public partial class SamplePrescription
     {
+        public SamplePrescription()
+        {
+            SamplePrescriptionDetails = new HashSet<SamplePrescriptionDetail>();
+        }
+
         public int Id { get; set; }
         public int DiseaseId { get; set; }
-        public decimal? CustomerWeight { get; set; }
+        public string Name { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedBy { get; set; }
@@ -19,5 +24,6 @@ namespace UtNhanDrug_BE.Entities
         public virtual Manager CreatedByNavigation { get; set; }
         public virtual Disease Disease { get; set; }
         public virtual Manager UpdatedByNavigation { get; set; }
+        public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetails { get; set; }
     }
 }
