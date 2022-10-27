@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
@@ -13,5 +14,6 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         Task<List<ViewGoodsReceiptNoteModel>> GetAllGoodsReceiptNote();
         Task<bool> CheckGoodsReceiptNote(int id);
         Task<List<NoteLog>> GetListNoteLog(int id);
+        Task<List<ViewModel>> GetListNoteTypes();
     }
 }

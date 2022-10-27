@@ -28,12 +28,23 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
         public async Task<AccessTokenModel> Authenticate(LoginModel model)
         {
             var checkLogin = await CheckLogin(model);
+            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.LoginName == model.Username);
+            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userLogin.UserAccountId);
+            var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserAccountId == userLogin.UserAccountId);
+            bool isAdmin = true;
+            if(staff != null)
+            {
+                isAdmin = false;
+            }
             if (checkLogin == -1) return new AccessTokenModel() { AccessToken = "", Message = "Not found username" };
             if (checkLogin == 0) return new AccessTokenModel() { AccessToken = "", Message = "Password incorrect" };
             if (checkLogin == 1)
             {
                 var accessToken = await CreateToken(model);
-                return new AccessTokenModel() { Message = "Successfully", AccessToken = accessToken.Trim()};
+                return new AccessTokenModel() { Message = "Successfully", 
+                                                AccessToken = accessToken.Trim(),
+                                                IsAdmin = isAdmin
+                };
             }
             return new AccessTokenModel() { Message = "Fail", AccessToken = "" };
         }

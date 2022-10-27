@@ -155,6 +155,19 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             }).ToListAsync();
             return data;
         }
+
+        public async Task<List<ViewModel>> GetListNoteTypes()
+        {
+            var query = from x in _context.GoodsReceiptNoteTypes
+                        select x;
+            var data = await query.Select(x => new ViewModel()
+            {
+                Id= x.Id,
+                Name = x.Name
+            }).ToListAsync();
+            return data;
+        }
+
         public async Task<bool> UpdateGoodsReceiptNote(int id, int userId, UpdateGoodsReceiptNoteModel model)
         {
             var c = await _context.GoodsReceiptNotes.FirstOrDefaultAsync(x => x.Id == id);

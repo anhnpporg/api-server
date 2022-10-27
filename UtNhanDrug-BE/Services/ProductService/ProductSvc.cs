@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using UtNhanDrug_BE.Models.ModelHelper;
+using UtNhanDrug_BE.Models.PagingModel;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -41,7 +42,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 RouteOfAdministrationId = model.RouteOfAdministrationId,
                 IsMedicine = model.IsMedicine,
                 IsConsignment = model.IsConsignment,
-                CreatedBy = userId
+                CreatedBy = userId,
             };
             _context.Products.Add(product);
             var result = await _context.SaveChangesAsync();
@@ -49,6 +50,29 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 product.Barcode = GenaralBarcode.CreateEan13(product.Id+"");
                 await _context.SaveChangesAsync();
+                ProductUnit pu = new ProductUnit()
+                {
+                    ProductId = product.Id,
+                    UnitId = model.UnitId,
+                    ConversionValue = 1,
+                    Price = model.Price,
+                    IsBaseUnit = true
+                };
+                _context.ProductUnits.Add(pu);
+
+                foreach (var productUnit in model.ProductUnits)
+                {
+                    ProductUnit x = new ProductUnit()
+                    {
+                        ProductId = product.Id,
+                        UnitId = productUnit.UnitId,
+                        ConversionValue = productUnit.ConversionValue,
+                        Price = productUnit.Price,
+                        IsBaseUnit = false
+                    };
+                    _context.ProductUnits.Add(x);
+                }
+
                 foreach (var p in model.ActiveSubstances)
                 {
                     ProductActiveSubstance pas = new ProductActiveSubstance()
@@ -125,6 +149,64 @@ namespace UtNhanDrug_BE.Services.ProductService
             return result;
         }
 
+        public async Task<PageResult<ViewProductModel>> GetProductPaging(ProductPagingRequest request)
+        {
+            var query = from p in _context.Products
+                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue)
+                        select  p;
+            var data = query.Distinct();
+            var result = await data.Select( p => new ViewProductModel()
+            {
+                Id = p.Id,
+                DrugRegistrationNumber = p.DrugRegistrationNumber,
+                Barcode = p.Barcode,
+                Name = p.Name,
+                Brand = new ViewModel()
+                {
+                    Id = p.Brand.Id,
+                    Name = p.Brand.Name
+                },
+                Shelf = new ViewModel()
+                {
+                    Id = p.Shelf.Id,
+                    Name = p.Shelf.Name
+                },
+                MinimumQuantity = p.MinimumQuantity,
+                StockStrength = p.StockStrength,
+                StockStrengthUnit = new ViewModel()
+                {
+                    Id = p.StockStrengthUnit.Id,
+                    Name = p.StockStrengthUnit.Name
+                },
+                RouteOfAdministration = new ViewModel()
+                {
+                    Id = p.RouteOfAdministration.Id,
+                    Name = p.RouteOfAdministration.Name
+                },
+                IsMedicine = p.IsMedicine,
+                IsConsignment = p.IsConsignment,
+                CreatedAt = p.CreatedAt,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.Id,
+                    Name = p.CreatedByNavigation.UserAccount.FullName
+                },
+                IsActive = p.IsActive,
+            }).ToListAsync();
+            //paging
+            int totalRow = await data.CountAsync();
+
+            var pagedResult = new PageResult<ViewProductModel>()
+            {
+                TotalRecords = totalRow,
+                PageSize = request.PageSize,
+                Items = result
+            };
+
+            return pagedResult;
+        }
+
         public async Task<List<ViewModel>> GetListActiveSubstances(int productId)
         {
             var query = from pas in _context.ProductActiveSubstances
@@ -134,6 +216,30 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 Id = x.ActiveSubstance.Id,
                 Name = x.ActiveSubstance.Name
+            }).ToListAsync();
+            return data;
+        }
+
+        public async Task<List<ViewModel>> GetListRouteOfAdmin()
+        {
+            var query = from x in _context.RouteOfAdministrations
+                        select x;
+            var data = await query.Select(x => new ViewModel()
+            {
+                Id = x.Id,
+                Name = x.Name
+            }).ToListAsync();
+            return data;
+        }
+
+        public async Task<List<ViewModel>> GetListStockStrengthUnits()
+        {
+            var query = from x in _context.StockStrengthUnits
+                        select x;
+            var data = await query.Select(x => new ViewModel()
+            {
+                Id = x.Id,
+                Name = x.Name
             }).ToListAsync();
             return data;
         }

@@ -151,8 +151,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     Name = p.CreatedByNavigation.UserAccount.FullName
                 },
                 IsActive = p.IsActive,
-            }).ToListAsync();
-
+            }).OrderByDescending(p => p.IsActive).ToListAsync();
             return data;
         }
     }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
+using UtNhanDrug_BE.Models.PagingModel;
 using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Models.UserModel;
@@ -32,6 +33,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<bool> CheckVerifyPassword(int userId, string token);
         Task<bool> CheckTimeVerifyPassword(int userId);
         Task<bool> UpdateEmail(int userId, string email);
+        Task<PageResult<CustomerViewModel>> SearchCustomer(CustomerPagingRequest request);
 
     }
 }

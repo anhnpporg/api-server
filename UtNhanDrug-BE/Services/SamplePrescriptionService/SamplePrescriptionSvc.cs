@@ -20,8 +20,8 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
 
         public async Task<bool> CheckSamplePrescription(int id)
         {
-            var brand = await _context.SamplePrescriptions.FirstOrDefaultAsync(x => x.Id == id);
-            if (brand != null) return true;
+            var sp = await _context.SamplePrescriptions.FirstOrDefaultAsync(x => x.Id == id);
+            if (sp != null) return true;
             return false;
         }
 
@@ -71,12 +71,12 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
                     Id = b.CreatedByNavigation.UserAccount.Id,
                     Name = b.CreatedByNavigation.UserAccount.FullName
                 },
-                UpdatedAt = b.UpdatedAt,
-                UpdatedBy = new ViewModel()
-                {
-                    Id = b.UpdatedByNavigation.UserAccount.Id,
-                    Name = b.UpdatedByNavigation.UserAccount.FullName
-                },
+                //UpdatedAt = b.UpdatedAt,
+                //UpdatedBy = new ViewModel()
+                //{
+                //    Id = b.UpdatedByNavigation.UserAccount.Id,
+                //    Name = b.UpdatedByNavigation.UserAccount.FullName
+                //},
                 IsActive = b.IsActive,
             }).ToListAsync();
 
@@ -104,12 +104,12 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
                         Id = sp.CreatedByNavigation.UserAccount.Id,
                         Name = sp.CreatedByNavigation.UserAccount.FullName
                     },
-                    UpdatedAt = sp.UpdatedAt,
-                    UpdatedBy = new ViewModel()
-                    {
-                        Id = sp.UpdatedByNavigation.UserAccount.Id,
-                        Name = sp.UpdatedByNavigation.UserAccount.FullName
-                    }
+                    //UpdatedAt = sp.UpdatedAt,
+                    //UpdatedBy = new ViewModel()
+                    //{
+                    //    Id = sp.UpdatedByNavigation.UserAccount.Id,
+                    //    Name = sp.UpdatedByNavigation.UserAccount.FullName
+                    //}
                 };
                 return result;
             }

@@ -18,7 +18,7 @@ namespace UtNhanDrug_BE.Controllers
             _unitSvc = unitSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("units")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -28,7 +28,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(unit);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("units/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]

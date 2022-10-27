@@ -13,6 +13,7 @@ using UtNhanDrug_BE.Hepper;
 using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Models.EmailModel;
+using UtNhanDrug_BE.Models.PagingModel;
 
 namespace UtNhanDrug_BE.Services.ManagerService
 {
@@ -535,6 +536,33 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 return true;
             }
             return false;
+        }
+
+        public async Task<PageResult<CustomerViewModel>> SearchCustomer(CustomerPagingRequest request)
+        {
+            var query = from c in _context.Customers
+                        where c.PhoneNumber.Contains(request.PhoneNumber)
+                        select c;
+            var data = query.Distinct();
+            var result = await data.Select(c => new CustomerViewModel()
+            {
+                UserId = c.UserAccountId,
+                Fullname = c.UserAccount.FullName,
+                PhoneNumber = c.PhoneNumber,
+                CreatedAt = c.UserAccount.CreatedAt,
+                IsActive = c.UserAccount.IsActive
+            }).ToListAsync();
+            //paging
+            int totalRow = await data.CountAsync();
+
+            var pagedResult = new PageResult<CustomerViewModel>()
+            {
+                TotalRecords = totalRow,
+                PageSize = request.PageSize,
+                Items = result
+            };
+
+            return pagedResult;
         }
     }
 }

@@ -39,6 +39,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("goods-receipt-note-types")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetAllGRNTypes()
+        {
+            var result = await _grnSvc.GetListNoteTypes();
+            return Ok(result);
+        }
+
+        [Authorize]
         [Route("goods-receipt-notes/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]

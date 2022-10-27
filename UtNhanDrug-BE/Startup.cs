@@ -27,6 +27,7 @@ using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
 using UtNhanDrug_BE.Services.ProductUnitService;
+using UtNhanDrug_BE.Services.SamplePrescriptionDetailService;
 using UtNhanDrug_BE.Services.SamplePrescriptionService;
 using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
@@ -80,6 +81,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
             services.AddTransient<ISamplePrescriptionSvc, SamplePrescriptionSvc>();
+            services.AddTransient<ISamplePrescriptionDetailSvc, SamplePrescriptionDetailSvc>();
             services.AddTransient<IDiseaseSvc, DiseaseSvc>();
             services.AddTransient<ISenderService, SenderService>();
             services.AddTransient<IGRNSvc, GRNSvc>();

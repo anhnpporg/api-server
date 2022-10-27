@@ -61,6 +61,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
             {
                 Id = c.Id,
                 Name = c.Name,
+                IsActive = c.IsActive,
                 CreatedAt = c.CreatedAt,
                 CreatedBy = new ViewModel()
                 {

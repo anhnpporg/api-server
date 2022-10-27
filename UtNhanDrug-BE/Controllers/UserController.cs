@@ -47,6 +47,17 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(customer);
         }
 
+        //search customer
+        [Authorize]
+        [Route("customers/filter")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetCustomerPaging([FromQuery] CustomerPagingRequest request)
+        {
+            var customers = await _userSvc.SearchCustomer(request);
+            return Ok(customers);
+        }
+
         [Authorize(Roles = "MANAGER")]
         [Route("staffs")]
         [HttpGet]

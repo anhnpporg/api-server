@@ -25,7 +25,7 @@ namespace UtNhanDrug_BE.Controllers
             _productUnitSvc = productUnitSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -43,8 +43,47 @@ namespace UtNhanDrug_BE.Controllers
 
             return Ok(products);
         }
+        
+        [Authorize]
+        [Route("products/filter")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProductPaging([FromQuery] ProductPagingRequest request)
+        {
+            var products = await _productSvc.GetProductPaging(request);
+            foreach (var product in products.Items)
+            {
+                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                product.ActiveSubstances = activeSubstance;
+                var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                product.ProductUnits = productUnits;
+            }
+            
 
-        [Authorize(Roles = "MANAGER")]
+            return Ok(products);
+        }
+        
+        [Authorize]
+        [Route("route-of-administrations")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetRouteOfAdministrations()
+        {
+            var result = await _productSvc.GetListRouteOfAdmin();
+            return Ok(result);
+        }
+
+        [Authorize]
+        [Route("stock-strength-units")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetListStockStrengthUnits()
+        {
+            var result = await _productSvc.GetListStockStrengthUnits();
+            return Ok(result);
+        }
+
+        [Authorize]
         [Route("products/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -55,11 +94,11 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(product);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("products")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateProduct([FromForm] CreateProductModel model)
+        public async Task<ActionResult> CreateProduct([FromBody] CreateProductModel model )
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -77,7 +116,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "create successfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("products/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromForm] UpdateProductModel model)
@@ -100,7 +139,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("products/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteProduct([FromRoute] int id)
