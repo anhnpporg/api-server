@@ -18,8 +18,8 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
-        private readonly IProductUnitSvc _productUnitSvc;
-        public ProductController(IProductSvc productSvc, IProductUnitSvc productUnitSvc)
+        private readonly IProductUnitPriceSvc _productUnitSvc;
+        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc)
         {
             _productSvc = productSvc;
             _productUnitSvc = productUnitSvc;
@@ -70,16 +70,6 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetRouteOfAdministrations()
         {
             var result = await _productSvc.GetListRouteOfAdmin();
-            return Ok(result);
-        }
-
-        [Authorize]
-        [Route("stock-strength-units")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetListStockStrengthUnits()
-        {
-            var result = await _productSvc.GetListStockStrengthUnits();
             return Ok(result);
         }
 

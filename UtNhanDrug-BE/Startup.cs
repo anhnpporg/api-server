@@ -18,7 +18,7 @@ using UtNhanDrug_BE.Models.RoleModel;
 using UtNhanDrug_BE.Services.ActiveSubstanceService;
 using UtNhanDrug_BE.Services.AuthenticationService;
 using UtNhanDrug_BE.Services.BrandService;
-using UtNhanDrug_BE.Services.ConsignmentService;
+using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Services.DiseaseService;
 using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Services.FcmNotificationService;
@@ -31,7 +31,6 @@ using UtNhanDrug_BE.Services.SamplePrescriptionDetailService;
 using UtNhanDrug_BE.Services.SamplePrescriptionService;
 using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
-using UtNhanDrug_BE.Services.UnitService;
 
 namespace UtNhanDrug_BE
 {
@@ -76,7 +75,6 @@ namespace UtNhanDrug_BE
             services.AddTransient<IUserSvc, UserSvc>();
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();
-            services.AddTransient<IUnitSvc, UnitSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
@@ -85,8 +83,8 @@ namespace UtNhanDrug_BE
             services.AddTransient<IDiseaseSvc, DiseaseSvc>();
             services.AddTransient<ISenderService, SenderService>();
             services.AddTransient<IGRNSvc, GRNSvc>();
-            services.AddTransient<IProductUnitSvc, ProductUnitSvc>();
-            services.AddTransient<IConsignmentSvc, ConsignmentSvc>();
+            services.AddTransient<IProductUnitPriceSvc, ProductUnitPriceSvc>();
+            services.AddTransient<IBatchSvc, BatchSvc>();
             services.AddTransient<ISupplierSvc, SupplierSvc>();
             services.AddTransient<RoleType>();
 

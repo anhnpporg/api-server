@@ -9,13 +9,14 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
     {
         public int Id { get; set; }
         public ViewModel GoodsReceiptNoteType { get; set; }
-        public ViewConsignment Consignment { get; set; }
+        public ViewBatch Batch { get; set; }
+        public int? Invoice { get; set; }
         public ViewModel? Supplier { get; set; }
         public int Quantity { get; set; }
-        public ViewModel Unit { get; set; }
-        public decimal PurchasePrice { get; set; }
+        public string Unit { get; set; }
+        public decimal TotalPrice { get; set; }
         public int ConvertedQuantity { get; set; }
-        public decimal? PurchasePriceBaseUnit { get; set; }
+        public decimal BaseUnitPrice { get; set; }
         public DateTime CreatedAt { get; set; }
         public ViewModel CreatedBy { get; set; }
         public List<NoteLog> Note { get; set; }
@@ -24,10 +25,10 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
     {
         public int Id { get; set; }
         public string Note { get; set; }
-        public DateTime UpdateAt { get; set; }
+        public DateTime? UpdateAt { get; set; }
         public ViewModel UpdateBy { get; set; }
     }
-    public class ViewConsignment
+    public class ViewBatch
     {
         public int Id { get; set; }
         public string Barcode { get; set; }

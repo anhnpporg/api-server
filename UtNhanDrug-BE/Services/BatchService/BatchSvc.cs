@@ -2,53 +2,53 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Entities;
-using UtNhanDrug_BE.Models.ConsignmentModel;
+using UtNhanDrug_BE.Models.BatchModel;
 using System.Linq;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using System;
 using UtNhanDrug_BE.Models.ModelHelper;
 
-namespace UtNhanDrug_BE.Services.ConsignmentService
+namespace UtNhanDrug_BE.Services.BatchService
 {
-    public class ConsignmentSvc : IConsignmentSvc
+    public class BatchSvc : IBatchSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
 
-        public ConsignmentSvc(ut_nhan_drug_store_databaseContext context)
+        public BatchSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
         }
-        public async Task<bool> CheckConsignment(int id)
+        public async Task<bool> CheckBatch(int id)
         {
-            var result = await _context.Consignments.FirstOrDefaultAsync(x => x.Id == id);
+            var result = await _context.Batches.FirstOrDefaultAsync(x => x.Id == id);
             if (result != null) return true;
             return false;
         }
 
-        public async Task<bool> CreateConsignment(int userId, CreateConsignmentModel model)
+        public async Task<bool> CreateBatch(int userId, CreateBatchModel model)
         {
-            Consignment consignment = new Consignment()
+            Batch consignment = new Batch()
             {
-                Barcode = "#####",
+                BatchBarcode = "#####",
                 ProductId = model.ProductId,
                 ManufacturingDate = model.ManufacturingDate,
                 ExpiryDate = model.ExpiryDate,
                 CreatedBy = userId,
             };
-            _context.Consignments.Add(consignment);
+            _context.Batches.Add(consignment);
             var result = await _context.SaveChangesAsync();
             if (result > 0) 
             {
-                consignment.Barcode = GenaralBarcode.CreateEan13(consignment.Id + "");
+                consignment.BatchBarcode = GenaralBarcode.CreateEan13(consignment.Id + "");
                 await _context.SaveChangesAsync();
                 return true;
             } 
             return false;
         }
 
-        public async Task<bool> DeleteConsignment(int id, int userId)
+        public async Task<bool> DeleteBatch(int id, int userId)
         {
-            var result = await _context.Consignments.FirstOrDefaultAsync(x => x.Id == id);
+            var result = await _context.Batches.FirstOrDefaultAsync(x => x.Id == id);
             if (result != null)
             {
                 result.IsActive = false;
@@ -58,14 +58,14 @@ namespace UtNhanDrug_BE.Services.ConsignmentService
             return false;
         }
 
-        public async Task<List<ViewConsignmentModel>> GetAllConsignment()
+        public async Task<List<ViewBatchModel>> GetAllBatch()
         {
-            var query = from c in _context.Consignments
+            var query = from c in _context.Batches
                         select c;
-            var data = await query.Select(x => new ViewConsignmentModel()
+            var data = await query.Select(x => new ViewBatchModel()
             {
                 Id = x.Id,
-                Barcode = x.Barcode,
+                BatchBarcode = x.BatchBarcode,
                 Product = new ViewModel()
                 {
                     Id = x.Product.Id,
@@ -77,22 +77,22 @@ namespace UtNhanDrug_BE.Services.ConsignmentService
                 CreatedAt = x.CreatedAt,
                 CreatedBy = new ViewModel()
                 {
-                    Id = x.CreatedByNavigation.UserAccount.Id,
-                    Name = x.CreatedByNavigation.UserAccount.FullName
+                    Id = x.CreatedByNavigation.Id,
+                    Name = x.CreatedByNavigation.FullName
                 },
             }).ToListAsync();
             return data;
         }
 
-        public async Task<ViewConsignmentModel> GetConsignmentById(int id)
+        public async Task<ViewBatchModel> GetBatchById(int id)
         {
-            var c = await _context.Consignments.FirstOrDefaultAsync(x => x.Id == id);
+            var c = await _context.Batches.FirstOrDefaultAsync(x => x.Id == id);
             if (c != null)
             {
-                ViewConsignmentModel result = new ViewConsignmentModel()
+                ViewBatchModel result = new ViewBatchModel()
                 {
                     Id = c.Id,
-                    Barcode = c.Barcode,
+                    BatchBarcode = c.BatchBarcode,
                     Product = new ViewModel()
                     {
                         Id = c.Product.Id,
@@ -104,8 +104,8 @@ namespace UtNhanDrug_BE.Services.ConsignmentService
                     CreatedAt = c.CreatedAt,
                     CreatedBy = new ViewModel()
                     {
-                        Id = c.CreatedByNavigation.UserAccount.Id,
-                        Name = c.CreatedByNavigation.UserAccount.FullName
+                        Id = c.CreatedByNavigation.Id,
+                        Name = c.CreatedByNavigation.FullName
                     },
                 };
                 return result;
@@ -113,15 +113,14 @@ namespace UtNhanDrug_BE.Services.ConsignmentService
             return null;
         }
 
-        public async Task<bool> UpdateConsignment(int id, int userId, UpdateConsignmentModel model)
+        public async Task<bool> UpdateBatch(int id, int userId, UpdateBatchModel model)
         {
-            var c = await _context.Consignments.FirstOrDefaultAsync(x => x.Id == id);
+            var c = await _context.Batches.FirstOrDefaultAsync(x => x.Id == id);
             if (c != null)
             {
                 c.ProductId = model.ProductId;
                 c.ManufacturingDate = model.ManufacturingDate;
                 c.ExpiryDate = model.ExpiryDate;
-                c.IsActive = model.IsActive;
                 c.UpdatedAt = DateTime.Now;
                 c.UpdatedBy = userId;
                 await _context.SaveChangesAsync();

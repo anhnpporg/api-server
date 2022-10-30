@@ -7,8 +7,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
-using UtNhanDrug_BE.Models.ProductUnitModel;
-using UtNhanDrug_BE.Services.ConsignmentService;
 using UtNhanDrug_BE.Services.GoodsReceiptNoteService;
 
 namespace UtNhanDrug_BE.Controllers

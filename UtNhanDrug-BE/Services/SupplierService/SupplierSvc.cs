@@ -63,14 +63,10 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 CreatedBy = new ViewModel()
                 {
                     Id = s.CreatedByNavigation.Id,
-                    Name = s.CreatedByNavigation.UserAccount.FullName
+                    Name = s.CreatedByNavigation.FullName
                 },
                 UpdatedAt = s.UpdatedAt,
-                UpdatedBy = new ViewModel()
-                {
-                    Id = s.UpdatedByNavigation.Id,
-                    Name = s.UpdatedByNavigation.UserAccount.FullName
-                },
+                UpdatedBy = s.UpdatedBy,
                 IsActive = s.IsActive,
             }).ToListAsync();
 
@@ -96,14 +92,10 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     CreatedBy = new ViewModel()
                     {
                         Id = supplier.CreatedByNavigation.Id,
-                        Name = supplier.CreatedByNavigation.UserAccount.FullName
+                        Name = supplier.CreatedByNavigation.FullName
                     },
                     UpdatedAt = supplier.UpdatedAt,
-                    UpdatedBy = new ViewModel()
-                    {
-                        Id = supplier.UpdatedByNavigation.Id,
-                        Name = supplier.UpdatedByNavigation.UserAccount.FullName
-                    },
+                    UpdatedBy = supplier.UpdatedBy
                 };
                 return result;
             }

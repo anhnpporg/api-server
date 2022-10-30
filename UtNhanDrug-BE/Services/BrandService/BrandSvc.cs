@@ -72,7 +72,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     CreatedBy = new ViewModel()
                     {
                         Id = brand.CreatedByNavigation.Id,
-                        Name = brand.CreatedByNavigation.UserAccount.FullName
+                        Name = brand.CreatedByNavigation.FullName
                     },
                 };
                 return result;
@@ -93,7 +93,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                 CreatedBy = new ViewModel()
                 {
                     Id = b.CreatedByNavigation.Id,
-                    Name = b.CreatedByNavigation.UserAccount.FullName
+                    Name = b.CreatedByNavigation.FullName
                 },
                 IsActive = b.IsActive,
             }).ToListAsync();
@@ -130,26 +130,18 @@ namespace UtNhanDrug_BE.Services.BrandService
                     Id = p.Shelf.Id,
                     Name = p.Shelf.Name
                 },
-                MinimumQuantity = p.MinimumQuantity,
-                StockStrength = p.StockStrength,
-                StockStrengthUnit = new ViewModel()
-                {
-                    Id = p.StockStrengthUnit.Id,
-                    Name = p.StockStrengthUnit.Name
-                },
+                MininumInventory = p.MininumInventory,
                 RouteOfAdministration = new ViewModel()
                 {
                     Id = p.RouteOfAdministration.Id,
                     Name = p.RouteOfAdministration.Name
                 },
-                IsMedicine = p.IsMedicine,
-                IsConsignment = p.IsConsignment,
+                IsUseDose = p.IsUseDose,
+                IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.CreatedByNavigation.UserAccount.Id,
-                    Name = p.CreatedByNavigation.UserAccount.FullName
-                },
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
             }).OrderByDescending(p => p.IsActive).ToListAsync();
             return data;

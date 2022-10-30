@@ -80,17 +80,20 @@ namespace UtNhanDrug_BE.Services.ManagerService
         public async Task<List<CustomerViewModel>> GetCustomers()
         {
             var query = from c in _context.Customers
-                        join u in _context.UserAccounts on c.UserAccountId equals u.Id
-                        select new { u, c };
+                        select c;
 
             var data = await query
                 .Select(x => new CustomerViewModel()
                 {
-                    UserId = x.u.Id,
-                    Fullname = x.u.FullName,
-                    PhoneNumber = x.c.PhoneNumber,
-                    CreatedAt = x.u.CreatedAt,
-                    IsActive = x.u.IsActive
+                    Id = x.Id,
+                    FullName = x.FullName,
+                    PhoneNumber = x.PhoneNumber,
+                    TotalPoint = x.TotalPoint,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = x.CreatedBy,
+                    UpdatedBy = x.CreatedBy,
+                    UpdatedAt = x.UpdatedAt,
+                    IsActive = x.IsActive
                 }).ToListAsync();
             return data;
         }
@@ -110,7 +113,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     PhoneNumber = x.s.PhoneNumber,
                     DateOfBirth = x.s.DateOfBirth,
                     IsMale = x.s.IsMale,
-                    Avatar = x.s.Avatar,
+                    Avatar = x.s.UrlAvartar,
                     CreatedAt = x.u.CreatedAt,
                     IsActive = x.u.IsActive
                 }).ToListAsync();
@@ -136,7 +139,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
             if(user != null && staff != null)
             {
                 user.FullName = model.Fullname;
-                staff.Avatar = avatar;
+                staff.UrlAvartar = avatar;
                 staff.IsMale = model.IsMale;
                 staff.DateOfBirth = model.Dob;
                 staff.PhoneNumber = model.PhoneNumber;
@@ -185,13 +188,12 @@ namespace UtNhanDrug_BE.Services.ManagerService
             var isExits = await FindCustomer(model.PhoneNumber);
             if (isExits != true)
             {
-                var userId = await CreateUser(model.Fullname);
+                var userId = await CreateUser(model.FullName);
                 if (userId != 0)
                 {
                     var customer = new Customer()
                     {
                         PhoneNumber = model.PhoneNumber,
-                        UserAccountId = userId
                     };
                     _context.Customers.Add(customer);
                     var result = await _context.SaveChangesAsync();
@@ -259,7 +261,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         Staff s = new Staff()
                         {
                             UserAccountId = userId,
-                            Avatar = avatar,
+                            UrlAvartar = avatar,
                             DateOfBirth = model.Dob,
                             IsMale = model.IsMale,
                             PhoneNumber = model.PhoneNumber,
@@ -303,24 +305,11 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
             if(user == null) return null;
             //filter user
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.UserAccountId == user.Id);
             var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
 
-            if (customer != null)
-            {
-                CustomerViewModel model = new CustomerViewModel()
-                {
-                    UserId = userId,
-                    CreatedAt = user.CreatedAt,
-                    Fullname = user.FullName,
-                    PhoneNumber = customer.PhoneNumber,
-                    IsActive = user.IsActive
-                };
-
-                return model;
-            }
-            else if (manager != null)
+            
+            if (manager != null)
             {
                 ManagerViewModel model = new ManagerViewModel()
                 {
@@ -338,7 +327,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     UserId = userId,
                     PhoneNumber = staff.PhoneNumber,
-                    Avatar = staff.Avatar,
+                    Avatar = staff.UrlAvartar,
                     CreatedAt = user.CreatedAt,
                     DateOfBirth = staff.DateOfBirth,
                     Fullname = user.FullName,
@@ -546,11 +535,11 @@ namespace UtNhanDrug_BE.Services.ManagerService
             var data = query.Distinct();
             var result = await data.Select(c => new CustomerViewModel()
             {
-                UserId = c.UserAccountId,
-                Fullname = c.UserAccount.FullName,
+                Id = c.Id,
+                FullName = c.FullName,
                 PhoneNumber = c.PhoneNumber,
-                CreatedAt = c.UserAccount.CreatedAt,
-                IsActive = c.UserAccount.IsActive
+                CreatedAt = c.CreatedAt,
+                IsActive = c.IsActive
             }).ToListAsync();
             //paging
             int totalRow = await data.CountAsync();
@@ -563,6 +552,29 @@ namespace UtNhanDrug_BE.Services.ManagerService
             };
 
             return pagedResult;
+        }
+
+        public async Task<CustomerViewModel> GetCustomerProfile(int id)
+        {
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Id == id);
+            if (customer != null)
+            {
+                CustomerViewModel model = new CustomerViewModel()
+                {
+                    Id = customer.Id,
+                    FullName = customer.FullName,
+                    PhoneNumber = customer.PhoneNumber,
+                    TotalPoint = customer.TotalPoint,
+                    CreatedAt = customer.CreatedAt,
+                    CreatedBy = customer.CreatedBy,
+                    UpdatedAt = customer.UpdatedAt,
+                    UpdatedBy = customer.UpdatedBy,
+                    IsActive = customer.IsActive
+                };
+
+                return model;
+            }
+            return null;
         }
     }
 }

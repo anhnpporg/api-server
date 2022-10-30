@@ -5,16 +5,21 @@ using System.Collections.Generic;
 
 namespace UtNhanDrug_BE.Entities
 {
-    public partial class SamplePrescription
+    public partial class ProductUnitPrice
     {
-        public SamplePrescription()
+        public ProductUnitPrice()
         {
             SamplePrescriptionDetails = new HashSet<SamplePrescriptionDetail>();
         }
 
         public int Id { get; set; }
-        public int DiseaseId { get; set; }
-        public string Name { get; set; }
+        public int ProductId { get; set; }
+        public string Unit { get; set; }
+        public double? ConversionValue { get; set; }
+        public decimal? Price { get; set; }
+        public bool IsPackingSpecification { get; set; }
+        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
+        public bool IsBaseUnit { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedBy { get; set; }
@@ -22,7 +27,7 @@ namespace UtNhanDrug_BE.Entities
         public int? UpdatedBy { get; set; }
 
         public virtual UserAccount CreatedByNavigation { get; set; }
-        public virtual Disease Disease { get; set; }
+        public virtual Product Product { get; set; }
         public virtual UserAccount UpdatedByNavigation { get; set; }
         public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetails { get; set; }
     }

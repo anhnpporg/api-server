@@ -9,9 +9,10 @@ namespace UtNhanDrug_BE.Entities
     {
         public Product()
         {
-            Consignments = new HashSet<Consignment>();
+            Batches = new HashSet<Batch>();
+            OrderDetails = new HashSet<OrderDetail>();
             ProductActiveSubstances = new HashSet<ProductActiveSubstance>();
-            ProductUnits = new HashSet<ProductUnit>();
+            ProductUnitPrices = new HashSet<ProductUnitPrice>();
             SamplePrescriptionDetails = new HashSet<SamplePrescriptionDetail>();
         }
 
@@ -21,12 +22,10 @@ namespace UtNhanDrug_BE.Entities
         public string Name { get; set; }
         public int BrandId { get; set; }
         public int ShelfId { get; set; }
-        public int MinimumQuantity { get; set; }
-        public decimal? StockStrength { get; set; }
-        public int? StockStrengthUnitId { get; set; }
-        public int? RouteOfAdministrationId { get; set; }
-        public bool IsMedicine { get; set; }
-        public bool IsConsignment { get; set; }
+        public int RouteOfAdministrationId { get; set; }
+        public int MininumInventory { get; set; }
+        public bool IsUseDose { get; set; }
+        public bool IsManagedInBatches { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedBy { get; set; }
@@ -34,14 +33,14 @@ namespace UtNhanDrug_BE.Entities
         public int? UpdatedBy { get; set; }
 
         public virtual Brand Brand { get; set; }
-        public virtual Manager CreatedByNavigation { get; set; }
+        public virtual UserAccount CreatedByNavigation { get; set; }
         public virtual RouteOfAdministration RouteOfAdministration { get; set; }
         public virtual Shelf Shelf { get; set; }
-        public virtual StockStrengthUnit StockStrengthUnit { get; set; }
-        public virtual Manager UpdatedByNavigation { get; set; }
-        public virtual ICollection<Consignment> Consignments { get; set; }
+        public virtual UserAccount UpdatedByNavigation { get; set; }
+        public virtual ICollection<Batch> Batches { get; set; }
+        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         public virtual ICollection<ProductActiveSubstance> ProductActiveSubstances { get; set; }
-        public virtual ICollection<ProductUnit> ProductUnits { get; set; }
+        public virtual ICollection<ProductUnitPrice> ProductUnitPrices { get; set; }
         public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetails { get; set; }
     }
 }

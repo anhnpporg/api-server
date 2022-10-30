@@ -9,15 +9,15 @@ namespace UtNhanDrug_BE.Models.SamplePrescriptionDetailModel
         public int Id { get; set; }
         public SPDModel SamplePrescription { get; set; }
         public ViewProductModel Product { get; set; }
-        public int? Dose { get; set; }
-        public decimal? DoseBasedOnBodyWeight { get; set; }
-        public int? FrequencyPerDay { get; set; }
+        public double Dose { get; set; }
+        public int ProductUnitPriceId { get; set; }
+        public int? Frequency { get; set; }
         public string Use { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
-        public ViewModel CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public ViewModel? UpdatedBy { get; set; }
+        public int? UpdatedBy { get; set; }
     }
     public class SPDModel
     {

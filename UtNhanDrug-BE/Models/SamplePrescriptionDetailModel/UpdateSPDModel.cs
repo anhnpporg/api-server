@@ -3,9 +3,10 @@
     public class UpdateSPDModel
     {
         public int ProductId { get; set; }
-        public int? Dose { get; set; }
-        public decimal? DoseBasedOnBodyWeight { get; set; }
-        public int? FrequencyPerDay { get; set; }
+        public double Dose { get; set; }
+        public int ProductUnitPriceId { get; set; }
+        public int? Frequency { get; set; }
         public string Use { get; set; }
+        public int CreatedBy { get; set; }
     }
 }
