@@ -10,10 +10,10 @@ namespace UtNhanDrug_BE.Entities
         public int Id { get; set; }
         public int GoodsReceiptNoteId { get; set; }
         public string Note { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public int? UpdatedBy { get; set; }
 
         public virtual GoodsReceiptNote GoodsReceiptNote { get; set; }
-        public virtual Manager UpdatedByNavigation { get; set; }
+        public virtual UserAccount UpdatedByNavigation { get; set; }
     }
 }

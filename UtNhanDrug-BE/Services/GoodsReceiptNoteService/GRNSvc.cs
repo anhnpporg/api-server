@@ -28,13 +28,14 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             GoodsReceiptNote grn = new GoodsReceiptNote()
             {
                 GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
-                ConsignmentId = model.ConsignmentId,
+                BatchId = model.BatchId,
+                Invoice = model.Invoice,
                 SupplierId = model.SupplierId,
                 Quantity = model.Quantity,
-                UnitId = model.UnitId,
-                PurchasePrice = model.PurchasePrice,
+                Unit = model.Unit,
+                TotalPrice = model.TotalPrice,
                 ConvertedQuantity = model.ConvertedQuantity,
-                PurchasePriceBaseUnit = model.PurchasePriceBaseUnit,
+                BaseUnitPrice = model.BaseUnitPrice,
                 CreatedBy = userId
             };
             _context.GoodsReceiptNotes.Add(grn);
@@ -58,12 +59,12 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Id = x.GoodsReceiptNoteType.Id,
                     Name = x.GoodsReceiptNoteType.Name
                 },
-                Consignment = new ViewConsignment()
+                Batch = new ViewBatch()
                 {
-                    Id = x.Consignment.Id,
-                    Barcode = x.Consignment.Barcode,
-                    ManufacturingDate = x.Consignment.ManufacturingDate,
-                    ExpiryDate = x.Consignment.ExpiryDate
+                    Id = x.Batch.Id,
+                    Barcode = x.Batch.BatchBarcode,
+                    ManufacturingDate = x.Batch.ManufacturingDate,
+                    ExpiryDate = x.Batch.ExpiryDate
                 },
                 Supplier = new ViewModel()
                 {
@@ -71,18 +72,15 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Name = x.Supplier.Name
                 },
                 Quantity = x.Quantity,
-                Unit = new ViewModel()
-                {
-                    Id = x.Unit.Id,
-                    Name = x.Unit.Name
-                },
-                PurchasePrice = x.PurchasePrice,
+                Unit = x.Unit,
+                Invoice = x.Invoice,
                 ConvertedQuantity = x.ConvertedQuantity,
-                PurchasePriceBaseUnit = x.PurchasePriceBaseUnit,
+                TotalPrice =  x.TotalPrice,
+                BaseUnitPrice = x.BaseUnitPrice,
                 CreatedBy = new ViewModel()
                 {
-                    Id = x.CreatedByNavigation.UserAccount.Id,
-                    Name = x.CreatedByNavigation.UserAccount.FullName
+                    Id = x.CreatedByNavigation.Id,
+                    Name = x.CreatedByNavigation.FullName
                 },
                 CreatedAt = x.CreatedAt,
             }).ToListAsync();
@@ -103,12 +101,12 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         Id = c.GoodsReceiptNoteType.Id,
                         Name = c.GoodsReceiptNoteType.Name
                     },
-                    Consignment = new ViewConsignment()
+                    Batch = new ViewBatch()
                     {
-                        Id = c.Consignment.Id,
-                        Barcode = c.Consignment.Barcode,
-                        ManufacturingDate = c.Consignment.ManufacturingDate,
-                        ExpiryDate = c.Consignment.ExpiryDate
+                        Id = c.Batch.Id,
+                        Barcode = c.Batch.BatchBarcode,
+                        ManufacturingDate = c.Batch.ManufacturingDate,
+                        ExpiryDate = c.Batch.ExpiryDate
                     },
                     Supplier = new ViewModel()
                     {
@@ -116,18 +114,15 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         Name = c.Supplier.Name
                     },
                     Quantity = c.Quantity,
-                    Unit = new ViewModel()
-                    {
-                        Id = c.Unit.Id,
-                        Name = c.Unit.Name
-                    },
-                    PurchasePrice = c.PurchasePrice,
+                    Unit = c.Unit,
+                    Invoice = c.Invoice,
                     ConvertedQuantity = c.ConvertedQuantity,
-                    PurchasePriceBaseUnit = c.PurchasePriceBaseUnit,
+                    TotalPrice = c.TotalPrice,
+                    BaseUnitPrice = c.BaseUnitPrice,
                     CreatedBy = new ViewModel()
                     {
-                        Id = c.CreatedByNavigation.UserAccount.Id,
-                        Name = c.CreatedByNavigation.UserAccount.FullName
+                        Id = c.CreatedByNavigation.Id,
+                        Name = c.CreatedByNavigation.FullName
                     },
                     CreatedAt = c.CreatedAt,
                 };
@@ -149,7 +144,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 UpdateBy = new ViewModel()
                 {
                     Id = x.UpdatedByNavigation.Id,
-                    Name = x.UpdatedByNavigation.UserAccount.FullName
+                    Name = x.UpdatedByNavigation.FullName
                 }
 
             }).ToListAsync();
@@ -174,13 +169,14 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             if (c != null)
             {
                 c.GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId;
-                c.ConsignmentId = model.ConsignmentId;
+                c.BatchId = model.BatchId;
+                c.Invoice = model.Invoice;
                 c.SupplierId = model.SupplierId;
                 c.Quantity = model.Quantity;
-                c.UnitId = model.UnitId;
-                c.PurchasePrice = model.PurchasePrice;
+                c.Unit = model.Unit;
+                c.TotalPrice = model.TotalPrice;
                 c.ConvertedQuantity = model.ConvertedQuantity;
-                c.PurchasePriceBaseUnit = model.PurchasePriceBaseUnit;
+                c.BaseUnitPrice = model.BaseUnitPrice;
                 GoodsReceiptNoteLog g = new GoodsReceiptNoteLog()
                 {
                     GoodsReceiptNoteId = id,

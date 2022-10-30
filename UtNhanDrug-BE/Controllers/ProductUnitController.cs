@@ -16,8 +16,8 @@ namespace UtNhanDrug_BE.Controllers
     [Route("api/v1/product-units-management")]
     public class ProductUnitController : ControllerBase
     {
-        private readonly IProductUnitSvc _productUnitSvc;
-        public ProductUnitController(IProductUnitSvc productUnitSvc)
+        private readonly IProductUnitPriceSvc _productUnitSvc;
+        public ProductUnitController(IProductUnitPriceSvc productUnitSvc)
         {
             _productUnitSvc = productUnitSvc;
         }
@@ -47,7 +47,7 @@ namespace UtNhanDrug_BE.Controllers
         [Route("product-units")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateProductUnit([FromForm] CreateProductUnitModel model)
+        public async Task<ActionResult> CreateProductUnit([FromForm] CreateProductUnitPriceModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -60,7 +60,7 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _productUnitSvc.CreateProductUnit(model);
+            var result = await _productUnitSvc.CreateProductUnit(userId, model);
             if (!result) return BadRequest(new { message = "Create product unit fail" });
             return Ok(new { message = "create successfully" });
         }
@@ -68,7 +68,7 @@ namespace UtNhanDrug_BE.Controllers
         [Authorize]
         [HttpPut("product-units/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateProductUnit([FromRoute] int id, [FromForm] UpdateProductUnitModel model)
+        public async Task<ActionResult> UpdateProductUnit([FromRoute] int id, [FromForm] UpdateProductUnitPriceModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -83,7 +83,7 @@ namespace UtNhanDrug_BE.Controllers
             }
             var isExit = await _productUnitSvc.CheckProductUnit(id);
             if (!isExit) return NotFound(new { message = "Not found this product unit" });
-            var result = await _productUnitSvc.UpdateProductUnit(id, model);
+            var result = await _productUnitSvc.UpdateProductUnit(id, userId, model);
             if (!result) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "update succesfully" });
         }

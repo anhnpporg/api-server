@@ -13,19 +13,17 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public string Name { get; set; }
         public ViewModel Brand { get; set; }
         public ViewModel Shelf { get; set; }
-        public int MinimumQuantity { get; set; }
-        public decimal? StockStrength { get; set; }
-        public ViewModel? StockStrengthUnit { get; set; }
-        public ViewModel? RouteOfAdministration { get; set; }
-        public bool IsMedicine { get; set; }
-        public bool IsConsignment { get; set; }
+        public ViewModel RouteOfAdministration { get; set; }
+        public int MininumInventory { get; set; }
+        public bool IsUseDose { get; set; }
+        public bool IsManagedInBatches { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
-        public ViewModel CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public ViewModel UpdatedBy { get; set; }
+        public int? UpdatedBy { get; set; }
         public List<ViewModel> ActiveSubstances { get; set; }
-        public List<ViewProductUnitModel> ProductUnits { get; set; }
+        public List<ViewProductUnitPriceModel> ProductUnits { get; set; }
     }
 
 

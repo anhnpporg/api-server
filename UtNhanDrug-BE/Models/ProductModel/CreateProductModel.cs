@@ -16,25 +16,24 @@ namespace UtNhanDrug_BE.Models.ProductModel
         [Required]
         public int ShelfId { get; set; }
         [Required]
-        public int MinimumQuantity { get; set; }
-        public decimal? StockStrength { get; set; }
-        public int? StockStrengthUnitId { get; set; }
-        public int? RouteOfAdministrationId { get; set; }
+        public int MininumInventory { get; set; }
+        public int RouteOfAdministrationId { get; set; }
         [Required]
-        public bool IsMedicine { get; set; }
+        public bool IsUseDose { get; set; }
         [Required]
-        public bool IsConsignment { get; set; }
+        public bool IsManagedInBatches { get; set; }
         [Required]
         public List<int> ActiveSubstances { get; set; }
 
         // create base unit
-        [Required]
-        public int UnitId { get; set; }
-        [Required]
+        public string Unit { get; set; }
         public decimal? Price { get; set; }
+        public bool IsPackingSpecification { get; set; }
+        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
+        public int CreatedBy { get; set; }
 
         //create product unit (optional)
-        public List<ProductUnitModels> ProductUnits { get; set; }
+        public List<ProductUnitPriceModels> ProductUnits { get; set; }
     }
 
 }

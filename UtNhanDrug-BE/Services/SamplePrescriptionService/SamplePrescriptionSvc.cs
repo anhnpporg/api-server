@@ -68,15 +68,11 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
                 CreatedAt = b.CreatedAt,
                 CreatedBy = new ViewModel()
                 {
-                    Id = b.CreatedByNavigation.UserAccount.Id,
-                    Name = b.CreatedByNavigation.UserAccount.FullName
+                    Id = b.CreatedByNavigation.Id,
+                    Name = b.CreatedByNavigation.FullName
                 },
-                //UpdatedAt = b.UpdatedAt,
-                //UpdatedBy = new ViewModel()
-                //{
-                //    Id = b.UpdatedByNavigation.UserAccount.Id,
-                //    Name = b.UpdatedByNavigation.UserAccount.FullName
-                //},
+                UpdatedAt = b.UpdatedAt,
+                UpdatedBy = b.UpdatedBy,
                 IsActive = b.IsActive,
             }).ToListAsync();
 
@@ -101,15 +97,11 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
                     CreatedAt = sp.CreatedAt,
                     CreatedBy = new ViewModel()
                     {
-                        Id = sp.CreatedByNavigation.UserAccount.Id,
-                        Name = sp.CreatedByNavigation.UserAccount.FullName
+                        Id = sp.CreatedByNavigation.Id,
+                        Name = sp.CreatedByNavigation.FullName
                     },
-                    //UpdatedAt = sp.UpdatedAt,
-                    //UpdatedBy = new ViewModel()
-                    //{
-                    //    Id = sp.UpdatedByNavigation.UserAccount.Id,
-                    //    Name = sp.UpdatedByNavigation.UserAccount.FullName
-                    //}
+                    UpdatedAt = sp.UpdatedAt,
+                    UpdatedBy = sp.UpdatedBy
                 };
                 return result;
             }

@@ -33,6 +33,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<bool> CheckVerifyPassword(int userId, string token);
         Task<bool> CheckTimeVerifyPassword(int userId);
         Task<bool> UpdateEmail(int userId, string email);
+        Task<CustomerViewModel> GetCustomerProfile(int id);
         Task<PageResult<CustomerViewModel>> SearchCustomer(CustomerPagingRequest request);
 
     }

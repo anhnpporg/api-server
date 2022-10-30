@@ -97,7 +97,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                         select a;
             var data = await query.Select(p => new ViewProductModel()
             {
-                Id = p.ProductId,
+                Id = p.Product.Id,
                 DrugRegistrationNumber = p.Product.DrugRegistrationNumber,
                 Barcode = p.Product.Barcode,
                 Name = p.Product.Name,
@@ -111,32 +111,18 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                     Id = p.Product.Shelf.Id,
                     Name = p.Product.Shelf.Name
                 },
-                MinimumQuantity = p.Product.MinimumQuantity,
-                StockStrength = p.Product.StockStrength,
-                StockStrengthUnit = new ViewModel()
-                {
-                    Id = p.Product.StockStrengthUnit.Id,
-                    Name = p.Product.StockStrengthUnit.Name
-                },
+                MininumInventory = p.Product.MininumInventory,
                 RouteOfAdministration = new ViewModel()
                 {
                     Id = p.Product.RouteOfAdministration.Id,
                     Name = p.Product.RouteOfAdministration.Name
                 },
-                IsMedicine = p.Product.IsMedicine,
-                IsConsignment = p.Product.IsConsignment,
+                IsUseDose = p.Product.IsUseDose,
+                IsManagedInBatches = p.Product.IsManagedInBatches,
                 CreatedAt = p.Product.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.Product.CreatedByNavigation.UserAccount.Id,
-                    Name = p.Product.CreatedByNavigation.UserAccount.FullName
-                },
+                CreatedBy = p.Product.CreatedBy,
                 UpdatedAt = p.Product.UpdatedAt,
-                UpdatedBy = new ViewModel()
-                {
-                    Id = p.Product.UpdatedByNavigation.UserAccount.Id,
-                    Name = p.Product.UpdatedByNavigation.UserAccount.FullName
-                },
+                UpdatedBy = p.Product.UpdatedBy,
                 IsActive = p.Product.IsActive,
             }).ToListAsync();
 

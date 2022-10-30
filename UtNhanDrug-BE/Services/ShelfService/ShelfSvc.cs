@@ -66,7 +66,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 CreatedBy = new ViewModel()
                 {
                     Id = c.CreatedByNavigation.Id,
-                    Name = c.CreatedByNavigation.UserAccount.FullName
+                    Name = c.CreatedByNavigation.FullName
                 },
                 UpdatedAt = c.UpdatedAt,
             }).ToListAsync();
@@ -88,7 +88,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
                     CreatedBy = new ViewModel()
                     {
                         Id = shelf.CreatedByNavigation.Id,
-                        Name = shelf.CreatedByNavigation.UserAccount.FullName
+                        Name = shelf.CreatedByNavigation.FullName
                     },
                 };
                 return result;
@@ -118,26 +118,18 @@ namespace UtNhanDrug_BE.Services.ShelfService
                     Id = p.Shelf.Id,
                     Name = p.Shelf.Name
                 },
-                MinimumQuantity = p.MinimumQuantity,
-                StockStrength = p.StockStrength,
-                StockStrengthUnit = new ViewModel()
-                {
-                    Id = p.StockStrengthUnit.Id,
-                    Name = p.StockStrengthUnit.Name
-                },
+                MininumInventory = p.MininumInventory,
                 RouteOfAdministration = new ViewModel()
                 {
                     Id = p.RouteOfAdministration.Id,
                     Name = p.RouteOfAdministration.Name
                 },
-                IsMedicine = p.IsMedicine,
-                IsConsignment = p.IsConsignment,
+                IsUseDose = p.IsUseDose,
+                IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.CreatedByNavigation.UserAccount.Id,
-                    Name = p.CreatedByNavigation.UserAccount.FullName
-                },
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
             }).ToListAsync();
 

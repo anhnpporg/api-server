@@ -31,8 +31,8 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                 SamplePrescriptionId = model.SamplePrescriptionId,
                 ProductId = model.ProductId,
                 Dose = model.Dose,
-                DoseBasedOnBodyWeight = model.DoseBasedOnBodyWeight,
-                FrequencyPerDay = model.FrequencyPerDay,
+                ProductUnitPriceId = model.ProductUnitPriceId,
+                Frequency = model.Frequency,
                 Use = model.Use,
                 CreatedBy = userId,
             };
@@ -85,44 +85,28 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                         Id = b.Product.Shelf.Id,
                         Name = b.Product.Shelf.Name
                     },
-                    MinimumQuantity = b.Product.MinimumQuantity,
-                    StockStrength = b.Product.StockStrength,
-                    StockStrengthUnit = new ViewModel()
-                    {
-                        Id = b.Product.StockStrengthUnit.Id,
-                        Name = b.Product.StockStrengthUnit.Name
-                    },
+                    MininumInventory = b.Product.MininumInventory,
                     RouteOfAdministration = new ViewModel()
                     {
                         Id = b.Product.RouteOfAdministration.Id,
                         Name = b.Product.RouteOfAdministration.Name
                     },
-                    IsMedicine = b.Product.IsMedicine,
-                    IsConsignment = b.Product.IsConsignment,
+                    IsUseDose = b.Product.IsUseDose,
+                    IsManagedInBatches = b.Product.IsManagedInBatches,
                     CreatedAt = b.Product.CreatedAt,
-                    CreatedBy = new ViewModel()
-                    {
-                        Id = b.Product.CreatedByNavigation.Id,
-                        Name = b.Product.CreatedByNavigation.UserAccount.FullName
-                    },
+                    CreatedBy = b.Product.CreatedBy,
+                    UpdatedAt = b.Product.UpdatedAt,
+                    UpdatedBy = b.Product.UpdatedBy,
                     IsActive = b.Product.IsActive,
                 },
                 Dose = b.Dose,
-                DoseBasedOnBodyWeight = b.DoseBasedOnBodyWeight,
-                FrequencyPerDay = b.FrequencyPerDay,
                 Use = b.Use,
+                Frequency = b.Frequency,
+                ProductUnitPriceId = b.ProductUnitPriceId,
                 CreatedAt = b.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = b.CreatedByNavigation.UserAccount.Id,
-                    Name = b.CreatedByNavigation.UserAccount.FullName
-                },
-                //UpdatedAt = b.UpdatedAt,
-                //UpdatedBy = new ViewModel()
-                //{
-                //    Id = b.UpdatedByNavigation.UserAccount.Id,
-                //    Name = b.UpdatedByNavigation.UserAccount.FullName
-                //},
+                CreatedBy = b.CreatedBy,
+                UpdatedAt = b.UpdatedAt,
+                UpdatedBy = b.UpdatedBy,
                 IsActive = b.IsActive,
             }).ToListAsync();
 
@@ -160,45 +144,29 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                             Id = sp.Product.Shelf.Id,
                             Name = sp.Product.Shelf.Name
                         },
-                        MinimumQuantity = sp.Product.MinimumQuantity,
-                        StockStrength = sp.Product.StockStrength,
-                        StockStrengthUnit = new ViewModel()
-                        {
-                            Id = sp.Product.StockStrengthUnit.Id,
-                            Name = sp.Product.StockStrengthUnit.Name
-                        },
+                        MininumInventory = sp.Product.MininumInventory,
                         RouteOfAdministration = new ViewModel()
                         {
                             Id = sp.Product.RouteOfAdministration.Id,
                             Name = sp.Product.RouteOfAdministration.Name
                         },
-                        IsMedicine = sp.Product.IsMedicine,
-                        IsConsignment = sp.Product.IsConsignment,
+                        IsUseDose = sp.Product.IsUseDose,
+                        IsManagedInBatches = sp.Product.IsManagedInBatches,
                         CreatedAt = sp.Product.CreatedAt,
-                        CreatedBy = new ViewModel()
-                        {
-                            Id = sp.Product.CreatedByNavigation.Id,
-                            Name = sp.Product.CreatedByNavigation.UserAccount.FullName
-                        },
+                        CreatedBy = sp.Product.CreatedBy,
+                        UpdatedAt = sp.Product.UpdatedAt,
+                        UpdatedBy = sp.Product.UpdatedBy,
                         IsActive = sp.Product.IsActive,
                     },
                     Dose = sp.Dose,
-                    DoseBasedOnBodyWeight = sp.DoseBasedOnBodyWeight,
-                    FrequencyPerDay = sp.FrequencyPerDay,
+                    Frequency = sp.Frequency,
                     Use = sp.Use,
+                    ProductUnitPriceId = sp.ProductUnitPriceId,
                     IsActive = sp.IsActive,
                     CreatedAt = sp.CreatedAt,
-                    CreatedBy = new ViewModel()
-                    {
-                        Id = sp.CreatedByNavigation.UserAccount.Id,
-                        Name = sp.CreatedByNavigation.UserAccount.FullName
-                    },
-                    //UpdatedAt = sp.UpdatedAt,
-                    //UpdatedBy = new ViewModel()
-                    //{
-                    //    Id = sp.UpdatedByNavigation.UserAccount.Id,
-                    //    Name = sp.UpdatedByNavigation.UserAccount.FullName
-                    //}
+                    CreatedBy = sp.CreatedBy,
+                    UpdatedAt = sp.UpdatedAt,
+                    UpdatedBy = sp.UpdatedBy
                 };
                 return result;
             }
@@ -212,10 +180,10 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
             {
                 spd.ProductId = model.ProductId;
                 spd.Dose = model.Dose;
-                spd.DoseBasedOnBodyWeight = model.DoseBasedOnBodyWeight;
-                spd.FrequencyPerDay = model.FrequencyPerDay;
                 spd.Use = model.Use;
+                spd.Frequency = model.Frequency;
                 spd.UpdatedBy = userId;
+                spd.ProductUnitPriceId = model.ProductUnitPriceId;
                 await _context.SaveChangesAsync();
                 return true;
             }

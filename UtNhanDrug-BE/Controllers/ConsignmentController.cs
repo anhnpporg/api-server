@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Models.ConsignmentModel;
-using UtNhanDrug_BE.Services.ConsignmentService;
+using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Services.BatchService;
 
 namespace UtNhanDrug_BE.Controllers
 {
@@ -16,8 +16,8 @@ namespace UtNhanDrug_BE.Controllers
     [Route("api/v1/consignment-management")]
     public class ConsignmentController : ControllerBase
     {
-        private readonly IConsignmentSvc _consignmentSvc;
-        public ConsignmentController(IConsignmentSvc consignmentSvc)
+        private readonly IBatchSvc _consignmentSvc;
+        public ConsignmentController(IBatchSvc consignmentSvc)
         {
             _consignmentSvc = consignmentSvc;
         }
@@ -28,7 +28,7 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetAllConsignment()
         {
-            var disease = await _consignmentSvc.GetAllConsignment();
+            var disease = await _consignmentSvc.GetAllBatch();
             return Ok(disease);
         }
 
@@ -38,7 +38,7 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetConsignmentById([FromRoute] int id)
         {
-            var disease = await _consignmentSvc.GetConsignmentById(id);
+            var disease = await _consignmentSvc.GetBatchById(id);
             if (disease == null) return NotFound(new { message = "Not found this consignment" });
             return Ok(disease);
         }
@@ -47,7 +47,7 @@ namespace UtNhanDrug_BE.Controllers
         [Route("consignments")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateConsignment([FromForm] CreateConsignmentModel model)
+        public async Task<ActionResult> CreateConsignment([FromForm] CreateBatchModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -60,7 +60,7 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _consignmentSvc.CreateConsignment(userId, model);
+            var result = await _consignmentSvc.CreateBatch(userId, model);
             if (!result) return BadRequest(new { message = "Create consignment fail" });
             return Ok(new { message = "create successfully" });
         }
@@ -68,7 +68,7 @@ namespace UtNhanDrug_BE.Controllers
         [Authorize]
         [HttpPut("consignments/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateConsignment([FromRoute] int id, [FromForm] UpdateConsignmentModel model)
+        public async Task<ActionResult> UpdateConsignment([FromRoute] int id, [FromForm] UpdateBatchModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -81,9 +81,9 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _consignmentSvc.CheckConsignment(id);
+            var isExit = await _consignmentSvc.CheckBatch(id);
             if (!isExit) return NotFound(new { message = "Not found this consignment" });
-            var result = await _consignmentSvc.UpdateConsignment(id, userId, model);
+            var result = await _consignmentSvc.UpdateBatch(id, userId, model);
             if (!result) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "update succesfully" });
         }
@@ -105,9 +105,9 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _consignmentSvc.CheckConsignment(id);
+            var isExit = await _consignmentSvc.CheckBatch(id);
             if (!isExit) return NotFound(new { message = "Not found this consignment" });
-            var result = await _consignmentSvc.DeleteConsignment(id, userId);
+            var result = await _consignmentSvc.DeleteBatch(id, userId);
             if (!result) return BadRequest(new { message = "Delete fail" });
             return Ok(new { message = "Delete successfully" });
         }

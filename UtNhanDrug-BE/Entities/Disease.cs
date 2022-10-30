@@ -20,8 +20,8 @@ namespace UtNhanDrug_BE.Entities
         public DateTime? UpdatedAt { get; set; }
         public int? UpdatedBy { get; set; }
 
-        public virtual Manager CreatedByNavigation { get; set; }
-        public virtual Manager UpdatedByNavigation { get; set; }
+        public virtual UserAccount CreatedByNavigation { get; set; }
+        public virtual UserAccount UpdatedByNavigation { get; set; }
         public virtual ICollection<SamplePrescription> SamplePrescriptions { get; set; }
     }
 }

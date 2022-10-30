@@ -36,12 +36,10 @@ namespace UtNhanDrug_BE.Services.ProductService
                 Barcode = "####",
                 BrandId = model.BrandId,
                 ShelfId = model.ShelfId,
-                MinimumQuantity = model.MinimumQuantity,
-                StockStrength = model.StockStrength,
-                StockStrengthUnitId = model.StockStrengthUnitId,
+                MininumInventory = model.MininumInventory,
                 RouteOfAdministrationId = model.RouteOfAdministrationId,
-                IsMedicine = model.IsMedicine,
-                IsConsignment = model.IsConsignment,
+                IsUseDose = model.IsUseDose,
+                IsManagedInBatches = model.IsManagedInBatches,
                 CreatedBy = userId,
             };
             _context.Products.Add(product);
@@ -50,27 +48,31 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 product.Barcode = GenaralBarcode.CreateEan13(product.Id+"");
                 await _context.SaveChangesAsync();
-                ProductUnit pu = new ProductUnit()
+                ProductUnitPrice pu = new ProductUnitPrice()
                 {
                     ProductId = product.Id,
-                    UnitId = model.UnitId,
+                    Unit = model.Unit,
                     ConversionValue = 1,
                     Price = model.Price,
-                    IsBaseUnit = true
+                    IsBaseUnit = true,
+                    IsPackingSpecification = model.IsPackingSpecification,
+                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit
                 };
-                _context.ProductUnits.Add(pu);
+                _context.ProductUnitPrices.Add(pu);
 
                 foreach (var productUnit in model.ProductUnits)
                 {
-                    ProductUnit x = new ProductUnit()
+                    ProductUnitPrice x = new ProductUnitPrice()
                     {
                         ProductId = product.Id,
-                        UnitId = productUnit.UnitId,
+                        Unit = productUnit.Unit,
                         ConversionValue = productUnit.ConversionValue,
                         Price = productUnit.Price,
-                        IsBaseUnit = false
+                        IsBaseUnit = false,
+                        IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
+                        IsPackingSpecification = productUnit.IsPackingSpecification,   
                     };
-                    _context.ProductUnits.Add(x);
+                    _context.ProductUnitPrices.Add(x);
                 }
 
                 foreach (var p in model.ActiveSubstances)
@@ -123,26 +125,18 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Id = p.Shelf.Id,
                     Name = p.Shelf.Name
                 },
-                MinimumQuantity = p.MinimumQuantity,
-                StockStrength = p.StockStrength,
-                StockStrengthUnit = new ViewModel()
-                {
-                    Id = p.StockStrengthUnit.Id,
-                    Name = p.StockStrengthUnit.Name
-                },
+                MininumInventory = p.MininumInventory,
                 RouteOfAdministration = new ViewModel()
                 {
                     Id = p.RouteOfAdministration.Id,
                     Name = p.RouteOfAdministration.Name
                 },
-                IsMedicine = p.IsMedicine,
-                IsConsignment = p.IsConsignment,
+                IsUseDose = p.IsUseDose,
+                IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.CreatedByNavigation.Id,
-                    Name = p.CreatedByNavigation.UserAccount.FullName
-                },
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
             }).ToListAsync();
 
@@ -172,26 +166,18 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Id = p.Shelf.Id,
                     Name = p.Shelf.Name
                 },
-                MinimumQuantity = p.MinimumQuantity,
-                StockStrength = p.StockStrength,
-                StockStrengthUnit = new ViewModel()
-                {
-                    Id = p.StockStrengthUnit.Id,
-                    Name = p.StockStrengthUnit.Name
-                },
+                MininumInventory = p.MininumInventory,
                 RouteOfAdministration = new ViewModel()
                 {
                     Id = p.RouteOfAdministration.Id,
                     Name = p.RouteOfAdministration.Name
                 },
-                IsMedicine = p.IsMedicine,
-                IsConsignment = p.IsConsignment,
+                IsUseDose = p.IsUseDose,
+                IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.CreatedByNavigation.Id,
-                    Name = p.CreatedByNavigation.UserAccount.FullName
-                },
+                CreatedBy = p.CreatedBy,
+                UpdatedAt = p.UpdatedAt,
+                UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
             }).ToListAsync();
             //paging
@@ -232,18 +218,6 @@ namespace UtNhanDrug_BE.Services.ProductService
             return data;
         }
 
-        public async Task<List<ViewModel>> GetListStockStrengthUnits()
-        {
-            var query = from x in _context.StockStrengthUnits
-                        select x;
-            var data = await query.Select(x => new ViewModel()
-            {
-                Id = x.Id,
-                Name = x.Name
-            }).ToListAsync();
-            return data;
-        }
-
         public async Task<ViewProductModel> GetProductById(int id)
         {   
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
@@ -265,26 +239,18 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Id = product.Shelf.Id,
                         Name = product.Shelf.Name
                     },
-                    MinimumQuantity = product.MinimumQuantity,
-                    StockStrength = product.StockStrength,
-                    StockStrengthUnit = new ViewModel()
-                    {
-                        Id = product.StockStrengthUnit.Id,
-                        Name = product.StockStrengthUnit.Name
-                    },
+                    MininumInventory = product.MininumInventory,
                     RouteOfAdministration = new ViewModel()
                     {
                         Id = product.RouteOfAdministration.Id,
                         Name = product.RouteOfAdministration.Name
                     },
-                    IsMedicine = product.IsMedicine,
-                    IsConsignment = product.IsConsignment,
+                    IsUseDose = product.IsUseDose,
+                    IsManagedInBatches = product.IsManagedInBatches,
                     CreatedAt = product.CreatedAt,
-                    CreatedBy = new ViewModel()
-                    {
-                        Id = product.CreatedByNavigation.UserAccount.Id,
-                        Name = product.CreatedByNavigation.UserAccount.FullName
-                    },
+                    CreatedBy = product.CreatedBy,
+                    UpdatedAt = product.UpdatedAt,
+                    UpdatedBy = product.UpdatedBy,
                     IsActive = product.IsActive,
                 };
                 return result;
@@ -301,13 +267,10 @@ namespace UtNhanDrug_BE.Services.ProductService
                 product.Name = model.Name;
                 product.BrandId = model.BrandId;
                 product.ShelfId = model.ShelfId;
-                product.MinimumQuantity = model.MinimumQuantity;
-                product.StockStrength = model.StockStrength;
-                product.StockStrengthUnitId = model.StockStrengthUnitId;
+                product.MininumInventory = model.MininumInventory;
                 product.RouteOfAdministrationId = model.RouteOfAdministrationId;
-                product.IsMedicine = model.IsMedicine;
-                product.IsConsignment = model.IsConsignment;
-                product.IsActive = model.IsActive;
+                product.IsManagedInBatches = model.IsManagedInBatches;
+                product.IsUseDose = model.IsUseDose;
                 product.UpdatedAt = DateTime.Now;
                 product.UpdatedBy = userId;
 

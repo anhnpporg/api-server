@@ -11,6 +11,6 @@ namespace UtNhanDrug_BE.Models.SupplierModel
         public DateTime CreatedAt { get; set; }
         public ViewModel CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public ViewModel UpdatedBy { get; set; }
+        public int? UpdatedBy { get; set; }
     }
 }

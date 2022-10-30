@@ -1,12 +1,13 @@
 ﻿using System;
 
-namespace UtNhanDrug_BE.Models.ConsignmentModel
+namespace UtNhanDrug_BE.Models.BatchModel
 {
-    public class CreateConsignmentModel
+    public class CreateBatchModel
     {
+        public string BatchBarcode { get; set; }
         public int ProductId { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
-        public bool? IsActive { get; set; }
+        public int CreatedBy { get; set; }
     }
 }
