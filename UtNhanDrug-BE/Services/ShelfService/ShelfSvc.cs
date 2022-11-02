@@ -127,7 +127,11 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 IsUseDose = p.IsUseDose,
                 IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = p.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.Id,
+                    Name = p.CreatedByNavigation.FullName
+                },
                 UpdatedAt = p.UpdatedAt,
                 UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,

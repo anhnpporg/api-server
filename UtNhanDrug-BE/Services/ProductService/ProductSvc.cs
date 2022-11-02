@@ -8,6 +8,7 @@ using System;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.PagingModel;
+using UtNhanDrug_BE.Models.BatchModel;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -56,7 +57,8 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Price = model.Price,
                     IsBaseUnit = true,
                     IsPackingSpecification = model.IsPackingSpecification,
-                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit
+                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
+                    CreatedBy = userId
                 };
                 _context.ProductUnitPrices.Add(pu);
 
@@ -70,7 +72,8 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Price = productUnit.Price,
                         IsBaseUnit = false,
                         IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
-                        IsPackingSpecification = productUnit.IsPackingSpecification,   
+                        IsPackingSpecification = productUnit.IsPackingSpecification, 
+                        CreatedBy = userId
                     };
                     _context.ProductUnitPrices.Add(x);
                 }
@@ -107,9 +110,9 @@ namespace UtNhanDrug_BE.Services.ProductService
         {
             var query = from p in _context.Products
                         select p;
-            
 
-            var result = await query.Select( p => new ViewProductModel()
+
+            var result = await query.Select(p => new ViewProductModel()
             {
                 Id = p.Id,
                 DrugRegistrationNumber = p.DrugRegistrationNumber,
@@ -134,7 +137,11 @@ namespace UtNhanDrug_BE.Services.ProductService
                 IsUseDose = p.IsUseDose,
                 IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = p.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.Id,
+                    Name = p.CreatedByNavigation.FullName
+                },
                 UpdatedAt = p.UpdatedAt,
                 UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
@@ -143,7 +150,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             return result;
         }
 
-        public async Task<PageResult<ViewProductModel>> GetProductPaging(ProductPagingRequest request)
+        public async Task<PageResult<ViewProductModel>> GetProductFilter(ProductFilterRequest request)
         {
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
@@ -175,7 +182,11 @@ namespace UtNhanDrug_BE.Services.ProductService
                 IsUseDose = p.IsUseDose,
                 IsManagedInBatches = p.IsManagedInBatches,
                 CreatedAt = p.CreatedAt,
-                CreatedBy = p.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.CreatedByNavigation.Id,
+                    Name = p.CreatedByNavigation.FullName
+                },
                 UpdatedAt = p.UpdatedAt,
                 UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
@@ -220,42 +231,44 @@ namespace UtNhanDrug_BE.Services.ProductService
 
         public async Task<ViewProductModel> GetProductById(int id)
         {   
-            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
-            if (product != null)
+            var query = from p in _context.Products
+                        where p.Id == id
+                        select  p ;
+            var data = await query.Select(x => new ViewProductModel()
             {
-                ViewProductModel result = new ViewProductModel()
+                Id = x.Id,
+                DrugRegistrationNumber = x.DrugRegistrationNumber,
+                Barcode = x.Barcode,
+                Name = x.Name,
+                Brand = new ViewModel()
                 {
-                    Id = product.Id,
-                    DrugRegistrationNumber = product.DrugRegistrationNumber,
-                    Barcode = product.Barcode,
-                    Name = product.Name,
-                    Brand = new ViewModel()
-                    {
-                        Id = product.Brand.Id,
-                        Name = product.Brand.Name
-                    },
-                    Shelf = new ViewModel()
-                    {
-                        Id = product.Shelf.Id,
-                        Name = product.Shelf.Name
-                    },
-                    MininumInventory = product.MininumInventory,
-                    RouteOfAdministration = new ViewModel()
-                    {
-                        Id = product.RouteOfAdministration.Id,
-                        Name = product.RouteOfAdministration.Name
-                    },
-                    IsUseDose = product.IsUseDose,
-                    IsManagedInBatches = product.IsManagedInBatches,
-                    CreatedAt = product.CreatedAt,
-                    CreatedBy = product.CreatedBy,
-                    UpdatedAt = product.UpdatedAt,
-                    UpdatedBy = product.UpdatedBy,
-                    IsActive = product.IsActive,
-                };
-                return result;
-            }
-            return null;
+                    Id = x.Brand.Id,
+                    Name = x.Brand.Name
+                },
+                Shelf = new ViewModel()
+                {
+                    Id = x.Shelf.Id,
+                    Name = x.Shelf.Name
+                },
+                MininumInventory = x.MininumInventory,
+                RouteOfAdministration = new ViewModel()
+                {
+                    Id = x.RouteOfAdministration.Id,
+                    Name = x.RouteOfAdministration.Name
+                },
+                IsUseDose = x.IsUseDose,
+                IsManagedInBatches = x.IsManagedInBatches,
+                CreatedAt = x.CreatedAt,
+                CreatedBy = new ViewModel()
+                {
+                    Id = x.CreatedByNavigation.Id,
+                    Name = x.CreatedByNavigation.FullName
+                },
+                UpdatedAt = x.UpdatedAt,
+                UpdatedBy = x.UpdatedBy,
+                IsActive = x.IsActive,
+            }).FirstOrDefaultAsync();
+            return data;
         }
 
         public async Task<bool> UpdateProduct(int id, int userId, UpdateProductModel model)
@@ -279,5 +292,74 @@ namespace UtNhanDrug_BE.Services.ProductService
             }
             return false;
         }
+
+        public async Task<List<ViewBatchModel>> GetBatchByProductId(int id)
+        {
+            var query = from x in _context.Batches
+                        where x.ProductId == id
+                        select x;
+            var data = await query.Select(b => new ViewBatchModel()
+            {
+                Id = b.Id,
+                BatchBarcode = b.BatchBarcode,
+                Product = new ViewModel()
+                {
+                    Id = b.Product.Id,
+                    Name = b.Product.Name
+                },
+                ManufacturingDate = b.ManufacturingDate,
+                ExpiryDate = b.ExpiryDate,
+                IsActive = b.IsActive,
+                CreatedAt = b.CreatedAt,
+                CreatedBy = new ViewModel()
+                {
+                    Id = b.CreatedByNavigation.Id,
+                    Name = b.CreatedByNavigation.FullName
+                },
+            }).ToListAsync();
+            return data;
+        }
+
+        //public async Task<PageResult<PageResult<ViewProductModel>>> GetProductPaging(ProductPagingRequest request)
+        //{
+        //    var query = from p in _context.Products
+                        
+        //    //filter
+        //    if (!string.IsNullOrEmpty(request.keyword))
+        //        query = query.Where(x => x.c.CampaignName.Contains(request.keyword));
+
+        //    if (request.DonationCaseId != null && request.DonationCaseId != 0)
+        //    {
+        //        query = query.Where(p => p.dc.DonationCaseId == request.DonationCaseId);
+        //    }
+        //    //paging
+        //    int totalRow = await query.CountAsync();
+
+        //    var data = await query.Skip((request.PageIndex - 1) * request.PageSize)
+        //        .Take(request.PageSize)
+        //        .Select(x => new CampaignViewModel()
+        //        {
+        //            CampaignId = x.c.CampaignId,
+        //            CampaignName = x.c.CampaignName,
+        //            CardNumber = x.c.CardNumber,
+        //            DateCreate = (DateTime)x.c.DateCreate,
+        //            Description = x.c.Description,
+        //            DonationCaseId = (int)x.c.DonationCaseId,
+        //            Image = _storageService.GetFileUrl(x.c.Image),
+        //            OrganizationId = (int)x.c.OrganizationId,
+        //            Title = x.c.Title,
+        //            Goal = (double)x.c.Goal
+        //        }).ToListAsync();
+
+        //    // select and projection
+        //    var pagedResult = new PageResult<ViewProductModel>()
+        //    {
+        //        TotalRecord = totalRow,
+        //        PageSize = request.PageSize,
+        //        PageIndex = request.PageIndex,
+        //        Items = data
+        //    };
+        //    return pagedResult;
+        //}
     }
 }

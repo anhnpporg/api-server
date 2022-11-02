@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Entities;
 using UtNhanDrug_BE.Models.CustomerModel;
 using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.PagingModel;
@@ -19,7 +20,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<bool> UpdateStaffProfile(int userId, UpdateStaffModel model);
         Task<bool> ChangePassword(int userId, ChangePasswordModel model);
         //Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model);
-        Task<bool> CreateCustomer(CreateCustomerModel model);
+        Task<Customer> CreateCustomer(int UserId, CreateCustomerModel model);
         Task<bool> CreateStaff(CreateStaffModel model);
         Task<object> GetUserProfile(int userId);
         Task<bool> CheckUser(int userId);

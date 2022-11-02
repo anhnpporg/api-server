@@ -14,8 +14,8 @@ namespace UtNhanDrug_BE.Entities
 
         public int Id { get; set; }
         public int GoodsReceiptNoteTypeId { get; set; }
-        public int BatchId { get; set; }
-        public int? Invoice { get; set; }
+        public int? BatchId { get; set; }
+        public int? InvoiceId { get; set; }
         public int? SupplierId { get; set; }
         public int Quantity { get; set; }
         public string Unit { get; set; }
@@ -28,7 +28,7 @@ namespace UtNhanDrug_BE.Entities
         public virtual Batch Batch { get; set; }
         public virtual UserAccount CreatedByNavigation { get; set; }
         public virtual GoodsReceiptNoteType GoodsReceiptNoteType { get; set; }
-        public virtual Invoice InvoiceNavigation { get; set; }
+        public virtual Invoice Invoice { get; set; }
         public virtual Supplier Supplier { get; set; }
         public virtual ICollection<GoodsReceiptNoteLog> GoodsReceiptNoteLogs { get; set; }
     }

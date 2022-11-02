@@ -348,7 +348,7 @@ namespace UtNhanDrug_BE.Entities
 
                 entity.Property(e => e.StatusDescription)
                     .IsRequired()
-                    .HasMaxLength(10)
+                    .HasMaxLength(20)
                     .IsUnicode(false)
                     .HasColumnName("status_description");
             });
@@ -375,7 +375,7 @@ namespace UtNhanDrug_BE.Entities
                     .HasColumnName("unit");
 
                 entity.Property(e => e.UnitPrice)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("unit_price");
 
                 entity.HasOne(d => d.Batch)
@@ -415,7 +415,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.Id).HasColumnName("id");
 
                 entity.Property(e => e.BaseUnitPrice)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("base_unit_price");
 
                 entity.Property(e => e.BatchId).HasColumnName("batch_id");
@@ -431,14 +431,14 @@ namespace UtNhanDrug_BE.Entities
 
                 entity.Property(e => e.GoodsReceiptNoteTypeId).HasColumnName("goods_receipt_note_type_id");
 
-                entity.Property(e => e.Invoice).HasColumnName("invoice");
+                entity.Property(e => e.InvoiceId).HasColumnName("invoice_id");
 
                 entity.Property(e => e.Quantity).HasColumnName("quantity");
 
                 entity.Property(e => e.SupplierId).HasColumnName("supplier_id");
 
                 entity.Property(e => e.TotalPrice)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("total_price");
 
                 entity.Property(e => e.Unit)
@@ -464,9 +464,9 @@ namespace UtNhanDrug_BE.Entities
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__goods_rec__goods__123EB7A3");
 
-                entity.HasOne(d => d.InvoiceNavigation)
+                entity.HasOne(d => d.Invoice)
                     .WithMany(p => p.GoodsReceiptNotes)
-                    .HasForeignKey(d => d.Invoice)
+                    .HasForeignKey(d => d.InvoiceId)
                     .HasConstraintName("FK__goods_rec__invoi__14270015");
 
                 entity.HasOne(d => d.Supplier)
@@ -610,7 +610,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.ProductId).HasColumnName("product_id");
 
                 entity.Property(e => e.TotalPrice)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("total_price");
 
                 entity.Property(e => e.UnitDose).HasColumnName("unit_dose");
@@ -774,7 +774,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.IsPackingSpecification).HasColumnName("is_packing_specification");
 
                 entity.Property(e => e.Price)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("price");
 
                 entity.Property(e => e.ProductId).HasColumnName("product_id");

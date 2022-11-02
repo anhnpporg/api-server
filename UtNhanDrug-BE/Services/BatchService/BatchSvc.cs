@@ -81,6 +81,11 @@ namespace UtNhanDrug_BE.Services.BatchService
                     Name = x.CreatedByNavigation.FullName
                 },
             }).ToListAsync();
+            foreach(var x in data)
+            {
+                int currentQuantity = await GetCurrentQuantity(x.Id);
+                x.CurrentQuantity = currentQuantity;
+            }
             return data;
         }
 
@@ -127,6 +132,24 @@ namespace UtNhanDrug_BE.Services.BatchService
                 return true;
             }
             return false;
+        }
+
+
+
+
+
+        //quantity
+        private async Task<int> GetCurrentQuantity(int batchId)
+        {
+            var query = from g in _context.GoodsReceiptNotes
+                        where g.BatchId == batchId
+                        select g;
+            var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
+            var query2 = from g in _context.GoodsIssueNotes
+                         where g.BatchId == batchId
+                         select g;
+            var saledQuantity = await query2.Select(x => x.ConvertedQuantity).SumAsync();
+            return totalQuantity-saledQuantity;
         }
     }
 }

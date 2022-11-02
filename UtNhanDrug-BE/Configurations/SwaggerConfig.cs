@@ -28,7 +28,9 @@ namespace UtNhanDrug_BE.Configurations
                     {
                         Name = "UtNhanDrug"
                     }
+
                 });
+                //c.OrderActionsBy((apiDesc) => $"{apiDesc.RelativePath}");
 
                 c.DescribeAllParametersInCamelCase();
                 // Set the comments path for the Swagger JSON and UI.

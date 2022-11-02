@@ -2,9 +2,8 @@
 
 namespace UtNhanDrug_BE.Models.ProductModel
 {
-    public class ProductPagingRequest : PagingRequestBase
+    public class ProductFilterRequest : PagingRequestBase
     {
-        public int PageIndex { get; set; }
         public string SearchValue { get; set; }
     }
 }

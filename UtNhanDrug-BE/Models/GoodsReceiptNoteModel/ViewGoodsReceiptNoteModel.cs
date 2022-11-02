@@ -10,7 +10,7 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
         public int Id { get; set; }
         public ViewModel GoodsReceiptNoteType { get; set; }
         public ViewBatch Batch { get; set; }
-        public int? Invoice { get; set; }
+        public int? InvoiceId { get; set; }
         public ViewModel? Supplier { get; set; }
         public int Quantity { get; set; }
         public string Unit { get; set; }

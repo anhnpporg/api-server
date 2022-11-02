@@ -13,41 +13,41 @@ namespace UtNhanDrug_BE.Controllers
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/consignment-management")]
-    public class ConsignmentController : ControllerBase
+    [Route("api/v1/batch-management")]
+    public class BatchController : ControllerBase
     {
         private readonly IBatchSvc _consignmentSvc;
-        public ConsignmentController(IBatchSvc consignmentSvc)
+        public BatchController(IBatchSvc consignmentSvc)
         {
             _consignmentSvc = consignmentSvc;
         }
 
         [Authorize]
-        [Route("consignments")]
+        [Route("batches")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetAllConsignment()
+        public async Task<ActionResult> GetAllbatches()
         {
             var disease = await _consignmentSvc.GetAllBatch();
             return Ok(disease);
         }
 
         [Authorize]
-        [Route("consignments/{id}")]
+        [Route("batches/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetConsignmentById([FromRoute] int id)
+        public async Task<ActionResult> GetbatchById([FromRoute] int id)
         {
             var disease = await _consignmentSvc.GetBatchById(id);
-            if (disease == null) return NotFound(new { message = "Not found this consignment" });
+            if (disease == null) return NotFound(new { message = "Not found this batch" });
             return Ok(disease);
         }
 
         [Authorize]
-        [Route("consignments")]
+        [Route("batches")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateConsignment([FromForm] CreateBatchModel model)
+        public async Task<ActionResult> Createbatch([FromForm] CreateBatchModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -61,14 +61,14 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _consignmentSvc.CreateBatch(userId, model);
-            if (!result) return BadRequest(new { message = "Create consignment fail" });
+            if (!result) return BadRequest(new { message = "Create batch fail" });
             return Ok(new { message = "create successfully" });
         }
 
         [Authorize]
-        [HttpPut("consignments/{id}")]
+        [HttpPut("batches/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateConsignment([FromRoute] int id, [FromForm] UpdateBatchModel model)
+        public async Task<ActionResult> Updatebatch([FromRoute] int id, [FromForm] UpdateBatchModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -82,16 +82,16 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this consignment" });
+            if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.UpdateBatch(id, userId, model);
             if (!result) return BadRequest(new { message = "Update fail" });
             return Ok(new { message = "update succesfully" });
         }
         
         [Authorize]
-        [HttpPatch("consignments/{id}")]
+        [HttpPatch("batches/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> DeleteConsignment([FromRoute] int id)
+        public async Task<ActionResult> Deletebatch([FromRoute] int id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -106,7 +106,7 @@ namespace UtNhanDrug_BE.Controllers
             }
 
             var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this consignment" });
+            if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.DeleteBatch(id, userId);
             if (!result) return BadRequest(new { message = "Delete fail" });
             return Ok(new { message = "Delete successfully" });

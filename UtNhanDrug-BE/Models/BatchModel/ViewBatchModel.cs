@@ -8,6 +8,7 @@ namespace UtNhanDrug_BE.Models.BatchModel
         public int Id { get; set; }
         public string BatchBarcode { get; set; }
         public ViewModel Product { get; set; }
+        public int CurrentQuantity { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public bool? IsActive { get; set; }

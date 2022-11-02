@@ -53,6 +53,8 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetGRNById([FromRoute] int id)
         {
             var result = await _grnSvc.GetGoodsReceiptNoteById(id);
+            var notes = await _grnSvc.GetListNoteLog(id);
+            result.Note = notes;
             if (result == null) return NotFound(new { message = "Not found this goods receipt note" });
             return Ok(result);
         }

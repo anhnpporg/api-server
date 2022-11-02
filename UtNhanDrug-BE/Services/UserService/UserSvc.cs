@@ -183,7 +183,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         //    return false;
         //}
 
-        public async Task<bool> CreateCustomer(CreateCustomerModel model)
+        public async Task<Customer> CreateCustomer(int UserId, CreateCustomerModel model)
         {
             var isExits = await FindCustomer(model.PhoneNumber);
             if (isExits != true)
@@ -194,13 +194,15 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     var customer = new Customer()
                     {
                         PhoneNumber = model.PhoneNumber,
+                        FullName = model.FullName,
+                        CreatedBy = userId
                     };
                     _context.Customers.Add(customer);
                     var result = await _context.SaveChangesAsync();
-                    if (result != 0) return true;
+                    if (result != 0) return customer;
                 }
             }
-            return false;
+            return null;
 
         }
 
