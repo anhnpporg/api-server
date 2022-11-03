@@ -113,9 +113,7 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionService
             var sp = await _context.SamplePrescriptions.FirstOrDefaultAsync(x => x.Id == id);
             if (sp != null)
             {
-                sp.DiseaseId = model.DiseaseId;
                 sp.Name = model.Name;
-                sp.IsActive = model.IsActive;
                 sp.UpdatedAt = DateTime.Now;
                 sp.UpdatedBy = userId;
                 await _context.SaveChangesAsync();

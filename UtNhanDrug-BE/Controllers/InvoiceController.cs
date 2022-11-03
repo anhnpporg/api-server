@@ -22,6 +22,57 @@ namespace UtNhanDrug_BE.Controllers
             _invoiceSvc = invoiceSvc;
         }
 
+
+        [Authorize]
+        [Route("invoices/{id}")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceById([FromRoute] int id)
+        {
+            var result = await _invoiceSvc.ViewInvoiceById(id);
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
+        [Route("invoices")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetAllInvoice()
+        {
+            var result = await _invoiceSvc.GetAllInvoice();
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
+        [Route("users/{id}/invoices")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceByUserId([FromRoute] int id)
+        {
+            var result = await _invoiceSvc.GetInvoiceByUserId(id);
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
+        [Route("customers/{id}/invoices")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceByCustomerId([FromRoute] int id)
+        {
+            var result = await _invoiceSvc.GetInvoiceCustomerId(id);
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
+        [Route("invoices/{id}/invoice-detail")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceDetailByInvoiceId([FromRoute] int id)
+        {
+            var result = await _invoiceSvc.ViewOrderDetailByInvoiceId(id);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [Authorize]
         [Route("invoices")]
         [HttpPost]
@@ -33,15 +84,15 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _invoiceSvc.CreateInvoice(userId, model);
-            if (!result) return BadRequest(new { message = "Create invoice fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
+
     }
 }

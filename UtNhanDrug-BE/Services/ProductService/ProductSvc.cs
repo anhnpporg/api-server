@@ -34,7 +34,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 DrugRegistrationNumber = model.DrugRegistrationNumber,
                 Name = model.Name,
-                Barcode = "####",
+                Barcode = model.DrugRegistrationNumber,
                 BrandId = model.BrandId,
                 ShelfId = model.ShelfId,
                 MininumInventory = model.MininumInventory,
@@ -47,7 +47,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var result = await _context.SaveChangesAsync();
             if (result > 0)
             {
-                product.Barcode = GenaralBarcode.CreateEan13(product.Id+"");
+                product.Barcode = GenaralBarcode.CreateEan13Product(product.Id+"");
                 await _context.SaveChangesAsync();
                 ProductUnitPrice pu = new ProductUnitPrice()
                 {
@@ -62,31 +62,37 @@ namespace UtNhanDrug_BE.Services.ProductService
                 };
                 _context.ProductUnitPrices.Add(pu);
 
-                foreach (var productUnit in model.ProductUnits)
+                if(model.ProductUnits != null)
                 {
-                    ProductUnitPrice x = new ProductUnitPrice()
+                    foreach (var productUnit in model.ProductUnits)
                     {
-                        ProductId = product.Id,
-                        Unit = productUnit.Unit,
-                        ConversionValue = productUnit.ConversionValue,
-                        Price = productUnit.Price,
-                        IsBaseUnit = false,
-                        IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
-                        IsPackingSpecification = productUnit.IsPackingSpecification, 
-                        CreatedBy = userId
-                    };
-                    _context.ProductUnitPrices.Add(x);
+                        ProductUnitPrice x = new ProductUnitPrice()
+                        {
+                            ProductId = product.Id,
+                            Unit = productUnit.Unit,
+                            ConversionValue = productUnit.ConversionValue,
+                            Price = productUnit.Price,
+                            IsBaseUnit = false,
+                            IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
+                            IsPackingSpecification = productUnit.IsPackingSpecification,
+                            CreatedBy = userId
+                        };
+                        _context.ProductUnitPrices.Add(x);
+                    }
                 }
-
-                foreach (var p in model.ActiveSubstances)
+                if(model.ActiveSubstances != null)
                 {
-                    ProductActiveSubstance pas = new ProductActiveSubstance()
+                    foreach (var p in model.ActiveSubstances)
                     {
-                        ProductId = product.Id,
-                        ActiveSubstanceId = p
-                    };
-                    product.ProductActiveSubstances.Add(pas);
+                        ProductActiveSubstance pas = new ProductActiveSubstance()
+                        {
+                            ProductId = product.Id,
+                            ActiveSubstanceId = p
+                        };
+                        product.ProductActiveSubstances.Add(pas);
+                    }
                 }
+                
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -270,7 +276,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             }).FirstOrDefaultAsync();
             return data;
         }
-
+        
         public async Task<bool> UpdateProduct(int id, int userId, UpdateProductModel model)
         {
             var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);

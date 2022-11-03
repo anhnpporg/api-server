@@ -52,8 +52,8 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                 Id = x.Id,
                 ProductId = x.ProductId,
                 Unit = x.Unit,
-                ConversionValue = x.ConversionValue,
                 Price = x.Price,
+                ConversionValue = x.ConversionValue,
                 IsBaseUnit = x.IsBaseUnit,
                 IsDoseBasedOnBodyWeightUnit = x.IsDoseBasedOnBodyWeightUnit,
                 IsPackingSpecification = x.IsPackingSpecification,
@@ -63,6 +63,23 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                 UpdatedAt = x.UpdatedAt,
                 UpdatedBy = x.UpdatedBy
             }).ToListAsync();
+            double basePrice = 0;
+            foreach (var u in data)
+            {
+                if(u.IsBaseUnit == true)
+                {
+                    basePrice = (double)u.Price;
+                }
+            }
+            if (data != null){ 
+                foreach(var x in data)
+                {
+                    if(x.Price == null)
+                    {
+                        x.Price = (decimal)(basePrice*x.ConversionValue);
+                    }
+                }
+            }
             return data;
 
         }
@@ -98,7 +115,6 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                 pu.Price = model.Price;
                 pu.Unit = model.Unit;
                 pu.IsBaseUnit = model.IsBaseUnit;
-                pu.IsActive = model.IsActive;
                 pu.UpdatedBy = userId;
                 pu.IsPackingSpecification= model.IsPackingSpecification;
                 pu.IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit;

@@ -70,7 +70,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -91,7 +91,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {

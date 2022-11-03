@@ -7,6 +7,5 @@ namespace UtNhanDrug_BE.Models.BatchModel
         public int ProductId { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
-        public int? UpdatedBy { get; set; }
     }
 }

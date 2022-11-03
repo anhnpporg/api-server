@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.CustomerModel;
+using UtNhanDrug_BE.Models.ManagerModel;
 using UtNhanDrug_BE.Models.StaffModel;
 using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Models.UserModel;
@@ -166,13 +167,8 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "Bạn chưa đăng nhập" });
             }
 
-            var checkExits = await _userSvc.CheckEmail(userId);
-            if (checkExits == 1) return BadRequest(new { message = "Tài khoản không có email" });
-            if (checkExits == 3) return BadRequest(new { message = "Tài khoản đã được xác thực" });
-
             var token = await _userSvc.CreateTokenVerifyEmail(userId);
-            if (token == null) return BadRequest(new { message = "Tạo mã xác thực thất bại" });
-            return Ok(token);
+            return StatusCode(token.StatusCode, token);
         }
 
         [Authorize]
@@ -193,10 +189,9 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Not found user" });
+            if (user == false) return NotFound(new { message = "Không tìm thấy tài khoản này" });
             var token = await _userSvc.CreateTokenVerifyPassword(userId);
-            if (token == null) return BadRequest(new { message = "Create token fail" });
-            return Ok(token);
+            return StatusCode(token.StatusCode, token);
         }
 
         [Authorize]
@@ -235,26 +230,34 @@ namespace UtNhanDrug_BE.Controllers
         [Authorize(Roles = "MANAGER")]
         [HttpPut("users/recovery-password/{userId}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> RecoveryPassword([FromRoute] int userId, [FromForm] RecoveryPasswordModel model)
+        public async Task<ActionResult> RecoveryPassword([FromRoute] int userId)
         {
             var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Not found login name" });
-            if (model.NewPassword.Trim() != model.ConfirmPassword.Trim()) return BadRequest(new { message = "Confirm password incorect" });
-            var result = await _userSvc.RecoveryPassword(userId, model);
-            if (result == false) return BadRequest(new { message = "Change password fail" });
-            return Ok(new { message = "Change password successfully" });
+            if (user == false) return NotFound(new { message = "Không tìm thấy nhân viên" });
+            var result = await _userSvc.RecoveryPassword(userId);
+            return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize(Roles = "MANAGER")]
-        [HttpPut("staffs/{userId}")]
+        [Authorize]
+        [HttpPut("staffs/profile")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateStaffAccount([FromRoute] int userId,   [FromForm] UpdateStaffModel model)
+        public async Task<ActionResult> UpdateStaffAccount([FromForm] UpdateStaffModel model)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
             var user = await _userSvc.CheckUser(userId);
             if (user == false) return NotFound(new { message = "Not found account" });
-            bool result = await _userSvc.UpdateStaffProfile(userId, model);
-            if (result == false) return BadRequest(new { message = "Update fail"});
-            return Ok(new { message = "Update successfully" });
+            var result = await _userSvc.UpdateStaffProfile(userId, model);
+            return StatusCode(result.StatusCode, result);
         }
         
         [Authorize]
@@ -294,20 +297,10 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "Đổi mật khẩu thành công" });
         }
 
-        //[Authorize(Roles = "MANAGER")]
-        //[HttpPut("managers/{userId}")]
-        //[MapToApiVersion("1.0")]
-        //public async Task<ActionResult> UpdateManagerAccount([FromRoute] int userId, [FromForm] UpdateManagerModel model)
-        //{
-        //    bool result = await _userSvc.UpdateManagerProfile(userId, model);
-        //    if (result == false) return NotFound(new { message = "Not found account" });
-        //    return Ok(new { message = "Update successfully" });
-        //}
-
-        [Authorize(Roles = "STAFF")]
-        [HttpPut("staffs/profile")]
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("managers/profile")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateStaffAccount( [FromForm] string email)
+        public async Task<ActionResult> UpdateManagerAccount([FromForm] UpdateManagerModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -320,12 +313,32 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Not found account" });
-            bool result = await _userSvc.UpdateEmail(userId, email);
-            if (result == false) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "Update successfully" });
+            var result = await _userSvc.UpdateManagerProfile(userId, model);
+            return StatusCode(result.StatusCode, result);
         }
+
+        //[Authorize(Roles = "STAFF")]
+        //[HttpPut("staffs/profile")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> UpdateStaffAccount( [FromForm] string email)
+        //{
+        //    var identity = HttpContext.User.Identity as ClaimsIdentity;
+        //    IList<Claim> claim = identity.Claims.ToList();
+        //    int userId;
+        //    try
+        //    {
+        //        userId = Convert.ToInt32(claim[0].Value);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return BadRequest(new { message = "You are not login" });
+        //    }
+        //    var user = await _userSvc.CheckUser(userId);
+        //    if (user == false) return NotFound(new { message = "Not found account" });
+        //    bool result = await _userSvc.UpdateEmail(userId, email);
+        //    if (result == false) return BadRequest(new { message = "Update fail" });
+        //    return Ok(new { message = "Update successfully" });
+        //}
 
         [Authorize(Roles = "MANAGER")]
         [HttpPatch("users/ban/{userId}")]

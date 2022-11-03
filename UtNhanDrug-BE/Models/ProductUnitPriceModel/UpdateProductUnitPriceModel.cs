@@ -8,7 +8,5 @@
         public bool IsPackingSpecification { get; set; }
         public bool IsDoseBasedOnBodyWeightUnit { get; set; }
         public bool IsBaseUnit { get; set; }
-        public bool? IsActive { get; set; }
-        public int UpdatedBy { get; set; }
     }
 }

@@ -33,6 +33,17 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("products/{id}/batches")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
+        {
+            var disease = await _consignmentSvc.GetBatchesByProductId(id);
+            if (disease == null) return NotFound(new { message = "Not found this batch" });
+            return Ok(disease);
+        }
+        
+        [Authorize]
         [Route("batches/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -41,6 +52,16 @@ namespace UtNhanDrug_BE.Controllers
             var disease = await _consignmentSvc.GetBatchById(id);
             if (disease == null) return NotFound(new { message = "Not found this batch" });
             return Ok(disease);
+        }
+        
+        [Authorize]
+        [Route("batches/filter")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetbatchByBarcode([FromQuery] string barcode)
+        {
+            var batch = await _consignmentSvc.GetBatchesByBarcode(barcode);
+            return StatusCode(batch.StatusCode, batch);
         }
 
         [Authorize]
@@ -54,7 +75,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -75,7 +96,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -98,7 +119,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {

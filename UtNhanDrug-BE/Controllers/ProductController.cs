@@ -20,10 +20,13 @@ namespace UtNhanDrug_BE.Controllers
     {
         private readonly IProductSvc _productSvc;
         private readonly IProductUnitPriceSvc _productUnitSvc;
-        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc)
+        private readonly IBatchSvc _batchSvc;
+
+        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc, IBatchSvc batchSvc)
         {
             _productSvc = productSvc;
-            _productUnitSvc = productUnitSvc;;
+            _productUnitSvc = productUnitSvc;
+            _batchSvc = batchSvc;
         }
 
         [Authorize]
@@ -39,7 +42,7 @@ namespace UtNhanDrug_BE.Controllers
                 product.ActiveSubstances = activeSubstance;
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
-                var batches = await _productSvc.GetBatchByProductId(product.Id);
+                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
                 product.Batches = batches;
             }
             
@@ -60,7 +63,7 @@ namespace UtNhanDrug_BE.Controllers
                 product.ActiveSubstances = activeSubstance;
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
-                var batches = await _productSvc.GetBatchByProductId(product.Id);
+                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
                 product.Batches = batches;
             }
             
@@ -90,19 +93,9 @@ namespace UtNhanDrug_BE.Controllers
             product.ActiveSubstances = activeSubstance;
             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
             product.ProductUnits = productUnits;
-            var batches = await _productSvc.GetBatchByProductId(product.Id);
+            var batches = await _batchSvc.GetBatchesByProductId(product.Id);
             product.Batches = batches;
             return Ok(product);
-        }
-        
-        [Authorize]
-        [Route("products/{id}/batches")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetBatchesByProdcutId([FromRoute] int id)
-        {
-            var batchs = await _productSvc.GetBatchByProductId(id);
-            return Ok(batchs);
         }
 
         [Authorize]

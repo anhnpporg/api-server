@@ -54,7 +54,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 };
                 var batch = _context.Batches.Add(s);
                 await _context.SaveChangesAsync();
-                s.BatchBarcode = GenaralBarcode.CreateEan13(s.Id + "");
+                s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
                 await _context.SaveChangesAsync();
                 model.BatchId = s.Id;
             }

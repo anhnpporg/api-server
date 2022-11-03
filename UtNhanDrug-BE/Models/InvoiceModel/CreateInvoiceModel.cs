@@ -7,11 +7,8 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
     public class CreateInvoiceModel
     {
         public int? CustomerId { get; set; }
-        [Required]
         public decimal? BodyWeight { get; set; }
-        [Required]
         public int? DayUse { get; set; }
-        public decimal Discount { get; set; }
         [Required]
         public List<OrderDetailModel> Product { get; set; }
 
@@ -27,13 +24,13 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public int? DayUse { get; set; }
         public string Use { get; set; }
 
-        public GoodsIssueNoteModel GoodsIssueNote { get; set; }
+        public List<GoodsIssueNoteModel> GoodsIssueNote { get; set; }
     }
 
     public class GoodsIssueNoteModel
     {
-        public int GoodsIssueNoteTypeId { get; set; }
         public int Quantity { get; set; }
         public int Unit { get; set; }
+        public int BatchId { get; set; }
     }
 }
