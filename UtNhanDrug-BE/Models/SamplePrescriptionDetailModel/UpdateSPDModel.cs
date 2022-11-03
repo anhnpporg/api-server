@@ -7,6 +7,5 @@
         public int ProductUnitPriceId { get; set; }
         public int? Frequency { get; set; }
         public string Use { get; set; }
-        public int CreatedBy { get; set; }
     }
 }

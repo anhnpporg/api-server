@@ -31,6 +31,7 @@ using UtNhanDrug_BE.Services.SamplePrescriptionDetailService;
 using UtNhanDrug_BE.Services.SamplePrescriptionService;
 using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
+using UtNhanDrug_BE.Services.InvoiceService;
 
 namespace UtNhanDrug_BE
 {
@@ -72,6 +73,7 @@ namespace UtNhanDrug_BE
 
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<IInvoiceSvc, InvoiceSvc>();
             services.AddTransient<IUserSvc, UserSvc>();
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();

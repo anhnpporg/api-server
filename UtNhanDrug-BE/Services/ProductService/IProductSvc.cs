@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.PagingModel;
 using UtNhanDrug_BE.Models.ProductModel;
@@ -16,6 +17,7 @@ namespace UtNhanDrug_BE.Services.ProductService
         Task<bool> CheckProduct(int brandId);
         Task<List<ViewModel>> GetListActiveSubstances(int productId);
         Task<List<ViewModel>> GetListRouteOfAdmin();
-        Task<PageResult<ViewProductModel>> GetProductPaging(ProductPagingRequest request);
+        Task<PageResult<ViewProductModel>> GetProductFilter(ProductFilterRequest request);
+        //Task<PageResult<PageResult<ViewProductModel>>> GetProductPaging(ProductPagingRequest request);
     }
 }

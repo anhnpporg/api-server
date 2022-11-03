@@ -23,12 +23,15 @@ namespace UtNhanDrug_BE.Configurations
                 {
                     Title = "UtNhanDrug",
                     Version = "v1",
-                    Description = "UtNhanDrug API",
+                    Description = "UtNhanDrug API - admin :eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwicm9sZVVzZXJJZCI6IjEiLCJyb2xlIjoiTUFOQUdFUiIsIm5iZiI6MTY2NzQ5ODY5OSwiZXhwIjoxNjY4NzA4Mjk5LCJpYXQiOjE2Njc0OTg2OTl9.h3iTLptG4anWWUpfVnMxQPorjaWBjNDR4pDokVAbD0E"
+                    ,
                     Contact = new OpenApiContact()
                     {
                         Name = "UtNhanDrug"
                     }
+
                 });
+                //c.OrderActionsBy((apiDesc) => $"{apiDesc.RelativePath}");
 
                 c.DescribeAllParametersInCamelCase();
                 // Set the comments path for the Swagger JSON and UI.

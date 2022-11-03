@@ -1,16 +1,16 @@
-﻿namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
 {
     public class UpdateGoodsReceiptNoteModel
     {
         public int GoodsReceiptNoteTypeId { get; set; }
         public int BatchId { get; set; }
-        public int? Invoice { get; set; }
         public int? SupplierId { get; set; }
         public int Quantity { get; set; }
-        public string Unit { get; set; }
+        public int ProductUnitPriceId { get; set; }
         public decimal TotalPrice { get; set; }
-        public int ConvertedQuantity { get; set; }
-        public decimal BaseUnitPrice { get; set; }
+        [Required]
         public string Note { get; set; }
     }
 }

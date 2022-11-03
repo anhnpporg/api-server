@@ -6,6 +6,9 @@ using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
 using System.Linq;
 using System;
 using UtNhanDrug_BE.Models.ModelHelper;
+using UtNhanDrug_BE.Services.SupplierService;
+using UtNhanDrug_BE.Services.BatchService;
+using UtNhanDrug_BE.Hepper.GenaralBarcode;
 
 namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
@@ -25,17 +28,49 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
         public async Task<bool> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model)
         {
+            var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == model.ProductUnitPriceId);
+
+            if (model.SupplierId == null)
+            {
+                Supplier s = new Supplier()
+                {
+                    Name = model.Supplier.Name,
+                    CreatedBy = userId
+                };
+                var supplier = _context.Suppliers.Add(s);
+                await _context.SaveChangesAsync();
+                model.SupplierId = s.Id;
+            }
+            
+            if (model.BatchId == null)
+            {
+                Batch s = new Batch()
+                {
+                    BatchBarcode = "#####",
+                    ProductId = model.Batch.ProductId,
+                    ManufacturingDate = model.Batch.ManufacturingDate,
+                    ExpiryDate = model.Batch.ExpiryDate,
+                    CreatedBy = userId,
+                };
+                var batch = _context.Batches.Add(s);
+                await _context.SaveChangesAsync();
+                s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                await _context.SaveChangesAsync();
+                model.BatchId = s.Id;
+            }
+            int convertedQuantity = (int)(model.Quantity * unit.ConversionValue);
+            decimal baseUnitPrice = model.TotalPrice / convertedQuantity;
             GoodsReceiptNote grn = new GoodsReceiptNote()
             {
                 GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
                 BatchId = model.BatchId,
-                Invoice = model.Invoice,
+                InvoiceId = model.InvoiceId,
                 SupplierId = model.SupplierId,
                 Quantity = model.Quantity,
-                Unit = model.Unit,
+                Unit = unit.Unit,
                 TotalPrice = model.TotalPrice,
-                ConvertedQuantity = model.ConvertedQuantity,
-                BaseUnitPrice = model.BaseUnitPrice,
+                ConvertedQuantity = convertedQuantity,
+                BaseUnitPrice = baseUnitPrice,
                 CreatedBy = userId
             };
             _context.GoodsReceiptNotes.Add(grn);
@@ -73,7 +108,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 },
                 Quantity = x.Quantity,
                 Unit = x.Unit,
-                Invoice = x.Invoice,
+                InvoiceId = x.InvoiceId,
                 ConvertedQuantity = x.ConvertedQuantity,
                 TotalPrice =  x.TotalPrice,
                 BaseUnitPrice = x.BaseUnitPrice,
@@ -115,7 +150,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     },
                     Quantity = c.Quantity,
                     Unit = c.Unit,
-                    Invoice = c.Invoice,
+                    InvoiceId = c.InvoiceId,
                     ConvertedQuantity = c.ConvertedQuantity,
                     TotalPrice = c.TotalPrice,
                     BaseUnitPrice = c.BaseUnitPrice,
@@ -165,22 +200,23 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
         public async Task<bool> UpdateGoodsReceiptNote(int id, int userId, UpdateGoodsReceiptNoteModel model)
         {
+            var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == model.ProductUnitPriceId);
             var c = await _context.GoodsReceiptNotes.FirstOrDefaultAsync(x => x.Id == id);
             if (c != null)
             {
                 c.GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId;
                 c.BatchId = model.BatchId;
-                c.Invoice = model.Invoice;
                 c.SupplierId = model.SupplierId;
                 c.Quantity = model.Quantity;
-                c.Unit = model.Unit;
+                c.Unit = unit.Unit;
                 c.TotalPrice = model.TotalPrice;
-                c.ConvertedQuantity = model.ConvertedQuantity;
-                c.BaseUnitPrice = model.BaseUnitPrice;
+                c.ConvertedQuantity = (int)(model.Quantity * unit.ConversionValue);
+                c.BaseUnitPrice = model.TotalPrice / ((int)(model.Quantity * unit.ConversionValue));
                 GoodsReceiptNoteLog g = new GoodsReceiptNoteLog()
                 {
                     GoodsReceiptNoteId = id,
                     Note = model.Note,
+                    UpdatedAt = DateTime.Now,
                     UpdatedBy = userId,
                 };
                 _context.GoodsReceiptNoteLogs.Add(g);

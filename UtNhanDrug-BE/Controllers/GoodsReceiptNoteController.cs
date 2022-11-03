@@ -53,6 +53,8 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetGRNById([FromRoute] int id)
         {
             var result = await _grnSvc.GetGoodsReceiptNoteById(id);
+            var notes = await _grnSvc.GetListNoteLog(id);
+            result.Note = notes;
             if (result == null) return NotFound(new { message = "Not found this goods receipt note" });
             return Ok(result);
         }
@@ -68,7 +70,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -89,7 +91,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {

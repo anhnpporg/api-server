@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Services.ProductService;
 using UtNhanDrug_BE.Services.ProductUnitService;
 
@@ -19,10 +20,13 @@ namespace UtNhanDrug_BE.Controllers
     {
         private readonly IProductSvc _productSvc;
         private readonly IProductUnitPriceSvc _productUnitSvc;
-        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc)
+        private readonly IBatchSvc _batchSvc;
+
+        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc, IBatchSvc batchSvc)
         {
             _productSvc = productSvc;
             _productUnitSvc = productUnitSvc;
+            _batchSvc = batchSvc;
         }
 
         [Authorize]
@@ -38,6 +42,8 @@ namespace UtNhanDrug_BE.Controllers
                 product.ActiveSubstances = activeSubstance;
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
+                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
+                product.Batches = batches;
             }
             
 
@@ -48,15 +54,17 @@ namespace UtNhanDrug_BE.Controllers
         [Route("products/filter")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetProductPaging([FromQuery] ProductPagingRequest request)
+        public async Task<ActionResult> GetProductPaging([FromQuery] ProductFilterRequest request)
         {
-            var products = await _productSvc.GetProductPaging(request);
+            var products = await _productSvc.GetProductFilter(request);
             foreach (var product in products.Items)
             {
                 var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
                 product.ActiveSubstances = activeSubstance;
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
+                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
+                product.Batches = batches;
             }
             
 
@@ -81,6 +89,12 @@ namespace UtNhanDrug_BE.Controllers
         {
             var product = await _productSvc.GetProductById(id);
             if (product == null) return NotFound(new { message = "Not found this product" });
+            var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+            product.ActiveSubstances = activeSubstance;
+            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+            product.ProductUnits = productUnits;
+            var batches = await _batchSvc.GetBatchesByProductId(product.Id);
+            product.Batches = batches;
             return Ok(product);
         }
 
@@ -95,7 +109,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -116,7 +130,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {
@@ -139,7 +153,7 @@ namespace UtNhanDrug_BE.Controllers
             int userId;
             try
             {
-                userId = Convert.ToInt32(claim[1].Value);
+                userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
             {

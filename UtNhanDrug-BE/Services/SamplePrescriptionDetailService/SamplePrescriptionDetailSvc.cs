@@ -94,7 +94,11 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                     IsUseDose = b.Product.IsUseDose,
                     IsManagedInBatches = b.Product.IsManagedInBatches,
                     CreatedAt = b.Product.CreatedAt,
-                    CreatedBy = b.Product.CreatedBy,
+                    CreatedBy = new ViewModel()
+                    {
+                        Id = b.Product.CreatedByNavigation.Id,
+                        Name = b.Product.CreatedByNavigation.FullName
+                    },
                     UpdatedAt = b.Product.UpdatedAt,
                     UpdatedBy = b.Product.UpdatedBy,
                     IsActive = b.Product.IsActive,
@@ -153,7 +157,11 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                         IsUseDose = sp.Product.IsUseDose,
                         IsManagedInBatches = sp.Product.IsManagedInBatches,
                         CreatedAt = sp.Product.CreatedAt,
-                        CreatedBy = sp.Product.CreatedBy,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = sp.Product.CreatedByNavigation.Id,
+                            Name = sp.Product.CreatedByNavigation.FullName
+                        },
                         UpdatedAt = sp.Product.UpdatedAt,
                         UpdatedBy = sp.Product.UpdatedBy,
                         IsActive = sp.Product.IsActive,

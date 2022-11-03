@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Models.ResponseModel;
 
 namespace UtNhanDrug_BE.Services.BatchService
 {
@@ -9,6 +10,8 @@ namespace UtNhanDrug_BE.Services.BatchService
         Task<bool> CreateBatch(int userId, CreateBatchModel model);
         Task<bool> UpdateBatch(int id, int userId, UpdateBatchModel model);
         Task<bool> DeleteBatch(int id, int userId);
+        Task<List<ViewBatchModel>> GetBatchesByProductId(int id);
+        Task<Response<ViewBatchModel>> GetBatchesByBarcode(string barcode);
         Task<ViewBatchModel> GetBatchById(int id);
         Task<List<ViewBatchModel>> GetAllBatch();
         Task<bool> CheckBatch(int id);

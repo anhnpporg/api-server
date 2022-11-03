@@ -14,6 +14,7 @@ using UtNhanDrug_BE.Models.UserLoginModel;
 using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Models.EmailModel;
 using UtNhanDrug_BE.Models.PagingModel;
+using UtNhanDrug_BE.Models.ResponseModel;
 
 namespace UtNhanDrug_BE.Services.ManagerService
 {
@@ -120,33 +121,47 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return data;
         }
 
-        public async Task<bool> UpdateStaffProfile(int userId, UpdateStaffModel model)
+        public async Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffModel model)
         {
             var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
             var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            string avatar;
-            if(model.Avatar == null)
-            {
-                avatar = defaultAvatar;
-            }
-            else
-            {
-                avatar = model.Avatar;
-            }
+            //string avatar;
+            //if(model.Avatar == null)
+            //{
+            //    avatar = defaultAvatar;
+            //}
+            //else
+            //{
+            //    avatar = model.Avatar;
+            //}
 
             var updateEmail = await UpdateEmail(userId, model.EmailAddressRecovery);
-
-            if(user != null && staff != null)
+            if (updateEmail.StatusCode == 400)
             {
-                user.FullName = model.Fullname;
-                staff.UrlAvartar = avatar;
-                staff.IsMale = model.IsMale;
-                staff.DateOfBirth = model.Dob;
-                staff.PhoneNumber = model.PhoneNumber;
-                await _context.SaveChangesAsync();
-                return true;
+                return updateEmail;
             }
-            return false;
+            return new Response<bool>(true)
+            {
+                Message = "Cập nhật nhân viên thành công"
+            };
+            //if (user != null && staff != null)
+            //{
+            //    //user.FullName = model.Fullname;
+            //    //staff.UrlAvartar = avatar;
+            //    //staff.IsMale = model.IsMale;
+            //    //staff.DateOfBirth = model.Dob;
+            //    //staff.PhoneNumber = model.PhoneNumber;
+            //    await _context.SaveChangesAsync();
+            //    return new Response<bool>(true)
+            //    {
+            //        Message = "Cập nhật nhân viên thành công"
+            //    };
+            //}
+            //return new Response<bool>(false)
+            //{
+            //    StatusCode = 400,
+            //    Message = "Cập nhật nhân viên không thành công"
+            //};
         }
 
         public async Task<bool> ChangePassword(int userId, ChangePasswordModel model)
@@ -183,7 +198,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         //    return false;
         //}
 
-        public async Task<bool> CreateCustomer(CreateCustomerModel model)
+        public async Task<Customer> CreateCustomer(int UserId, CreateCustomerModel model)
         {
             var isExits = await FindCustomer(model.PhoneNumber);
             if (isExits != true)
@@ -194,13 +209,15 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     var customer = new Customer()
                     {
                         PhoneNumber = model.PhoneNumber,
+                        FullName = model.FullName,
+                        CreatedBy = userId
                     };
                     _context.Customers.Add(customer);
                     var result = await _context.SaveChangesAsync();
-                    if (result != 0) return true;
+                    if (result != 0) return customer;
                 }
             }
-            return false;
+            return null;
 
         }
 
@@ -347,8 +364,10 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return false;
         }
 
-        public async Task<bool> RecoveryPassword(int userId, RecoveryPasswordModel model)
+        public async Task<Response<string>> RecoveryPassword(int userId)
         {
+            string newPassword = KeyGenerator.GetUniqueKey(6);
+
             var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             if (userLogin != null)
             {
@@ -357,29 +376,52 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 int hashingId = rnd.Next(1, 3);
                 if (hashingId == 1)
                 {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(model.NewPassword);
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(newPassword);
                 }
                 else if (hashingId == 2)
                 {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(model.NewPassword);
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(newPassword);
                 }
                 else
                 {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(model.NewPassword);
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(newPassword);
                 }
                 userLogin.HashingAlgorithmId = hashingId;
                 userLogin.PasswordHash = passwordEncode;
                 var result = await _context.SaveChangesAsync();
-                if (result > 0) return true;
+                if (result > 0) return new Response<string>(newPassword)
+                {
+                    Message = "Tạo mật khẩu mới thành công"
+                };
             }
-            return false;
+            return new Response<string>(null)
+            {
+                StatusCode = 400,
+                Message = "Tạo mật khẩu mới thất bại"
+            };
         }
 
-        public async Task<TokenVerifyResponse> CreateTokenVerifyEmail(int userId)
+        public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyEmail(int userId)
         {
             var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             if(userLogin != null)
             {
+                if(userLogin.EmailValidationStatusId == 1)
+                {
+                    return new Response<TokenVerifyResponse>()
+                    {
+                        StatusCode = 400,
+                        Message = "Tài khoản không có email"
+                    };
+                }
+                else if(userLogin.EmailValidationStatusId == 3) 
+                {
+                    return new Response<TokenVerifyResponse>()
+                    {
+                        StatusCode = 400,
+                        Message = "Email đã được xác thực"
+                    };
+                }
                 userLogin.ConfirmationToken = KeyGenerator.GetUniqueKey(6);
                 userLogin.TokenGenerationTime = DateTime.Now;
                 var result = await _context.SaveChangesAsync();
@@ -388,15 +430,22 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification email", userLogin.ConfirmationToken);
                     await _senderService.SendEmail(message);
 
-                    return new TokenVerifyResponse()
+                    return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
                     {
                         Token = userLogin.ConfirmationToken,
                         CreateAt = userLogin.TokenGenerationTime
+                    }){
+                        Message = "Gửi mã xác thực thành công"
                     };
                 }
                 
             }
-            return null;
+
+            return new Response<TokenVerifyResponse>()
+            {
+                StatusCode = 400,
+                Message = "Gửi mã xác thực thất bại"
+            };
         }
 
         public async Task<bool> CheckTokenVerifyEmail(int userId, TokenVerifyModel model)
@@ -468,11 +517,20 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return true;
         }
 
-        public async Task<TokenVerifyResponse> CreateTokenVerifyPassword(int userId)
+        public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyPassword(int userId)
         {
             var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
             if (userLogin != null)
             {
+                if (userLogin.EmailValidationStatusId != 3)
+                {
+                    return new Response<TokenVerifyResponse>()
+                    {
+                        StatusCode = 400,
+                        Message = "Bạn chưa xác thực email"
+                    };
+                }
+
                 userLogin.PasswordRecoveryToken = KeyGenerator.GetUniqueKey(6);
                 userLogin.RecoveryTokenTime = DateTime.Now;
                 var result = await _context.SaveChangesAsync();
@@ -481,14 +539,20 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification password", userLogin.PasswordRecoveryToken);
                     await _senderService.SendEmail(message);
 
-                    return new TokenVerifyResponse()
+                    return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
                     {
                         Token = userLogin.PasswordRecoveryToken,
                         CreateAt = userLogin.RecoveryTokenTime
+                    }){
+                        Message = "Đã gửi mã xác thực thành công"
                     };
                 } 
             }
-            return null;
+            return new Response<TokenVerifyResponse>()
+            {
+                StatusCode = 400,
+                Message = "Gửi mã xác thực thất bại"
+            };
         }
 
         public async Task<bool> CheckVerifyPassword(int userId, string token)
@@ -500,18 +564,22 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return false;
         }
 
-        public async Task<bool> UpdateEmail(int userId, string email)
+        public async Task<Response<bool>> UpdateEmail(int userId, string email)
         {
             var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
 
             int EmailValidationStatusId;
-            if (userData.EmailAddressRecovery.Equals(email.Trim()) && userData.EmailValidationStatusId == 3)
-            {
-                EmailValidationStatusId = 3;
-            }
-            else if (userData.EmailAddressRecovery == null && email.Trim() == null)
+            if (userData.EmailAddressRecovery == null )
             {
                 EmailValidationStatusId = 1;
+            }
+            else if(email.Trim() == null)
+            {
+                EmailValidationStatusId = 1;
+            }
+            else if (userData.EmailAddressRecovery.Equals(email.Trim()) && userData.EmailValidationStatusId == 3)
+            {
+                EmailValidationStatusId = 3;
             }
             else
             {
@@ -522,9 +590,16 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 userData.EmailAddressRecovery = email.Trim();
                 userData.EmailValidationStatusId = EmailValidationStatusId;
                 await _context.SaveChangesAsync();
-                return true;
+                return new Response<bool>(true)
+                {
+                    Message = "Cập nhật email thành công"
+                };
             }
-            return false;
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Cập nhật email thấy bại"
+            };
         }
 
         public async Task<PageResult<CustomerViewModel>> SearchCustomer(CustomerPagingRequest request)
@@ -575,6 +650,30 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 return model;
             }
             return null;
+        }
+
+        public async Task<Response<bool>> UpdateManagerProfile(int userId, UpdateManagerModel model)
+        {
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+
+            var updateEmail = await UpdateEmail(userId, model.Email);
+            if(updateEmail.StatusCode == 400){
+                return updateEmail;
+            }
+            if (user != null)
+            {
+                user.FullName = model.FullName;
+                await _context.SaveChangesAsync();
+                return new Response<bool>(true)
+                {
+                    Message = "Cập nhật thông tin thành công"
+                };
+            }
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Không tìm thấy tài khoản này"
+            };
         }
     }
 }

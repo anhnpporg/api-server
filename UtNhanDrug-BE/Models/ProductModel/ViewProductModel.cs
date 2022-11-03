@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ProductUnitModel;
 
@@ -19,11 +20,12 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public bool IsManagedInBatches { get; set; }
         public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int CreatedBy { get; set; }
+        public ViewModel CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int? UpdatedBy { get; set; }
         public List<ViewModel> ActiveSubstances { get; set; }
         public List<ViewProductUnitPriceModel> ProductUnits { get; set; }
+        public List<ViewBatchModel> Batches { get; set; }
     }
 
 

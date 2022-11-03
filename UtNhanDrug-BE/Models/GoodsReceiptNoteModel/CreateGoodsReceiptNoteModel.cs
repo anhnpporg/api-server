@@ -1,16 +1,24 @@
-﻿namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
+﻿using System.ComponentModel.DataAnnotations;
+using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Models.SupplierModel;
+
+namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
 {
     public class CreateGoodsReceiptNoteModel
     {
+        [Required]
         public int GoodsReceiptNoteTypeId { get; set; }
-        public int BatchId { get; set; }
-        public int? Invoice { get; set; }
+        public int? BatchId { get; set; }
+        public int? InvoiceId { get; set; }
         public int? SupplierId { get; set; }
+        [Required]
         public int Quantity { get; set; }
-        public string Unit { get; set; }
+        [Required]
+        public int ProductUnitPriceId { get; set; }
+        [Required]
         public decimal TotalPrice { get; set; }
-        public int ConvertedQuantity { get; set; }
-        public decimal BaseUnitPrice { get; set; }
-        public int CreatedBy { get; set; }
+
+        public CreateBatchModel? Batch { get; set; }
+        public CreateSupplierModel? Supplier { get; set; }
     }
 }

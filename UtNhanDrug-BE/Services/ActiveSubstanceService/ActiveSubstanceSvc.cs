@@ -120,7 +120,11 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 IsUseDose = p.Product.IsUseDose,
                 IsManagedInBatches = p.Product.IsManagedInBatches,
                 CreatedAt = p.Product.CreatedAt,
-                CreatedBy = p.Product.CreatedBy,
+                CreatedBy = new ViewModel()
+                {
+                    Id = p.Product.CreatedByNavigation.Id,
+                    Name = p.Product.CreatedByNavigation.FullName
+                },
                 UpdatedAt = p.Product.UpdatedAt,
                 UpdatedBy = p.Product.UpdatedBy,
                 IsActive = p.Product.IsActive,
