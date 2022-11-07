@@ -238,7 +238,7 @@ namespace UtNhanDrug_BE.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize]
+        [Authorize(Roles = "STAFF")]
         [HttpPut("staffs/profile")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateStaffAccount([FromForm] UpdateStaffModel model)
@@ -259,9 +259,18 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _userSvc.UpdateStaffProfile(userId, model);
             return StatusCode(result.StatusCode, result);
         }
+
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("staffs/profile/{id}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> UpdateStaffAccountByManager([FromRoute] int id ,[FromForm] UpdateStaffBaseModel model)
+        {
+            var result = await _userSvc.UpdateStaffProfile(id, model);
+            return StatusCode(result.StatusCode, result);
+        }
         
         [Authorize]
-        [HttpPut("accounts/reset-password/")]
+        [HttpPut("accounts/reset-password")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> ChangePassword([FromForm] ChangePasswordModel model)
         {
@@ -292,9 +301,29 @@ namespace UtNhanDrug_BE.Controllers
             var checkToken = await _userSvc.CheckVerifyPassword(userId, model.TokenRecovery);
             if (checkToken == false) return BadRequest(new { message = "Mã xác thực sai" });
             //check change password
-            bool result = await _userSvc.ChangePassword(userId, model);
-            if (result == false) return BadRequest(new { message = "Đổi mật khẩu thất bại" });
-            return Ok(new { message = "Đổi mật khẩu thành công" });
+            var result = await _userSvc.ChangePassword(userId, model);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [HttpPut("accounts/change-password")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> ChangePasswordById([FromForm] ChangePasswordByIdModel model)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Bạn chưa đăng nhập" });
+            }
+            //check change password
+            var result = await _userSvc.ChangePasswordByUserId(userId, model);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize(Roles = "MANAGER")]

@@ -5,7 +5,9 @@ namespace UtNhanDrug_BE.Models.StaffModel
 {
     public class ViewStaffModel
     {
+        
         public int UserId { get; set; }
+        public string UserAccount { get; set; }
         public string Avatar { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }

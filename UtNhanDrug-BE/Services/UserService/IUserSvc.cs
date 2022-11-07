@@ -19,7 +19,9 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<int> BanAccount(int Userid);
         Task<int> UnBanAccount(int UserId);
         Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffModel model);
-        Task<bool> ChangePassword(int userId, ChangePasswordModel model);
+        Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffBaseModel model);
+        Task<Response<bool>> ChangePassword(int userId, ChangePasswordModel model);
+        Task<Response<bool>> ChangePasswordByUserId(int userId, ChangePasswordByIdModel model);
         //Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model);
         Task<Customer> CreateCustomer(int UserId, CreateCustomerModel model);
         Task<bool> CreateStaff(CreateStaffModel model);

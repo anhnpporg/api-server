@@ -5,5 +5,6 @@ namespace UtNhanDrug_BE.Models.StaffModel
     public class UpdateStaffModel
     {
         public string EmailAddressRecovery { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }

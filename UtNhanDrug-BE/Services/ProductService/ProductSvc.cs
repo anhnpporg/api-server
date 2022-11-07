@@ -9,6 +9,7 @@ using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.PagingModel;
 using UtNhanDrug_BE.Models.BatchModel;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -30,74 +31,85 @@ namespace UtNhanDrug_BE.Services.ProductService
 
         public async Task<bool> CreateProduct(int userId, CreateProductModel model)
         {
-            Product product = new Product()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                DrugRegistrationNumber = model.DrugRegistrationNumber,
-                Name = model.Name,
-                Barcode = model.DrugRegistrationNumber,
-                BrandId = model.BrandId,
-                ShelfId = model.ShelfId,
-                MininumInventory = model.MininumInventory,
-                RouteOfAdministrationId = model.RouteOfAdministrationId,
-                IsUseDose = model.IsUseDose,
-                IsManagedInBatches = model.IsManagedInBatches,
-                CreatedBy = userId,
-            };
-            _context.Products.Add(product);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0)
-            {
-                product.Barcode = GenaralBarcode.CreateEan13Product(product.Id+"");
-                await _context.SaveChangesAsync();
-                ProductUnitPrice pu = new ProductUnitPrice()
+                Product product = new Product()
                 {
-                    ProductId = product.Id,
-                    Unit = model.Unit,
-                    ConversionValue = 1,
-                    Price = model.Price,
-                    IsBaseUnit = true,
-                    IsPackingSpecification = model.IsPackingSpecification,
-                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
-                    CreatedBy = userId
+                    DrugRegistrationNumber = model.DrugRegistrationNumber,
+                    Name = model.Name,
+                    Barcode = model.DrugRegistrationNumber,
+                    BrandId = model.BrandId,
+                    ShelfId = model.ShelfId,
+                    MininumInventory = model.MininumInventory,
+                    RouteOfAdministrationId = model.RouteOfAdministrationId,
+                    IsUseDose = model.IsUseDose,
+                    IsManagedInBatches = model.IsManagedInBatches,
+                    CreatedBy = userId,
                 };
-                _context.ProductUnitPrices.Add(pu);
+                _context.Products.Add(product);
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    product.Barcode = GenaralBarcode.CreateEan13Product(product.Id + "");
+                    await _context.SaveChangesAsync();
+                    ProductUnitPrice pu = new ProductUnitPrice()
+                    {
+                        ProductId = product.Id,
+                        Unit = model.Unit,
+                        ConversionValue = 1,
+                        Price = model.Price,
+                        IsBaseUnit = true,
+                        IsPackingSpecification = model.IsPackingSpecification,
+                        IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
+                        CreatedBy = userId
+                    };
+                    _context.ProductUnitPrices.Add(pu);
 
-                if(model.ProductUnits != null)
-                {
-                    foreach (var productUnit in model.ProductUnits)
+                    if (model.ProductUnits != null)
                     {
-                        ProductUnitPrice x = new ProductUnitPrice()
+                        foreach (var productUnit in model.ProductUnits)
                         {
-                            ProductId = product.Id,
-                            Unit = productUnit.Unit,
-                            ConversionValue = productUnit.ConversionValue,
-                            Price = productUnit.Price,
-                            IsBaseUnit = false,
-                            IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
-                            IsPackingSpecification = productUnit.IsPackingSpecification,
-                            CreatedBy = userId
-                        };
-                        _context.ProductUnitPrices.Add(x);
+                            ProductUnitPrice x = new ProductUnitPrice()
+                            {
+                                ProductId = product.Id,
+                                Unit = productUnit.Unit,
+                                ConversionValue = productUnit.ConversionValue,
+                                Price = productUnit.Price,
+                                IsBaseUnit = false,
+                                IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
+                                IsPackingSpecification = productUnit.IsPackingSpecification,
+                                CreatedBy = userId
+                            };
+                            _context.ProductUnitPrices.Add(x);
+                        }
+                    }
+                    if (model.ActiveSubstances != null)
+                    {
+                        foreach (var p in model.ActiveSubstances)
+                        {
+                            ProductActiveSubstance pas = new ProductActiveSubstance()
+                            {
+                                ProductId = product.Id,
+                                ActiveSubstanceId = p
+                            };
+                            product.ProductActiveSubstances.Add(pas);
+                        }
+                    }
+                    var r = await _context.SaveChangesAsync();
+                    if (r > 0)
+                    {
+                        transaction.Commit();
+                        return true;
                     }
                 }
-                if(model.ActiveSubstances != null)
-                {
-                    foreach (var p in model.ActiveSubstances)
-                    {
-                        ProductActiveSubstance pas = new ProductActiveSubstance()
-                        {
-                            ProductId = product.Id,
-                            ActiveSubstanceId = p
-                        };
-                        product.ProductActiveSubstances.Add(pas);
-                    }
-                }
-                
-                await _context.SaveChangesAsync();
-                return true;
+                return false;
             }
-            
-            return false;
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
 
         public async Task<bool> DeleteProduct(int id, int userId)

@@ -8,6 +8,8 @@ using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using System;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ResponseModel;
+using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.BatchService
 {
@@ -28,23 +30,27 @@ namespace UtNhanDrug_BE.Services.BatchService
 
         public async Task<bool> CreateBatch(int userId, CreateBatchModel model)
         {
-            Batch consignment = new Batch()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                BatchBarcode = "#####",
-                ProductId = model.ProductId,
-                ManufacturingDate = model.ManufacturingDate,
-                ExpiryDate = model.ExpiryDate,
-                CreatedBy = userId,
-            };
-            _context.Batches.Add(consignment);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0)
-            {
+                Batch consignment = new Batch()
+                {
+                    BatchBarcode = "#####",
+                    ProductId = model.ProductId,
+                    ManufacturingDate = model.ManufacturingDate,
+                    ExpiryDate = model.ExpiryDate,
+                    CreatedBy = userId,
+                };
+                _context.Batches.Add(consignment);
+                await _context.SaveChangesAsync();
                 consignment.BatchBarcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
                 await _context.SaveChangesAsync();
                 return true;
+            }catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return false;
             }
-            return false;
         }
 
         public async Task<bool> DeleteBatch(int id, int userId)
@@ -237,6 +243,114 @@ namespace UtNhanDrug_BE.Services.BatchService
                 StatusCode = 400,
                 Message = "Not found this batch"
             };
+        }
+
+        public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGRNByBatchId(int id)
+        {
+            var query = from grn in _context.GoodsReceiptNotes
+                        where grn.BatchId == id
+                        select grn;
+            var data = await query.Select(x => new ViewGoodsReceiptNoteModel()
+            {
+                Id = x.Id,
+                GoodsReceiptNoteType = new ViewModel()
+                {
+                    Id = x.GoodsReceiptNoteType.Id,
+                    Name = x.GoodsReceiptNoteType.Name
+                },
+                Batch = new ViewBatch()
+                {
+                    Id = x.Batch.Id,
+                    Barcode = x.Batch.BatchBarcode,
+                    ManufacturingDate = x.Batch.ManufacturingDate,
+                    ExpiryDate = x.Batch.ExpiryDate
+                },
+                Supplier = new ViewModel()
+                {
+                    Id = x.Supplier.Id,
+                    Name = x.Supplier.Name
+                },
+                Quantity = x.Quantity,
+                Unit = x.Unit,
+                InvoiceId = x.InvoiceId,
+                ConvertedQuantity = x.ConvertedQuantity,
+                TotalPrice = x.TotalPrice,
+                BaseUnitPrice = x.BaseUnitPrice,
+                CreatedBy = new ViewModel()
+                {
+                    Id = x.CreatedByNavigation.Id,
+                    Name = x.CreatedByNavigation.FullName
+                },
+                CreatedAt = x.CreatedAt,
+            }).ToListAsync();
+
+            if(data.Count == 0){
+                return new Response<List<ViewGoodsReceiptNoteModel>>(data)
+                {
+                    StatusCode = 400,
+                    Message = "Không có phiếu nhập hàng cho lô sản phẩm này"
+                };
+            };
+            return new Response<List<ViewGoodsReceiptNoteModel>>(data)
+            {
+                Message = "Thành công"
+            };
+        }
+
+        public async Task<Response<List<ViewQuantityInventoryModel>>> GetInventoryByUnitId(int unitId)
+        {
+            var query = from pup in _context.ProductUnitPrices
+                        where pup.Id == unitId
+                        select pup;
+            var data = await query.Select(x => new ViewModel()
+            {
+                Id = x.ProductId,
+                Name = x.Product.Name
+            }).FirstOrDefaultAsync();
+
+            if (data == null)
+            {
+                return new Response<List<ViewQuantityInventoryModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Không tồn tại đơn vị này"
+                };
+            }
+
+            var query1 = from b in _context.Batches
+                         where b.ProductId == data.Id
+                         select b;
+            var data1 = await query1.Select(xx => new ViewQuantityInventoryModel()
+            {
+                BatchId = xx.Id,
+                BatchBarcode = xx.BatchBarcode,
+                ExpiryDate = xx.ExpiryDate,
+                ManufacturingDate = xx.ManufacturingDate
+            }).ToListAsync();
+
+            if (data1.Count == 0)
+            {
+                return new Response<List<ViewQuantityInventoryModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Không tồn tại đơn vị này"
+                };
+            }
+
+            foreach (var x in data1)
+            {
+                var currentQuantity = await GetCurrentQuantity(x.BatchId);
+                foreach(var xx in currentQuantity)
+                {
+                    if(unitId == xx.Id)
+                    {
+                        x.Unit = xx.Unit;
+                        x.CurrentQuantity = xx.CurrentQuantity;
+                    }
+                }
+                
+            }
+            return new Response<List<ViewQuantityInventoryModel>>(data1);
         }
     }
 }

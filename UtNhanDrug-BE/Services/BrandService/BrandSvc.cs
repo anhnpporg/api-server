@@ -7,6 +7,7 @@ using System.Linq;
 using System;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ModelHelper;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.BrandService
 {
@@ -21,15 +22,24 @@ namespace UtNhanDrug_BE.Services.BrandService
 
         public async Task<bool> CreateBrand(int userId, CreateBrandModel model)
         {
-            Brand brand = new Brand()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                Name = model.Name,
-                CreatedBy = userId,
-            };
-            _context.Brands.Add(brand);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0) return true;
-            return false;
+                Brand brand = new Brand()
+                {
+                    Name = model.Name,
+                    CreatedBy = userId,
+                };
+                _context.Brands.Add(brand);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
 
         public async Task<bool> UpdateBrand(int brandId,int userId, UpdateBrandModel model)

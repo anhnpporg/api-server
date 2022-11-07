@@ -7,6 +7,7 @@ using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using System.Linq;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ModelHelper;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 {
@@ -28,15 +29,24 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 
         public async Task<bool> CreateActiveSubstance(int userId, CreateActiveSubstanceModel model)
         {
-            ActiveSubstance a = new ActiveSubstance()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                Name = model.Name,
-                CreatedBy = userId,
-            };
-            _context.ActiveSubstances.Add(a);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0) return true;
-            return false;
+                ActiveSubstance a = new ActiveSubstance()
+                {
+                    Name = model.Name,
+                    CreatedBy = userId,
+                };
+                _context.ActiveSubstances.Add(a);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
 
         public async Task<bool> DeleteActiveSubstance(int id, int userId)

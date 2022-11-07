@@ -110,7 +110,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 Unit = x.Unit,
                 InvoiceId = x.InvoiceId,
                 ConvertedQuantity = x.ConvertedQuantity,
-                TotalPrice =  x.TotalPrice,
+                TotalPrice = x.TotalPrice,
                 BaseUnitPrice = x.BaseUnitPrice,
                 CreatedBy = new ViewModel()
                 {

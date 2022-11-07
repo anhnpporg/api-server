@@ -15,6 +15,7 @@ using UtNhanDrug_BE.Services.EmailSenderService;
 using UtNhanDrug_BE.Models.EmailModel;
 using UtNhanDrug_BE.Models.PagingModel;
 using UtNhanDrug_BE.Models.ResponseModel;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.ManagerService
 {
@@ -123,27 +124,48 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         public async Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffModel model)
         {
-            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
-            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            //string avatar;
-            //if(model.Avatar == null)
-            //{
-            //    avatar = defaultAvatar;
-            //}
-            //else
-            //{
-            //    avatar = model.Avatar;
-            //}
-
-            var updateEmail = await UpdateEmail(userId, model.EmailAddressRecovery);
-            if (updateEmail.StatusCode == 400)
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                return updateEmail;
+                var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+                var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+                var checkPhoneNumber = await CheckPhoneNumber(userId, model.PhoneNumber);
+                if (checkPhoneNumber.Data != true) return checkPhoneNumber;
+                //string avatar;
+                //if(model.Avatar == null)
+                //{
+                //    avatar = defaultAvatar;
+                //}
+                //else
+                //{
+                //    avatar = model.Avatar;
+                //}
+                if (user != null && staff != null)
+                {
+                    staff.PhoneNumber = model.PhoneNumber;
+                    var updateEmail = await UpdateEmail(userId, model.EmailAddressRecovery);
+                    if (updateEmail.StatusCode == 400)
+                    {
+                        await transaction.RollbackAsync();
+                        return updateEmail;
+                    }
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return new Response<bool>(true)
+                {
+                    Message = "Cập nhật nhân viên thành công"
+                };
             }
-            return new Response<bool>(true)
+            catch
             {
-                Message = "Cập nhật nhân viên thành công"
-            };
+                await transaction.RollbackAsync();
+                return new Response<bool>(true)
+                {
+                    Message = "Cập nhật nhân viên thành công"
+                };
+            }
+            
             //if (user != null && staff != null)
             //{
             //    //user.FullName = model.Fullname;
@@ -164,12 +186,48 @@ namespace UtNhanDrug_BE.Services.ManagerService
             //};
         }
 
-        public async Task<bool> ChangePassword(int userId, ChangePasswordModel model)
+        private async Task<Response<bool>> CheckCurrentPassword(int userId ,string currentPassword)
+        {
+            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            int hashingId = userLogin.HashingAlgorithmId;
+            string passwordEncode;
+            if (hashingId == 1)
+            {
+                passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(currentPassword);
+            }
+            else if (hashingId == 2)
+            {
+                passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(currentPassword);
+            }
+            else
+            {
+                passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(currentPassword);
+            }
+            if (!passwordEncode.Equals(userLogin.PasswordHash))
+            {
+                return new Response<bool>(false)
+                {
+                    Message = "Mật khẩu hiện tại không đúng",
+                    StatusCode = 400
+                };
+            }
+            return new Response<bool>(true)
+            {
+                Message = "Mật khẩu hiện tại khớp",
+            };
+        }
+        public async Task<Response<bool>> ChangePassword(int userId, ChangePasswordModel model)
         {
             var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-
+            if(!model.NewPassword.Equals(model.ConfirmPassword)) return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Mật khẩu mới không khớp"
+            };
             if (userData != null)
             {
+                var checkCurrentPassword = await CheckCurrentPassword(userId, model.CurrentPassword);
+                if (checkCurrentPassword.Data == false) return checkCurrentPassword;
                 string passwordEncode;
                 Random rnd = new Random();
                 int hashingId = rnd.Next(1, 3);
@@ -188,9 +246,74 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 userData.PasswordHash = passwordEncode;
                 userData.HashingAlgorithmId = hashingId;
                 var result = await _context.SaveChangesAsync();
-                if (result > 0) return true;
+                if (result > 0)
+                {
+                    return new Response<bool>(true)
+                    {
+                        Message = "Đổi mật khẩu thành công"
+                    };
+                }
+                else return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Đổi mật khẩu thất bại"
+                };
             }
-            return false;
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Không tìm thấy tài khoản"
+            };
+        }
+        
+        public async Task<Response<bool>> ChangePasswordByUserId(int userId, ChangePasswordByIdModel model)
+        {
+            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            if (!model.NewPassword.Equals(model.ConfirmPassword)) return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Mật khẩu mới không khớp"
+            };
+            if (userData != null)
+            {
+                var checkCurrentPassword = await CheckCurrentPassword(userId, model.CurrentPassword);
+                if (checkCurrentPassword.Data == false) return checkCurrentPassword;
+                string passwordEncode;
+                Random rnd = new Random();
+                int hashingId = rnd.Next(1, 3);
+                if (hashingId == 1)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(model.NewPassword);
+                }
+                else if (hashingId == 2)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(model.NewPassword);
+                }
+                else
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(model.NewPassword);
+                }
+                userData.PasswordHash = passwordEncode;
+                userData.HashingAlgorithmId = hashingId;
+                var result = await _context.SaveChangesAsync();
+                if (result > 0)
+                {
+                    return new Response<bool>(true)
+                    {
+                        Message = "Đổi mật khẩu thành công"
+                    };
+                }
+                else return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Đổi mật khẩu thất bại"
+                };
+            }
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Không tìm thấy tài khoản"
+            };
         }
 
         //public async Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model)
@@ -200,6 +323,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         public async Task<Customer> CreateCustomer(int UserId, CreateCustomerModel model)
         {
+            
             var isExits = await FindCustomer(model.PhoneNumber);
             if (isExits != true)
             {
@@ -330,6 +454,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
             {
                 ManagerViewModel model = new ManagerViewModel()
                 {
+                    UserAccount = user.UserLoginDatum.LoginName,
                     CreatedAt = user.CreatedAt,
                     Fullname = user.FullName,
                     Email = userLogin.EmailAddressRecovery,
@@ -342,6 +467,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
             {
                 ViewStaffModel model = new ViewStaffModel()
                 {
+                    UserAccount = user.UserLoginDatum.LoginName,
                     UserId = userId,
                     PhoneNumber = staff.PhoneNumber,
                     Avatar = staff.UrlAvartar,
@@ -673,6 +799,72 @@ namespace UtNhanDrug_BE.Services.ManagerService
             {
                 StatusCode = 400,
                 Message = "Không tìm thấy tài khoản này"
+            };
+        }
+
+        public async Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffBaseModel model)
+        {
+            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+            var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            var checkPhoneNumber = await CheckPhoneNumber(userId, model.PhoneNumber);
+            if(checkPhoneNumber.Data != true) return checkPhoneNumber;
+
+            
+            string avatar;
+            if (model.Avartar == null)
+            {
+                avatar = defaultAvatar;
+            }
+            else
+            {
+                avatar = model.Avartar;
+            }
+            if (user != null && staff != null)
+            {
+                user.FullName = model.FullName;
+                staff.UrlAvartar = avatar;
+                staff.IsMale = model.IsMale;
+                staff.DateOfBirth = model.DateOfBirth;
+                staff.PhoneNumber = model.PhoneNumber;
+                await _context.SaveChangesAsync();
+                return new Response<bool>(true)
+                {
+                    Message = "Cập nhật nhân viên thành công"
+                };
+            }
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Cập nhật nhân viên không thành công"
+            };        
+        }
+
+        private async Task<Response<bool>> CheckPhoneNumber (int userId, string phoneNumber)
+        {
+            var u = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+            if (u == null)
+            {
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Không có nhân viên này"
+                };
+            }
+            var users = await _context.Staffs.ToListAsync();
+            foreach(var user in users)
+            {
+                if (user.PhoneNumber.Equals(phoneNumber) && user.UserAccountId != userId)
+                {
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Số điện thoại đã có người sử dụng"
+                    };
+                }
+            }
+            
+            return new Response<bool>(true)
+            {
             };
         }
     }

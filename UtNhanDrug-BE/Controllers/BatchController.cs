@@ -42,6 +42,16 @@ namespace UtNhanDrug_BE.Controllers
             if (disease == null) return NotFound(new { message = "Not found this batch" });
             return Ok(disease);
         }
+
+        [Authorize]
+        [Route("unit/{id}/inventory")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInventoryByUnitId([FromRoute] int id)
+        {
+            var i = await _consignmentSvc.GetInventoryByUnitId(id);
+            return StatusCode(i.StatusCode, i);
+        }
         
         [Authorize]
         [Route("batches/{id}")]
@@ -52,6 +62,16 @@ namespace UtNhanDrug_BE.Controllers
             var disease = await _consignmentSvc.GetBatchById(id);
             if (disease == null) return NotFound(new { message = "Not found this batch" });
             return Ok(disease);
+        }
+        
+        [Authorize]
+        [Route("batches/{id}/goods-receipt-note")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGRNById([FromRoute] int id)
+        {
+            var grn = await _consignmentSvc.GetGRNByBatchId(id);
+            return StatusCode(grn.StatusCode, grn);
         }
         
         [Authorize]

@@ -10,6 +10,7 @@ using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductUnitService;
 using System.Linq;
 using UtNhanDrug_BE.Models.ModelHelper;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace UtNhanDrug_BE.Services.InvoiceService
 {
@@ -26,8 +27,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         }
         public async Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
-            Invoice i = null;
-            GoodsIssueNote g = null;
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
                 if (model.CustomerId == null)
@@ -46,7 +46,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         };
                     }
                 }
-                i = new Invoice()
+                Invoice i = new Invoice()
                 {
                     CustomerId = model.CustomerId,
                     BodyWeight = model.BodyWeight,
@@ -56,7 +56,6 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 };
                 _context.Invoices.Add(i);
                 await _context.SaveChangesAsync();
-
                 foreach (OrderDetailModel x in model.Product)
                 {
 
@@ -97,7 +96,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             price = (decimal)unit.Price;
                         }
 
-                        g = new GoodsIssueNote()
+                        GoodsIssueNote g = new GoodsIssueNote()
                         {
                             GoodsIssueNoteTypeId = 1,
                             OrderDetailId = o.Id,
@@ -112,20 +111,19 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         i.TotalPrice += o.TotalPrice;
                     }
                 }
-
-
-
-                await _context.SaveChangesAsync();
+                var r = await _context.SaveChangesAsync();
+                if (r > 0)
+                {
+                    await transaction.CommitAsync();
+                }
                 return new Response<bool>(true)
                 {
                     Message = "Tạo hoá đơn thành công"
                 };
-
             }
             catch (Exception e)
             {
-                _context.Invoices.Remove(i);
-                _context.GoodsIssueNotes.Remove(g);
+                await transaction.RollbackAsync();
                 return new Response<bool>(false)
                 {
                     StatusCode = 400,
