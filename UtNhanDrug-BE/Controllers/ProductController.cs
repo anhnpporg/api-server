@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Services.ProductService;
@@ -63,7 +64,22 @@ namespace UtNhanDrug_BE.Controllers
                 product.ActiveSubstances = activeSubstance;
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
-                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
+                List<ViewBatchModel> batches;
+                if (request.SearchValue.Contains("BAT"))
+                {
+                    batches = new List<ViewBatchModel>();
+                    var batch = await _batchSvc.GetBatchesByBarcode(request.SearchValue);
+                    if(batch.Data == null)
+                    {
+                        return StatusCode(batch.StatusCode, batch);
+                    }
+                    batches.Add(batch.Data);
+                }
+                else
+                {
+                    batches = await _batchSvc.GetBatchesByProductId(product.Id);
+                }
+                
                 product.Batches = batches;
             }
             

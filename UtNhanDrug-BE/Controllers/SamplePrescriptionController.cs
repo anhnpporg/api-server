@@ -22,7 +22,7 @@ namespace UtNhanDrug_BE.Controllers
             _spSvc = spSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("sample-prescriptions")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -32,7 +32,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("sample-prescriptions/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -43,7 +43,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("sample-prescriptions")]
         [HttpPost]
         [MapToApiVersion("1.0")]
@@ -65,7 +65,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "create successfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("sample-prescriptions/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateSamplePrescription([FromRoute] int id, [FromForm] UpdateSamplePrescriptionModel model)
@@ -88,7 +88,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("sample-prescriptions/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteSamplePrescription([FromRoute] int id)

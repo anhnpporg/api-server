@@ -75,12 +75,12 @@ namespace UtNhanDrug_BE.Controllers
         }
         
         [Authorize]
-        [Route("batches/filter")]
+        [Route("batches/barcode")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetbatchByBarcode([FromQuery] string barcode)
+        public async Task<ActionResult> GetbatchByBarcode([FromQuery] string batchBarcode)
         {
-            var batch = await _consignmentSvc.GetBatchesByBarcode(barcode);
+            var batch = await _consignmentSvc.GetBatchesByBarcode(batchBarcode);
             return StatusCode(batch.StatusCode, batch);
         }
 

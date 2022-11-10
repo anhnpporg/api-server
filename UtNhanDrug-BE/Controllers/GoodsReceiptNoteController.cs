@@ -63,7 +63,7 @@ namespace UtNhanDrug_BE.Controllers
         [Route("goods-receipt-notes")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateGRN([FromForm] CreateGoodsReceiptNoteModel model)
+        public async Task<ActionResult> CreateGRN([FromForm] List<CreateGoodsReceiptNoteModel> model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -77,14 +77,13 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _grnSvc.CreateGoodsReceiptNote(userId, model);
-            if (!result) return BadRequest(new { message = "Create good receips note fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
         [HttpPut("goods-receipt-notes/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateGoodsReceiptNote([FromRoute] int id, [FromForm] UpdateGoodsReceiptNoteModel model)
+        public async Task<ActionResult> UpdateGoodsReceiptNote([FromRoute] int id, [FromBody] UpdateGoodsReceiptNoteModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();

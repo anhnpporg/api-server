@@ -25,7 +25,7 @@ namespace UtNhanDrug_BE.Controllers
             _productSvc = productSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("brands")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -35,7 +35,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(brands);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("brands/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -51,7 +51,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(products);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("brands/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -62,7 +62,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(brand);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("brands")]
         [HttpPost]
         [MapToApiVersion("1.0")]
@@ -84,7 +84,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "create successfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("brands/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateBrand([FromRoute] int id, [FromForm] UpdateBrandModel model)
@@ -107,7 +107,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("brands/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteBrand([FromRoute] int id)

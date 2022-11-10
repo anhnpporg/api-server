@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using Mailjet.Client;
+using MailKit.Net.Smtp;
 using MimeKit;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Configurations;
@@ -8,6 +9,7 @@ namespace UtNhanDrug_BE.Services.EmailSenderService
 {
     public class SenderService : ISenderService
     {
+
         private readonly EmailConfiguration _emailConfig;
         public SenderService(EmailConfiguration emailConfig)
         {
@@ -49,5 +51,7 @@ namespace UtNhanDrug_BE.Services.EmailSenderService
                 client.Dispose();
             }
         }
+
+        
     }
 }

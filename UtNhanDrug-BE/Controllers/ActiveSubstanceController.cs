@@ -25,7 +25,7 @@ namespace UtNhanDrug_BE.Controllers
             _productSvc = productSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -35,7 +35,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -51,7 +51,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(products);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -62,7 +62,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances")]
         [HttpPost]
         [MapToApiVersion("1.0")]
@@ -84,7 +84,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "create successfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("active-substances/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateBrand([FromRoute] int id, [FromForm] UpdateActiveSubstanceModel model)
@@ -107,7 +107,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("active-substances/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteBrand([FromRoute] int id)

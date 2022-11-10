@@ -121,10 +121,8 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateStaff([FromForm] CreateStaffModel model)
         {
-            if (model.Password != model.PasswordConfirm) return BadRequest(new { message = "Mật khẩu xác nhận chưa khớp" });
             var staff = await _userSvc.CreateStaff(model);
-            if (staff == false) return BadRequest(new { message = "Tên đăng nhập đã tồn tại" });
-            return Ok(new { message = "Tạo nhân viên thành công" });
+            return StatusCode(staff.StatusCode, staff);
         }
 
         [Authorize(Roles = "MANAGER, STAFF")]
@@ -145,8 +143,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "Bạn chưa đăng nhập" });
             }
             var customer = await _userSvc.CreateCustomer(userId, model);
-            if (customer == null) return BadRequest(new { message = "Số điện thoại này đã được đăng kí" });
-            return Ok(new { message = "Tạo khách hàng thành công" });
+            return StatusCode(customer.StatusCode, customer);
         }
 
         [Authorize]
@@ -186,10 +183,8 @@ namespace UtNhanDrug_BE.Controllers
             }
             catch (Exception)
             {
-                return BadRequest(new { message = "You are not login" });
+                return BadRequest(new { message = "Bạn chưa đăng nhập" });
             }
-            var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Không tìm thấy tài khoản này" });
             var token = await _userSvc.CreateTokenVerifyPassword(userId);
             return StatusCode(token.StatusCode, token);
         }
@@ -211,32 +206,31 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            // check email
-            var checkExits = await _userSvc.CheckEmail(userId);
-            if (checkExits == 1) return BadRequest(new { message = "Account not have an email" });
-            if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
+            //// check email
+            //var checkExits = await _userSvc.CheckEmail(userId);
+            //if (checkExits == 1) return BadRequest(new { message = "Account not have an email" });
+            //if (checkExits == 3) return BadRequest(new { message = "Email is verified" });
 
             //check time
-            var checkTime = await _userSvc.CheckTimeVerifyEmail(userId);
-            if (checkTime == false) return BadRequest(new { message = "Verification code expired" });
+            //var checkTime = await _userSvc.CheckTimeVerifyEmail(userId);
+            //if (checkTime == false) return BadRequest(new { message = "Verification code expired" });
 
             //check result
             var result = await _userSvc.CheckTokenVerifyEmail(userId, model);
-            if (result == false) return BadRequest(new { message = "Verification fail" });
-            return Ok(new { message = "Verification sucessfully" });
-        }
-
-
-        [Authorize(Roles = "MANAGER")]
-        [HttpPut("users/recovery-password/{userId}")]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> RecoveryPassword([FromRoute] int userId)
-        {
-            var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Không tìm thấy nhân viên" });
-            var result = await _userSvc.RecoveryPassword(userId);
             return StatusCode(result.StatusCode, result);
         }
+
+
+        //[Authorize(Roles = "MANAGER")]
+        //[HttpPut("users/recovery-password/{userId}")]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> RecoveryPassword([FromRoute] int userId)
+        //{
+        //    var user = await _userSvc.CheckUser(userId);
+        //    if (user == false) return NotFound(new { message = "Không tìm thấy nhân viên" });
+        //    var result = await _userSvc.RecoveryPassword(userId);
+        //    return StatusCode(result.StatusCode, result);
+        //}
 
         [Authorize(Roles = "STAFF")]
         [HttpPut("staffs/profile")]
@@ -254,8 +248,6 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Not found account" });
             var result = await _userSvc.UpdateStaffProfile(userId, model);
             return StatusCode(result.StatusCode, result);
         }
@@ -286,20 +278,20 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "Bạn chưa đăng nhập" });
             }
 
-            //check email
-            var user = await _userSvc.CheckUser(userId);
-            if (user == false) return NotFound(new { message = "Không tìm thấy tài khoản" });
-            //check confirm password
-            if (model.NewPassword != model.ConfirmPassword) return BadRequest(new { message = "Mật khẩu xác nhận chưa khớp" });
-            //check current password
-            var checkPassword = await _userSvc.CheckPassword(userId, model.CurrentPassword);
-            if (checkPassword == false) return BadRequest(new { message = "Mật khẩu hiện tại sai" });
-            //check time token
-            var checkTime = await _userSvc.CheckTimeVerifyPassword(userId);
-            if (checkTime == false) return BadRequest(new { message = "Mã xác thực hết hạn" });
-            //check password recovery token
-            var checkToken = await _userSvc.CheckVerifyPassword(userId, model.TokenRecovery);
-            if (checkToken == false) return BadRequest(new { message = "Mã xác thực sai" });
+            ////check email
+            //var user = await _userSvc.CheckUser(userId);
+            //if (user == false) return NotFound(new { message = "Không tìm thấy tài khoản" });
+            ////check confirm password
+            //if (model.NewPassword != model.ConfirmPassword) return BadRequest(new { message = "Mật khẩu xác nhận chưa khớp" });
+            ////check current password
+            //var checkPassword = await _userSvc.CheckPassword(userId, model.CurrentPassword);
+            //if (checkPassword == false) return BadRequest(new { message = "Mật khẩu hiện tại sai" });
+            ////check time token
+            //var checkTime = await _userSvc.CheckTimeVerifyPassword(userId);
+            //if (checkTime == false) return BadRequest(new { message = "Mã xác thực hết hạn" });
+            ////check password recovery token
+            //var checkToken = await _userSvc.CheckVerifyPassword(userId, model.TokenRecovery);
+            //if (checkToken == false) return BadRequest(new { message = "Mã xác thực sai" });
             //check change password
             var result = await _userSvc.ChangePassword(userId, model);
             return StatusCode(result.StatusCode, result);
@@ -375,9 +367,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> BanAccount([FromRoute] int userId)
         {
             var result = await _userSvc.BanAccount(userId);
-            if (result == -1) return NotFound(new { message = "Not found this account" });
-            if (result == 0) return BadRequest(new { message = "Ban fail" });
-            return Ok(new { message = "Ban successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize(Roles = "MANAGER")]
@@ -386,9 +376,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> UnBanAccount([FromRoute] int userId)
         {
             var result = await _userSvc.UnBanAccount(userId);
-            if (result == -1) return NotFound(new { message = "Not found this account" });
-            if (result == 0) return BadRequest(new { message = "Ban fail" });
-            return Ok(new { message = "Unban successfully" });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

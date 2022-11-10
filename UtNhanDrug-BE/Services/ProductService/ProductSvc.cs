@@ -172,7 +172,8 @@ namespace UtNhanDrug_BE.Services.ProductService
         {
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue)
+                        join b in _context.Batches on p.Id equals b.ProductId
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue) || b.BatchBarcode.Contains(request.SearchValue)
                         select  p;
             var data = query.Distinct();
             var result = await data.Select( p => new ViewProductModel()

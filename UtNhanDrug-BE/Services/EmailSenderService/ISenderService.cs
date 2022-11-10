@@ -6,5 +6,7 @@ namespace UtNhanDrug_BE.Services.EmailSenderService
     public interface ISenderService
     {
         Task SendEmail(MessageModel message);
+
+        
     }
 }

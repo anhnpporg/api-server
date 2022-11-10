@@ -35,7 +35,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     var customer = await _userSvc.CreateCustomer(UserId, model.Customer);
                     if (customer != null)
                     {
-                        model.CustomerId = customer.Id;
+                        model.CustomerId = customer.Data.Id;
                     }
                     else
                     {

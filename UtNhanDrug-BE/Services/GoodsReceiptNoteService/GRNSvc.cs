@@ -9,6 +9,8 @@ using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
+using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Models.ResponseModel;
 
 namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
@@ -26,60 +28,82 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             return true;
         }
 
-        public async Task<bool> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model)
+        public async Task<Response<bool>> CreateGoodsReceiptNote(int userId, List<CreateGoodsReceiptNoteModel> model)
         {
-            var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == model.ProductUnitPriceId);
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
+            {
+                foreach(var m in model)
+                {
+                    // add supplier id, if null add object supplier
+                    if (m.SupplierId == null)
+                    {
+                        Supplier s = new Supplier()
+                        {
+                            Name = m.Supplier.Name,
+                            CreatedBy = userId
+                        };
+                        var supplier = _context.Suppliers.Add(s);
+                        await _context.SaveChangesAsync();
+                        m.SupplierId = s.Id;
+                    }
+                    
+                    //batches 
+                    foreach(var b in m.Batches)
+                    {
+                        var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
+                        if (b.BatchId == null)
+                        {
+                            Batch s = new Batch()
+                            {
+                                BatchBarcode = "#####",
+                                ProductId = b.Batch.ProductId,
+                                ManufacturingDate = b.Batch.ManufacturingDate,
+                                ExpiryDate = b.Batch.ExpiryDate,
+                                CreatedBy = userId,
+                            };
+                            var batch = _context.Batches.Add(s);
+                            await _context.SaveChangesAsync();
+                            s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                            await _context.SaveChangesAsync();
+                            b.BatchId = s.Id;
 
-            if (model.SupplierId == null)
-            {
-                Supplier s = new Supplier()
+                            int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
+                            decimal baseUnitPrice = b.TotalPrice / convertedQuantity;
+                            GoodsReceiptNote grn = new GoodsReceiptNote()
+                            {
+                                GoodsReceiptNoteTypeId = m.GoodsReceiptNoteTypeId,
+                                BatchId = b.BatchId,
+                                InvoiceId = m.InvoiceId,
+                                SupplierId = m.SupplierId,
+                                Quantity = b.Quantity,
+                                Unit = unit.Unit,
+                                TotalPrice = b.TotalPrice,
+                                ConvertedQuantity = convertedQuantity,
+                                BaseUnitPrice = baseUnitPrice,
+                                CreatedBy = userId
+                            };
+                            _context.GoodsReceiptNotes.Add(grn);
+                            await _context.SaveChangesAsync();
+                            await transaction.CommitAsync();
+                        }
+                    }
+
+                }
+                return new Response<bool>(true)
                 {
-                    Name = model.Supplier.Name,
-                    CreatedBy = userId
+                    Message = "Tạo phiếu nhập hàng thành công"
                 };
-                var supplier = _context.Suppliers.Add(s);
-                await _context.SaveChangesAsync();
-                model.SupplierId = s.Id;
             }
-            
-            if (model.BatchId == null)
+            catch
             {
-                Batch s = new Batch()
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
                 {
-                    BatchBarcode = "#####",
-                    ProductId = model.Batch.ProductId,
-                    ManufacturingDate = model.Batch.ManufacturingDate,
-                    ExpiryDate = model.Batch.ExpiryDate,
-                    CreatedBy = userId,
+                    StatusCode = 400,
+                    Message = "Tạo phiếu nhập hàng thất bại"
                 };
-                var batch = _context.Batches.Add(s);
-                await _context.SaveChangesAsync();
-                s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
-                await _context.SaveChangesAsync();
-                model.BatchId = s.Id;
             }
-            int convertedQuantity = (int)(model.Quantity * unit.ConversionValue);
-            decimal baseUnitPrice = model.TotalPrice / convertedQuantity;
-            GoodsReceiptNote grn = new GoodsReceiptNote()
-            {
-                GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
-                BatchId = model.BatchId,
-                InvoiceId = model.InvoiceId,
-                SupplierId = model.SupplierId,
-                Quantity = model.Quantity,
-                Unit = unit.Unit,
-                TotalPrice = model.TotalPrice,
-                ConvertedQuantity = convertedQuantity,
-                BaseUnitPrice = baseUnitPrice,
-                CreatedBy = userId
-            };
-            _context.GoodsReceiptNotes.Add(grn);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0)
-            {
-                return true;
-            }
-            return false;
         }
 
         public async Task<List<ViewGoodsReceiptNoteModel>> GetAllGoodsReceiptNote()

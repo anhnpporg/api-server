@@ -8,6 +8,7 @@ namespace UtNhanDrug_BE.Models.StaffModel
         public string Password { get; set; }
         public string PasswordConfirm { get; set; }
         public string Fullname { get; set; }
+        public string Email { get; set; }
         public string Avatar { get; set; }
         public DateTime Dob { get; set; }
         public string PhoneNumber { get; set; }
