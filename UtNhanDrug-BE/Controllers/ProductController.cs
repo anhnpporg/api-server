@@ -44,7 +44,7 @@ namespace UtNhanDrug_BE.Controllers
                 var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                 product.ProductUnits = productUnits;
                 var batches = await _batchSvc.GetBatchesByProductId(product.Id);
-                product.Batches = batches;
+                product.Batches = batches.Data;
             }
             
 
@@ -77,7 +77,8 @@ namespace UtNhanDrug_BE.Controllers
                 }
                 else
                 {
-                    batches = await _batchSvc.GetBatchesByProductId(product.Id);
+                    var b = await _batchSvc.GetBatchesByProductId(product.Id);
+                    batches = b.Data;
                 }
                 
                 product.Batches = batches;
@@ -110,7 +111,7 @@ namespace UtNhanDrug_BE.Controllers
             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
             product.ProductUnits = productUnits;
             var batches = await _batchSvc.GetBatchesByProductId(product.Id);
-            product.Batches = batches;
+            product.Batches = batches.Data;
             return Ok(product);
         }
 

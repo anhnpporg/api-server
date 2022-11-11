@@ -29,7 +29,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllbatches()
         {
             var disease = await _consignmentSvc.GetAllBatch();
-            return Ok(disease);
+            return StatusCode(disease.StatusCode, disease);
         }
 
         [Authorize]
@@ -39,8 +39,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
         {
             var disease = await _consignmentSvc.GetBatchesByProductId(id);
-            if (disease == null) return NotFound(new { message = "Not found this batch" });
-            return Ok(disease);
+            return StatusCode(disease.StatusCode, disease);
         }
 
         [Authorize]
@@ -60,8 +59,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetbatchById([FromRoute] int id)
         {
             var disease = await _consignmentSvc.GetBatchById(id);
-            if (disease == null) return NotFound(new { message = "Not found this batch" });
-            return Ok(disease);
+            return StatusCode(disease.StatusCode, disease);
         }
         
         [Authorize]
@@ -102,8 +100,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _consignmentSvc.CreateBatch(userId, model);
-            if (!result) return BadRequest(new { message = "Create batch fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -122,11 +119,10 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this batch" });
+            //var isExit = await _consignmentSvc.CheckBatch(id);
+            //if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.UpdateBatch(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
         
         [Authorize]
@@ -146,11 +142,10 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this batch" });
+            //var isExit = await _consignmentSvc.CheckBatch(id);
+            //if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.DeleteBatch(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
