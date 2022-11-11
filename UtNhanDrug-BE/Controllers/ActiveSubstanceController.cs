@@ -32,7 +32,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllActiveSubstance()
         {
             var result = await _activeSubstanceSvc.GetAllActiveSubstance();
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -42,13 +42,13 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProducts([FromRoute] int id)
         {
             var products = await _activeSubstanceSvc.GetListProducts(id);
-            foreach (var product in products)
+            foreach (var product in products.Data)
             {
                 var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
                 product.ActiveSubstances = activeSubstance;
             }
 
-            return Ok(products);
+            return StatusCode(products.StatusCode, products);
         }
 
         [Authorize]
@@ -58,8 +58,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetActiveSubstanceById([FromRoute] int id)
         {
             var result = await _activeSubstanceSvc.GetActiveSubstanceById(id);
-            if (result == null) return NotFound(new { message = "Not found this active substance" });
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -80,8 +79,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _activeSubstanceSvc.CreateActiveSubstance(userId, model);
-            if (!result) return BadRequest(new { message = "Create active substance fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -100,11 +98,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _activeSubstanceSvc.CheckActiveSubstance(id);
-            if (!isExit) return NotFound(new { message = "Not found this active substance" });
             var result = await _activeSubstanceSvc.UpdateActiveSubstance(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -124,11 +119,8 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _activeSubstanceSvc.CheckActiveSubstance(id);
-            if (!isExit) return NotFound(new { message = "Not found this active substance" });
             var result = await _activeSubstanceSvc.DeleteActiveSubstance(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
     }
