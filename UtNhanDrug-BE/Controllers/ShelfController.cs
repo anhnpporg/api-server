@@ -18,11 +18,9 @@ namespace UtNhanDrug_BE.Controllers
     public class ShelfController : ControllerBase
     {
         private readonly IShelfSvc _shelfSvc;
-        private readonly IProductSvc _productSvc;
         public ShelfController(IShelfSvc shelfSvc, IProductSvc productSvc)
         {
             _shelfSvc = shelfSvc;
-            _productSvc = productSvc;
         }
 
         //CONTROLLER CATEGORY

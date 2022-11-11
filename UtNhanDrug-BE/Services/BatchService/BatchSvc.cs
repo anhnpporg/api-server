@@ -112,7 +112,7 @@ namespace UtNhanDrug_BE.Services.BatchService
             {
                 var query = from c in _context.Batches
                             select c;
-                var data = await query.Select(x => new ViewBatchModel()
+                var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
                 {
                     Id = x.Id,
                     BatchBarcode = x.BatchBarcode,
@@ -169,7 +169,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 var query = from b in _context.Batches
                             where b.ProductId == id
                             select b;
-                var data = await query.Select(x => new ViewBatchModel()
+                var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
                 {
                     Id = x.Id,
                     BatchBarcode = x.BatchBarcode,

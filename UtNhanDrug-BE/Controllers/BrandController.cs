@@ -18,11 +18,9 @@ namespace UtNhanDrug_BE.Controllers
     public class BrandController : ControllerBase
     {
         private readonly IBrandSvc _brandSvc;
-        private readonly IProductSvc _productSvc;
-        public BrandController(IBrandSvc brandSvc, IProductSvc productSvc)
+        public BrandController(IBrandSvc brandSvc)
         {
             _brandSvc = brandSvc;
-            _productSvc = productSvc;
         }
 
         [Authorize]
@@ -32,7 +30,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllBrand()
         {
             var brands = await _brandSvc.GetAllBrand();
-            return Ok(brands);
+            return StatusCode(brands.StatusCode, brands);
         }
 
         [Authorize]
@@ -42,13 +40,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProducts([FromRoute] int id)
         {
             var products = await _brandSvc.GetListProduct(id);
-            foreach (var product in products)
-            {
-                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance;
-            }
-
-            return Ok(products);
+            return StatusCode(products.StatusCode, products);
         }
 
         [Authorize]
@@ -58,8 +50,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetBrandById([FromRoute] int id)
         {
             var brand = await _brandSvc.GetBrandById(id);
-            if(brand == null) return NotFound(new { message = "Not found this brand" });
-            return Ok(brand);
+            return StatusCode(brand.StatusCode, brand);
         }
 
         [Authorize]
@@ -80,8 +71,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _brandSvc.CreateBrand(userId,model);
-            if(!result) return BadRequest(new { message = "Create brand fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -100,11 +90,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _brandSvc.CheckBrand(id);
-            if(!isExit) return NotFound(new { message = "Not found this brand" });
             var result = await _brandSvc.UpdateBrand(id,userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -123,12 +110,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-
-            var isExit = await _brandSvc.CheckBrand(id);
-            if (!isExit) return NotFound(new { message = "Not found this brand" });
             var result = await _brandSvc.DeleteBrand(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
         
     }
