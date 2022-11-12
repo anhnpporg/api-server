@@ -28,12 +28,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllGRN()
         {
             var result = await _grnSvc.GetAllGoodsReceiptNote();
-            foreach(var d in result)
-            {
-                var notes = await _grnSvc.GetListNoteLog(d.Id);
-                d.Note = notes;
-            }
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -43,7 +38,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllGRNTypes()
         {
             var result = await _grnSvc.GetListNoteTypes();
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -53,17 +48,14 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetGRNById([FromRoute] int id)
         {
             var result = await _grnSvc.GetGoodsReceiptNoteById(id);
-            var notes = await _grnSvc.GetListNoteLog(id);
-            result.Note = notes;
-            if (result == null) return NotFound(new { message = "Not found this goods receipt note" });
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
         [Route("goods-receipt-notes")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateGRN([FromForm] List<CreateGoodsReceiptNoteModel> model)
+        public async Task<ActionResult> CreateGRN([FromBody] List<CreateGoodsReceiptNoteModel> model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -96,11 +88,10 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _grnSvc.CheckGoodsReceiptNote(id);
-            if (!isExit) return NotFound(new { message = "Not found this goods receipt note" });
+            //var isExit = await _grnSvc.CheckGoodsReceiptNote(id);
+            //if (!isExit) return NotFound(new { message = "Not found this goods receipt note" });
             var result = await _grnSvc.UpdateGoodsReceiptNote(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
     }

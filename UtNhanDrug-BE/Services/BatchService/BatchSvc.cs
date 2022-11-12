@@ -318,7 +318,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                         select g;
             var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
 
-            var productId = await query.Select(x => x.Batch.ProductId).SumAsync();
+            var productId = await query.Select(x => x.Batch.ProductId).FirstOrDefaultAsync();
             var query2 = from g in _context.GoodsIssueNotes
                          where g.BatchId == batchId
                          select g;
@@ -409,11 +409,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 ConvertedQuantity = x.ConvertedQuantity,
                 TotalPrice = x.TotalPrice,
                 BaseUnitPrice = x.BaseUnitPrice,
-                CreatedBy = new ViewModel()
-                {
-                    Id = x.CreatedByNavigation.Id,
-                    Name = x.CreatedByNavigation.FullName
-                },
+                CreatedBy = x.CreatedBy,
                 CreatedAt = x.CreatedAt,
             }).ToListAsync();
 

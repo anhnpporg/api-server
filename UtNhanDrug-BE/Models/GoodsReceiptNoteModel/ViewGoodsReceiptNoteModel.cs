@@ -18,7 +18,7 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
         public int ConvertedQuantity { get; set; }
         public decimal BaseUnitPrice { get; set; }
         public DateTime CreatedAt { get; set; }
-        public ViewModel CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public List<NoteLog> Note { get; set; }
     }
     public class NoteLog
