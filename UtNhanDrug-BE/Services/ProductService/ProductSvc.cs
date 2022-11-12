@@ -218,7 +218,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         var activeSubstance = await GetListActiveSubstances(product.Id);
                         product.ActiveSubstances = activeSubstance.Data;
                         var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
-                        product.ProductUnits = productUnits;
+                        product.ProductUnits = productUnits.Data;
                         var batches = await GetBatchesByProductId(product.Id);
                         product.Batches = batches.Data;
                     }
@@ -350,7 +350,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     var activeSubstance = await GetListActiveSubstances(product.Id);
                     product.ActiveSubstances = activeSubstance.Data;
                     var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
-                    product.ProductUnits = productUnits;
+                    product.ProductUnits = productUnits.Data;
                     List<ViewBatchModel> batches;
                     if (request.SearchValue.Contains("BAT"))
                     {
@@ -528,7 +528,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     var activeSubstance = await GetListActiveSubstances(data.Id);
                     data.ActiveSubstances = activeSubstance.Data;
                     var productUnits = await _productUnitSvc.GetProductUnitByProductId(data.Id);
-                    data.ProductUnits = productUnits;
+                    data.ProductUnits = productUnits.Data;
                     var batches = await GetBatchesByProductId(data.Id);
                     data.Batches = batches.Data;
                     return new Response<ViewProductModel>(data)

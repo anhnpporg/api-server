@@ -83,7 +83,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         if (unit.Price == null)
                         {
                             var units = await _unitSvc.GetProductUnitByProductId(x.ProductId);
-                            foreach (var u in units)
+                            foreach (var u in units.Data)
                             {
                                 if (u.IsBaseUnit)
                                 {
