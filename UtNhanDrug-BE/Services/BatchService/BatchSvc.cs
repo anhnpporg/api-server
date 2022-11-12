@@ -162,62 +162,6 @@ namespace UtNhanDrug_BE.Services.BatchService
             
         }
 
-        public async Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id)
-        {
-            try
-            {
-                var query = from b in _context.Batches
-                            where b.ProductId == id
-                            select b;
-                var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
-                {
-                    Id = x.Id,
-                    BatchBarcode = x.BatchBarcode,
-                    Product = new ViewModel()
-                    {
-                        Id = x.Product.Id,
-                        Name = x.Product.Name
-                    },
-                    ManufacturingDate = x.ManufacturingDate,
-                    ExpiryDate = x.ExpiryDate,
-                    IsActive = x.IsActive,
-                    CreatedAt = x.CreatedAt,
-                    CreatedBy = new ViewModel()
-                    {
-                        Id = x.CreatedByNavigation.Id,
-                        Name = x.CreatedByNavigation.FullName
-                    },
-                }).ToListAsync();
-                foreach (var x in data)
-                {
-                    var currentQuantity = await GetCurrentQuantity(x.Id);
-                    x.CurrentQuantity = currentQuantity;
-                }
-                if(data.Count > 0)
-                {
-                    return new Response<List<ViewBatchModel>>(data)
-                    {
-                        Message = "Thông tin lô hàng"
-                    };
-                }
-                else
-                {
-                    return new Response<List<ViewBatchModel>>(null)
-                    {
-                        Message = "Không có lô hàng này"
-                    };
-                }
-            }
-            catch (Exception)
-            {
-                return new Response<List<ViewBatchModel>>(null)
-                {
-                    StatusCode = 400,
-                    Message = "Đã có lỗi xảy ra"
-                };
-            }
-        }
-
         public async Task<Response<ViewBatchModel>> GetBatchById(int id)
         {
             try

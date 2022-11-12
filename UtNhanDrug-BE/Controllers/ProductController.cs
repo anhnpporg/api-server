@@ -20,14 +20,10 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
-        private readonly IProductUnitPriceSvc _productUnitSvc;
-        private readonly IBatchSvc _batchSvc;
 
-        public ProductController(IProductSvc productSvc, IProductUnitPriceSvc productUnitSvc, IBatchSvc batchSvc)
+        public ProductController(IProductSvc productSvc)
         {
             _productSvc = productSvc;
-            _productUnitSvc = productUnitSvc;
-            _batchSvc = batchSvc;
         }
 
         [Authorize]
@@ -37,18 +33,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllProduct()
         {
             var products = await _productSvc.GetAllProduct();
-            foreach (var product in products)
-            {
-                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance;
-                var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
-                product.ProductUnits = productUnits;
-                var batches = await _batchSvc.GetBatchesByProductId(product.Id);
-                product.Batches = batches.Data;
-            }
-            
-
-            return Ok(products);
+            return StatusCode(products.StatusCode, products);
         }
         
         [Authorize]
@@ -58,33 +43,6 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProductPaging([FromQuery] ProductFilterRequest request)
         {
             var products = await _productSvc.GetProductFilter(request);
-            foreach (var product in products.Items)
-            {
-                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance;
-                var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
-                product.ProductUnits = productUnits;
-                List<ViewBatchModel> batches;
-                if (request.SearchValue.Contains("BAT"))
-                {
-                    batches = new List<ViewBatchModel>();
-                    var batch = await _batchSvc.GetBatchesByBarcode(request.SearchValue);
-                    if(batch.Data == null)
-                    {
-                        return StatusCode(batch.StatusCode, batch);
-                    }
-                    batches.Add(batch.Data);
-                }
-                else
-                {
-                    var b = await _batchSvc.GetBatchesByProductId(product.Id);
-                    batches = b.Data;
-                }
-                
-                product.Batches = batches;
-            }
-            
-
             return Ok(products);
         }
         
@@ -95,7 +53,17 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetRouteOfAdministrations()
         {
             var result = await _productSvc.GetListRouteOfAdmin();
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [Route("products/{id}/batches")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
+        {
+            var disease = await _productSvc.GetBatchesByProductId(id);
+            return StatusCode(disease.StatusCode, disease);
         }
 
         [Authorize]
@@ -105,14 +73,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProductById([FromRoute] int id)
         {
             var product = await _productSvc.GetProductById(id);
-            if (product == null) return NotFound(new { message = "Not found this product" });
-            var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-            product.ActiveSubstances = activeSubstance;
-            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
-            product.ProductUnits = productUnits;
-            var batches = await _batchSvc.GetBatchesByProductId(product.Id);
-            product.Batches = batches.Data;
-            return Ok(product);
+            return StatusCode(product.StatusCode, product);
         }
 
         [Authorize]
@@ -133,8 +94,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _productSvc.CreateProduct(userId, model);
-            if (!result) return BadRequest(new { message = "Create product fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -153,11 +113,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _productSvc.CheckProduct(id);
-            if (!isExit) return NotFound(new { message = "Not found this product" });
             var result = await _productSvc.UpdateProduct(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -176,12 +133,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-
-            var isExit = await _productSvc.CheckProduct(id);
-            if (!isExit) return NotFound(new { message = "Not found this product" });
             var result = await _productSvc.DeleteProduct(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

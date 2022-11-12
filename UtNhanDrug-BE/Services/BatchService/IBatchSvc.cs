@@ -11,7 +11,6 @@ namespace UtNhanDrug_BE.Services.BatchService
         Task<Response<bool>> CreateBatch(int userId, CreateBatchModel model);
         Task<Response<bool>> UpdateBatch(int id, int userId, UpdateBatchModel model);
         Task<Response<bool>> DeleteBatch(int id, int userId);
-        Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id);
         Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGRNByBatchId(int id);
         Task<Response<ViewBatchModel>> GetBatchesByBarcode(string barcode);
         Task<Response<ViewBatchModel>> GetBatchById(int id);

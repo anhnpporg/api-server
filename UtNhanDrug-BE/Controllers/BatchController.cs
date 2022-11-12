@@ -33,16 +33,6 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
-        [Route("products/{id}/batches")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
-        {
-            var disease = await _consignmentSvc.GetBatchesByProductId(id);
-            return StatusCode(disease.StatusCode, disease);
-        }
-
-        [Authorize]
         [Route("unit/{id}/inventory")]
         [HttpGet]
         [MapToApiVersion("1.0")]

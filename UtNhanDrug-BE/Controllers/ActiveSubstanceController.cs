@@ -45,7 +45,7 @@ namespace UtNhanDrug_BE.Controllers
             foreach (var product in products.Data)
             {
                 var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance;
+                product.ActiveSubstances = activeSubstance.Data;
             }
 
             return StatusCode(products.StatusCode, products);

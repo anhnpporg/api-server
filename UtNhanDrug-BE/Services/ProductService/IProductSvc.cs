@@ -4,19 +4,21 @@ using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.PagingModel;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Models.ResponseModel;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
     public interface IProductSvc
     {
-        Task<bool> CreateProduct(int userId, CreateProductModel model);
-        Task<bool> UpdateProduct(int brandId, int userId, UpdateProductModel model);
-        Task<bool> DeleteProduct(int brandId, int userId);
-        Task<ViewProductModel> GetProductById(int id);
-        Task<List<ViewProductModel>> GetAllProduct();
-        Task<bool> CheckProduct(int brandId);
-        Task<List<ViewModel>> GetListActiveSubstances(int productId);
-        Task<List<ViewModel>> GetListRouteOfAdmin();
+        Task<Response<bool>> CreateProduct(int userId, CreateProductModel model);
+        Task<Response<bool>> UpdateProduct(int brandId, int userId, UpdateProductModel model);
+        Task<Response<bool>> DeleteProduct(int brandId, int userId);
+        Task<Response<ViewProductModel>> GetProductById(int id);
+        Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id);
+        Task<Response<List<ViewProductModel>>> GetAllProduct();
+        //Task<bool> CheckProduct(int brandId);
+        Task<Response<List<ViewModel>>> GetListActiveSubstances(int productId);
+        Task<Response<List<ViewModel>>> GetListRouteOfAdmin();
         Task<PageResult<ViewProductModel>> GetProductFilter(ProductFilterRequest request);
         //Task<PageResult<PageResult<ViewProductModel>>> GetProductPaging(ProductPagingRequest request);
     }

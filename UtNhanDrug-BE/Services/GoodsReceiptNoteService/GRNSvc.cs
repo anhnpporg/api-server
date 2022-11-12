@@ -17,11 +17,9 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
     public class GRNSvc : IGRNSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
-        private readonly IBatchSvc _batch;
-        public GRNSvc(ut_nhan_drug_store_databaseContext context, IBatchSvc batch)
+        public GRNSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
-            _batch = batch;
         }
         //public async Task<bool> CheckGoodsReceiptNote(int id)
         //{
@@ -114,21 +112,21 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             }
         }
 
-        private async Task<int> GetCurrentQuantity(int batchId)
-        {
-            var query = from g in _context.GoodsReceiptNotes
-                        where g.BatchId == batchId
-                        select g;
-            var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
+        //private async Task<int> GetCurrentQuantity(int batchId)
+        //{
+        //    var query = from g in _context.GoodsReceiptNotes
+        //                where g.BatchId == batchId
+        //                select g;
+        //    var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
 
-            var productId = await query.Select(x => x.Batch.ProductId).SumAsync();
-            var query2 = from g in _context.GoodsIssueNotes
-                         where g.BatchId == batchId
-                         select g;
-            var saledQuantity = await query2.Select(x => x.ConvertedQuantity).SumAsync();
-            var currentQuantity = totalQuantity - saledQuantity;
-            return currentQuantity;
-        }
+        //    var productId = await query.Select(x => x.Batch.ProductId).SumAsync();
+        //    var query2 = from g in _context.GoodsIssueNotes
+        //                 where g.BatchId == batchId
+        //                 select g;
+        //    var saledQuantity = await query2.Select(x => x.ConvertedQuantity).SumAsync();
+        //    var currentQuantity = totalQuantity - saledQuantity;
+        //    return currentQuantity;
+        //}
         public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetAllGoodsReceiptNote()
         {
             try

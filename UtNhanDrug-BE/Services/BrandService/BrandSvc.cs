@@ -273,7 +273,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     foreach (var product in data)
                     {
                         var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                        product.ActiveSubstances = activeSubstance;
+                        product.ActiveSubstances = activeSubstance.Data;
                     }
                     return new Response<List<ViewProductModel>>(data)
                     {
