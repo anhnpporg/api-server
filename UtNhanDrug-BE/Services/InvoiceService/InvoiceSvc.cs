@@ -27,25 +27,26 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         }
         public async Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
+            if (model.CustomerId == null)
+            {
+                var customer = await _userSvc.CreateCustomer(UserId, model.Customer);
+                if (customer != null)
+                {
+                    model.CustomerId = customer.Data.Id;
+                }
+                else
+                {
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Khách hàng này đã tồn tại"
+                    };
+                }
+            }
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                if (model.CustomerId == null)
-                {
-                    var customer = await _userSvc.CreateCustomer(UserId, model.Customer);
-                    if (customer != null)
-                    {
-                        model.CustomerId = customer.Data.Id;
-                    }
-                    else
-                    {
-                        return new Response<bool>(false)
-                        {
-                            StatusCode = 400,
-                            Message = "Khách hàng này đã tồn tại"
-                        };
-                    }
-                }
+                
                 Invoice i = new Invoice()
                 {
                     CustomerId = model.CustomerId,

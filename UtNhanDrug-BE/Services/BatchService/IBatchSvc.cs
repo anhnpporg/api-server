@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
+using UtNhanDrug_BE.Models.InvoiceModel;
 using UtNhanDrug_BE.Models.ResponseModel;
 
 namespace UtNhanDrug_BE.Services.BatchService
@@ -12,6 +13,7 @@ namespace UtNhanDrug_BE.Services.BatchService
         Task<Response<bool>> UpdateBatch(int id, int userId, UpdateBatchModel model);
         Task<Response<bool>> DeleteBatch(int id, int userId);
         Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGRNByBatchId(int id);
+        Task<Response<List<ViewOrderDetailModel>>> GetGINByBatchId(int id);
         Task<Response<ViewBatchModel>> GetBatchesByBarcode(string barcode);
         Task<Response<ViewBatchModel>> GetBatchById(int id);
         Task<Response<List<ViewBatchModel>>> GetAllBatch();

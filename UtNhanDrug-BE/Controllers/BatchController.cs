@@ -61,6 +61,16 @@ namespace UtNhanDrug_BE.Controllers
             var grn = await _consignmentSvc.GetGRNByBatchId(id);
             return StatusCode(grn.StatusCode, grn);
         }
+
+        [Authorize]
+        [Route("batches/{id}/goods-issue-note")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGINById([FromRoute] int id)
+        {
+            var grn = await _consignmentSvc.GetGINByBatchId(id);
+            return StatusCode(grn.StatusCode, grn);
+        }
         
         [Authorize]
         [Route("batches/barcode")]

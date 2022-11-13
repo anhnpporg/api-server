@@ -10,6 +10,7 @@ using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ResponseModel;
 using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
 using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Models.InvoiceModel;
 
 namespace UtNhanDrug_BE.Services.BatchService
 {
@@ -424,6 +425,74 @@ namespace UtNhanDrug_BE.Services.BatchService
                 
             }
             return new Response<List<ViewQuantityInventoryModel>>(data1);
+        }
+
+        public async Task<Response<List<ViewOrderDetailModel>>> GetGINByBatchId(int id)
+        {
+            try
+            {
+                var query = from gin in _context.GoodsIssueNotes
+                            where gin.BatchId == id
+                            select gin;
+                var data = await query.Select(x => new ViewOrderDetailModel()
+                {
+                    Id = x.Id,
+                    Batch = new ViewModel()
+                    {
+                        Id = x.Batch.Id,
+                        Name = x.Batch.BatchBarcode
+                    },
+                    Quantity = x.Quantity,
+                    Unit = x.Unit,
+                    UnitPrice = x.UnitPrice,
+                    ConvertedQuantity = x.ConvertedQuantity,
+                    TotalPrice = x.UnitPrice,
+                    GoodsIssueNoteType = new ViewModel()
+                    {
+                        Id = x.GoodsIssueNoteType.Id,
+                        Name = x.GoodsIssueNoteType.Name
+                    },
+                    Product = new ViewModel()
+                    {
+                        Id = x.OrderDetail.Product.Id,
+                        Name = x.OrderDetail.Product.Name
+                    },
+                    UnitDose = x.OrderDetail.UnitDose,
+                    Use = x.OrderDetail.Use
+
+                }).ToListAsync();
+                if(data != null)
+                {
+                    if (data.Count == 0)
+                    {
+                        return new Response<List<ViewOrderDetailModel>>(data)
+                        {
+                            Message = "Lô này chưa có phiếu xuất"
+                        };
+                    };
+                    return new Response<List<ViewOrderDetailModel>>(data)
+                    {
+                        Message = "Thông tin tất cả phiếu xuất"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewOrderDetailModel>>(data)
+                    {
+                        StatusCode = 400,
+                        Message = "Không có phiếu nhập hàng cho lô sản phẩm này"
+                    };
+                }
+                
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewOrderDetailModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }
