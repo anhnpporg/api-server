@@ -97,6 +97,70 @@ namespace UtNhanDrug_BE.Services.DashBoardService
             }
         }
 
+        public async Task<Response<SaleModel>> GetSale()
+        {
+            try
+            {
+                DateTime today = DateTime.Today;
+                var query = from i in _context.Invoices
+                            select i;
+                var query1 = from i in _context.GoodsReceiptNotes
+                             select i;
+                var quantityOrderNow = await query.Where(x => x.CreatedAt >= today).CountAsync();
+                double percentQuantityOrder = 0;
+                var quantityOrderYesterday = await query.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).CountAsync();
+                if(quantityOrderYesterday > 0)
+                {
+                    percentQuantityOrder = ((quantityOrderNow - quantityOrderYesterday) / quantityOrderYesterday) * 100;
+                }
+
+                var turnoverNow = await query.Where(x => x.CreatedAt >= today).Select(x => x.TotalPrice).SumAsync();
+                double percentTurnover = 0;
+                var turnoverYesterday = await query.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).Select(x => x.TotalPrice).SumAsync();
+                if(turnoverYesterday > 0)
+                {
+                    percentTurnover = (double)(((turnoverNow - turnoverYesterday) / turnoverYesterday) * 100);
+                }
+                var costNow = await query1.Where(x => x.CreatedAt >= today).Select(x => x.TotalPrice).SumAsync();
+                double percentCost = 0;
+                var costYesterday = await query1.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).Select(x => x.TotalPrice).SumAsync();
+                if(costYesterday > 0)
+                {
+                    percentCost = (double)(((costNow - costYesterday) / costYesterday) * 100);
+                }
+                decimal profitNow = turnoverNow - costNow;
+                double PercentProfit = 0;
+                decimal profitYesterday = turnoverYesterday - costYesterday;
+                if(profitYesterday > 0)
+                {
+                    PercentProfit = (double)(((profitNow - profitYesterday) / profitYesterday) * 100);
+                }
+                SaleModel saleModel = new SaleModel()
+                {
+                    Cost = costNow,
+                    PercentCost = percentCost,
+                    PercentProfit = PercentProfit,
+                    PercentQuantityOrder = percentQuantityOrder,
+                    PercentTurnover = percentTurnover,
+                    Profit = profitNow,
+                    QuantityOrder = quantityOrderNow,
+                    Turnover = turnoverNow
+                };
+                return new Response<SaleModel>(saleModel)
+                {
+                    Message = "Thông tin"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<SaleModel>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
         public async Task<Response<List<TopSellingModel>>> GetTopSelling(SearchModel request)
         {
             try

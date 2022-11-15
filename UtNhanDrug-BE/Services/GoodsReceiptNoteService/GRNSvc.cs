@@ -133,7 +133,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             {
                 var query = from grn in _context.GoodsReceiptNotes
                             select grn;
-                var data = await query.Select(x => new ViewGoodsReceiptNoteModel()
+                var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewGoodsReceiptNoteModel()
                 {
                     Id = x.Id,
                     GoodsReceiptNoteType = new ViewModel()
@@ -261,7 +261,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 var query = from x in _context.GoodsReceiptNoteLogs
                             where x.GoodsReceiptNoteId == id
                             select x;
-                var data = await query.Select(x => new NoteLog()
+                var data = await query.OrderByDescending(x => x.UpdatedAt).Select(x => new NoteLog()
                 {
                     Id = x.Id,
                     Note = x.Note,

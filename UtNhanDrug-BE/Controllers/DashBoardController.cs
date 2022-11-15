@@ -37,5 +37,15 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _dashboardSvc.GetTopSelling(model);
             return StatusCode(result.StatusCode, result);
         }
+        
+        [Authorize]
+        [Route("sale-information")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetSale()
+        {
+            var result = await _dashboardSvc.GetSale();
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

@@ -141,7 +141,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         {
             var query = from i in _context.Invoices
                         select i;
-            var data = await query.Select(x => new ViewInvoiceModel()
+            var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
                 CreatedBy = new ViewModel()
@@ -197,7 +197,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var query = from i in _context.Invoices
                         where i.CustomerId == customerId
                         select i;
-            var data = await query.Select(x => new ViewInvoiceModel()
+            var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
                 CreatedBy = new ViewModel()

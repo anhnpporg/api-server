@@ -110,7 +110,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
             {
                 var query = from c in _context.Shelves
                             select c;
-                var result = await query.Select(c => new ViewShelfModel()
+                var result = await query.OrderByDescending(x => x.CreatedAt).Select(c => new ViewShelfModel()
                 {
                     Id = c.Id,
                     Name = c.Name,

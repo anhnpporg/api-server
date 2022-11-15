@@ -112,16 +112,12 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 var query = from s in _context.Suppliers
                             select s;
 
-                var result = await query.Select(s => new ViewSupplierModel()
+                var result = await query.OrderByDescending(x => x.CreatedAt).Select(s => new ViewSupplierModel()
                 {
                     Id = s.Id,
                     Name = s.Name,
                     CreatedAt = s.CreatedAt,
-                    CreatedBy = new ViewModel()
-                    {
-                        Id = s.CreatedByNavigation.Id,
-                        Name = s.CreatedByNavigation.FullName
-                    },
+                    CreatedBy = s.CreatedBy,
                     UpdatedAt = s.UpdatedAt,
                     UpdatedBy = s.UpdatedBy,
                     IsActive = s.IsActive,
@@ -191,7 +187,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
         {
             try
             {
-                var supplier = await _context.Brands.FirstOrDefaultAsync(x => x.Id == supplierId);
+                var supplier = await _context.Suppliers.FirstOrDefaultAsync(x => x.Id == supplierId);
                 if (supplier != null)
                 {
                     ViewSupplierModel result = new ViewSupplierModel()
@@ -200,11 +196,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                         Name = supplier.Name,
                         IsActive = supplier.IsActive,
                         CreatedAt = supplier.CreatedAt,
-                        CreatedBy = new ViewModel()
-                        {
-                            Id = supplier.CreatedByNavigation.Id,
-                            Name = supplier.CreatedByNavigation.FullName
-                        },
+                        CreatedBy = supplier.CreatedBy,
                         UpdatedAt = supplier.UpdatedAt,
                         UpdatedBy = supplier.UpdatedBy,
                     };
@@ -272,7 +264,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 var query = from g in _context.GoodsReceiptNotes
                             where g.SupplierId == supplierId
                             select g;
-                var data = await query.Select(x => new ViewBatchModel()
+                var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewBatchModel()
                 {
                     Id = x.Batch.Id,
                     BatchBarcode = x.Batch.BatchBarcode,

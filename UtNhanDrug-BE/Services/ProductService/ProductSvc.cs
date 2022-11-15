@@ -66,10 +66,22 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Price = model.Price,
                     IsBaseUnit = true,
                     IsPackingSpecification = model.IsPackingSpecification,
-                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
+                    IsDoseBasedOnBodyWeightUnit = false,
                     CreatedBy = userId
                 };
-                _context.ProductUnitPrices.Add(pu);
+                
+                ProductUnitPrice du = new ProductUnitPrice()
+                {
+                    ProductId = product.Id,
+                    Unit = model.DoseUnitPrice.DoseUnit,
+                    ConversionValue = 1,
+                    IsBaseUnit = false,
+                    IsPackingSpecification = model.DoseUnitPrice.IsPackingSpecification,
+                    IsDoseBasedOnBodyWeightUnit = true,
+                    CreatedBy = userId
+                };
+
+                _context.ProductUnitPrices.Add(du);
 
                 if (model.ProductUnits != null)
                 {
@@ -82,7 +94,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             ConversionValue = productUnit.ConversionValue,
                             Price = productUnit.Price,
                             IsBaseUnit = false,
-                            IsDoseBasedOnBodyWeightUnit = productUnit.IsDoseBasedOnBodyWeightUnit,
+                            IsDoseBasedOnBodyWeightUnit = false,
                             IsPackingSpecification = productUnit.IsPackingSpecification,
                             CreatedBy = userId
                         };

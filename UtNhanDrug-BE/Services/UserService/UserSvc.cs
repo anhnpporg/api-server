@@ -95,7 +95,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         join u in _context.UserAccounts on m.UserAccountId equals u.Id
                         select new { u, m };
 
-            var data = await query
+            var data = await query.OrderByDescending(x => x.u.CreatedAt)
                 .Select(x => new ManagerViewModel()
                 {
                     UserId = x.u.Id,
@@ -122,7 +122,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
             var query = from c in _context.Customers
                         select c;
 
-            var data = await query
+            var data = await query.OrderByDescending(x => x.CreatedAt)
                 .Select(x => new CustomerViewModel()
                 {
                     Id = x.Id,
@@ -154,7 +154,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         select new { u, s };
 
 
-            var data = await query
+            var data = await query.OrderByDescending(x => x.u.CreatedAt)
                 .Select(x => new ViewStaffModel()
                 {
                     UserId = x.u.Id,
@@ -471,7 +471,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         private async Task<bool> FindCustomer(string phoneNumber)
         {
-            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
+            var customer = await _context.Customers.OrderByDescending(x => x.CreatedAt).FirstOrDefaultAsync(x => x.PhoneNumber == phoneNumber);
             if (customer == null) return false;
             return true;
         }
@@ -1035,26 +1035,43 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         public async Task<Response<bool>> UpdateManagerProfile(int userId, UpdateManagerModel model)
         {
-            var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
-
-            var updateEmail = await UpdateEmail(userId, model.Email);
-            if(updateEmail.StatusCode == 400){
-                return updateEmail;
-            }
-            if (user != null)
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                user.FullName = model.FullName;
-                await _context.SaveChangesAsync();
-                return new Response<bool>(true)
+                var user = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userId);
+                var updateEmail = await UpdateEmail(userId, model.Email);
+                if (updateEmail.StatusCode == 400)
                 {
-                    Message = "Cập nhật thông tin thành công"
+                    return updateEmail;
+                }
+                if (user != null)
+                {
+                    user.FullName = model.FullName;
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new Response<bool>(true)
+                    {
+                        Message = "Cập nhật thông tin thành công"
+                    };
+                }
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Không tìm thấy tài khoản này"
                 };
             }
-            return new Response<bool>(false)
+            catch (Exception)
             {
-                StatusCode = 400,
-                Message = "Không tìm thấy tài khoản này"
-            };
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Không tìm thấy tài khoản này"
+                };
+            }
+            
         }
 
         public async Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffBaseModel model)

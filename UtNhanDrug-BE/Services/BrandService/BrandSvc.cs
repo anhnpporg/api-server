@@ -184,7 +184,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                 var query = from b in _context.Brands
                             select b;
 
-                var result = await query.Select(b => new ViewBrandModel()
+                var result = await query.OrderByDescending(x => x.CreatedAt).Select(b => new ViewBrandModel()
                 {
                     Id = b.Id,
                     Name = b.Name,

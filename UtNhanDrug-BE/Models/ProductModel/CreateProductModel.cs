@@ -29,10 +29,16 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public string Unit { get; set; }
         public decimal? Price { get; set; }
         public bool IsPackingSpecification { get; set; }
-        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
 
         //create product unit (optional)
         public List<ProductUnitPriceModels> ProductUnits { get; set; }
+        public DoseUnitPrice DoseUnitPrice { get; set; }
+    }
+    public class DoseUnitPrice
+    {
+        public string DoseUnit { get; set; }
+        public double ConversionValue { get; set; }
+        public bool IsPackingSpecification { get; set; }
     }
 
 }
