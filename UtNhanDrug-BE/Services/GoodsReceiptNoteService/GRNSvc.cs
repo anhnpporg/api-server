@@ -148,10 +148,11 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         ManufacturingDate = x.Batch.ManufacturingDate,
                         ExpiryDate = x.Batch.ExpiryDate
                     },
-                    Supplier = new ViewModel()
+                    Supplier = new ViewSupplierData()
                     {
                         Id = x.Supplier.Id,
-                        Name = x.Supplier.Name
+                        Name = x.Supplier.Name,
+                        IsActive = x.Supplier.IsActive
                     },
                     Quantity = x.Quantity,
                     Unit = x.Unit,
@@ -215,10 +216,11 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         ManufacturingDate = c.Batch.ManufacturingDate,
                         ExpiryDate = c.Batch.ExpiryDate
                     },
-                    Supplier = new ViewModel()
+                    Supplier = new ViewSupplierData()
                     {
                         Id = c.Supplier.Id,
-                        Name = c.Supplier.Name
+                        Name = c.Supplier.Name,
+                        IsActive = c.Supplier.IsActive
                     },
                     Quantity = c.Quantity,
                     Unit = c.Unit,

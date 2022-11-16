@@ -125,6 +125,28 @@ namespace UtNhanDrug_BE.Controllers
             return StatusCode(staff.StatusCode, staff);
         }
 
+        [Authorize(Roles = "MANAGER")]
+        [Route("users/check-password")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> CheckPassword([FromForm] String password)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "Bạn chưa đăng nhập" });
+            }
+            var result = await _userSvc.CheckPassword(userId,password);
+
+            return StatusCode(result.StatusCode, result);
+        }
+
         [Authorize(Roles = "MANAGER, STAFF")]
         [Route("customers")]
         [HttpPost]

@@ -34,7 +34,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<Response<bool>> UpdateManagerProfile(int userId, UpdateManagerModel model);
         //Task<Response<bool>> CheckVerifyPassword(int userId, string token);
         //Task<Response<bool>> CheckTimeVerifyPassword(int userId);
-        //Task<Response<bool>> CheckPassword(int userId, string password);
+        Task<Response<bool>> CheckPassword(int userId, string password);
         //Task<Response<bool>> CheckTimeVerifyEmail(int userId);
         //Task<Response<bool>> CheckUser(int userId);
         //Task<Response<string>> RecoveryPassword(int userId);

@@ -343,10 +343,11 @@ namespace UtNhanDrug_BE.Services.BatchService
                     ManufacturingDate = x.Batch.ManufacturingDate,
                     ExpiryDate = x.Batch.ExpiryDate
                 },
-                Supplier = new ViewModel()
+                Supplier = new ViewSupplierData()
                 {
                     Id = x.Supplier.Id,
-                    Name = x.Supplier.Name
+                    Name = x.Supplier.Name,
+                    IsActive = x.Supplier.IsActive
                 },
                 Quantity = x.Quantity,
                 Unit = x.Unit,

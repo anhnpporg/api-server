@@ -70,8 +70,7 @@ namespace UtNhanDrug_BE.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
             int userId;
-            try
-            {
+            try { 
                 userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)

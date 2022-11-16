@@ -11,7 +11,7 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
         public ViewModel GoodsReceiptNoteType { get; set; }
         public ViewBatch Batch { get; set; }
         public int? InvoiceId { get; set; }
-        public ViewModel? Supplier { get; set; }
+        public ViewSupplierData? Supplier { get; set; }
         public int Quantity { get; set; }
         public string Unit { get; set; }
         public decimal TotalPrice { get; set; }
@@ -34,5 +34,11 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
         public string Barcode { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
+    }
+    public class ViewSupplierData
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

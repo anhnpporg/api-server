@@ -831,30 +831,37 @@ namespace UtNhanDrug_BE.Services.ManagerService
         //    return 3;
         //}
 
-        //public async Task<Response<bool>> CheckPassword(int userId, string password)
-        //{
-        //    var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-        //    if (userData != null)
-        //    {
-        //        string passwordEncode;
-        //        int hashingId = userData.HashingAlgorithmId;
-        //        if (hashingId == 1)
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(password);
-        //        }
-        //        else if (hashingId == 2)
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(password);
-        //        }
-        //        else
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(password);
-        //        }
+        public async Task<Response<bool>> CheckPassword(int userId, string password)
+        {
+            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            if (userData != null)
+            {
+                string passwordEncode;
+                int hashingId = userData.HashingAlgorithmId;
+                if (hashingId == 1)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(password);
+                }
+                else if (hashingId == 2)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(password);
+                }
+                else
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(password);
+                }
 
-        //        if (userData.PasswordHash.Trim().Equals(passwordEncode.Trim())) return true;
-        //    }
-        //    return false;
-        //}
+                if (userData.PasswordHash.Trim().Equals(passwordEncode.Trim())) return new Response<bool>(true)
+                {
+                    Message = "Mật khẩu trùng khớp"
+                };
+            }
+            return new Response<bool>(false)
+            {
+                StatusCode = 400,
+                Message = "Sai mật khẩu"
+            };
+        }
 
         private async Task<bool> CheckTimeVerifyEmail(int userId)
         {
