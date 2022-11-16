@@ -65,23 +65,35 @@ namespace UtNhanDrug_BE.Services.ProductService
                     ConversionValue = 1,
                     Price = model.Price,
                     IsBaseUnit = true,
-                    IsPackingSpecification = model.IsPackingSpecification,
+                    IsPackingSpecification = true,
                     IsDoseBasedOnBodyWeightUnit = false,
                     CreatedBy = userId
                 };
-                
-                ProductUnitPrice du = new ProductUnitPrice()
+                if(model.IsUseDose == true)
                 {
-                    ProductId = product.Id,
-                    Unit = model.DoseUnitPrice.DoseUnit,
-                    ConversionValue = 1,
-                    IsBaseUnit = false,
-                    IsPackingSpecification = model.DoseUnitPrice.IsPackingSpecification,
-                    IsDoseBasedOnBodyWeightUnit = true,
-                    CreatedBy = userId
-                };
+                    ProductUnitPrice du = new ProductUnitPrice()
+                    {
+                        ProductId = product.Id,
+                        Unit = model.DoseUnitPrice.DoseUnit,
+                        ConversionValue = 1,
+                        IsBaseUnit = false,
+                        IsPackingSpecification = true,
+                        IsDoseBasedOnBodyWeightUnit = true,
+                        CreatedBy = userId
+                    };
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Đơn vị tính không hợp lệ"
+                    };
+                }
+                
 
-                _context.ProductUnitPrices.Add(du);
+                //_context.ProductUnitPrices.Add(du);
 
                 if (model.ProductUnits != null)
                 {
@@ -95,7 +107,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             Price = productUnit.Price,
                             IsBaseUnit = false,
                             IsDoseBasedOnBodyWeightUnit = false,
-                            IsPackingSpecification = productUnit.IsPackingSpecification,
+                            IsPackingSpecification = true,
                             CreatedBy = userId
                         };
                         _context.ProductUnitPrices.Add(x);
@@ -411,7 +423,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var query3 = from u in _context.ProductUnitPrices
                          where u.ProductId == productId
                          select u;
-            var data = await query3.Select(x => new ViewQuantityModel()
+            var data = await query3.Where(x => x.IsDoseBasedOnBodyWeightUnit == true).Select(x => new ViewQuantityModel()
             {
                 Id = x.Id,
                 Unit = x.Unit,

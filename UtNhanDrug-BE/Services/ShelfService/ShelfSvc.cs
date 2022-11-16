@@ -65,6 +65,18 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 var category = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
                 if (category != null)
                 {
+                    var query = from p in _context.Products
+                                select p;
+                    int count = await query.Where(x => x.ShelfId == shelfId).CountAsync();
+                    if(count > 0)
+                    {
+                        return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Kệ hàng còn chứa sản phẩm, xoá thất bại"
+                        };
+                    }
+
                     if(category.IsActive == true)
                     {
                         category.IsActive = false;

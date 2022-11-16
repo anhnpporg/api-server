@@ -67,7 +67,7 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                 var query = from pu in _context.ProductUnitPrices
                             where pu.ProductId == productId
                             select pu;
-                var data = await query.Select(x => new ViewProductUnitPriceModel()
+                var data = await query.Where(x => x.IsDoseBasedOnBodyWeightUnit == false).Select(x => new ViewProductUnitPriceModel()
                 {
                     Id = x.Id,
                     ProductId = x.ProductId,
