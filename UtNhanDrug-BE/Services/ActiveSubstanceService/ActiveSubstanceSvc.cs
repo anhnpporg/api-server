@@ -28,11 +28,25 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
         //    return false;
         //}
 
+        private async Task<bool> CheckName(string name)
+        {
+            var result = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Name == name);
+            if (result == null)
+            {
+                return true;
+            }
+            return false;
+        }
         public async Task<Response<bool>> CreateActiveSubstance(int userId, CreateActiveSubstanceModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                if(await CheckName(model.Name) == false) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Tên hoạt chất đã tồn tại"
+                };
                 ActiveSubstance a = new ActiveSubstance()
                 {
                     Name = model.Name,
@@ -285,6 +299,43 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
             }
             
             
+        }
+
+        public async Task<Response<List<ViewModel>>> GetListActiveSubstance()
+        {
+            try
+            {
+                var query = from b in _context.ActiveSubstances
+                            select b;
+
+                var result = await query.Where(x =>x.IsActive == true).Select(a => new ViewModel()
+                {
+                    Id = a.Id,
+                    Name = a.Name,
+                }).ToListAsync();
+                if (result.Count > 0)
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Tất cả thông tin hoạt chất"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Không tìm thấy thông tin hoạt chất này"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }

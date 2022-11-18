@@ -243,16 +243,14 @@ namespace UtNhanDrug_BE.Controllers
         }
 
 
-        //[Authorize(Roles = "MANAGER")]
-        //[HttpPut("users/recovery-password/{userId}")]
-        //[MapToApiVersion("1.0")]
-        //public async Task<ActionResult> RecoveryPassword([FromRoute] int userId)
-        //{
-        //    var user = await _userSvc.CheckUser(userId);
-        //    if (user == false) return NotFound(new { message = "Không tìm thấy nhân viên" });
-        //    var result = await _userSvc.RecoveryPassword(userId);
-        //    return StatusCode(result.StatusCode, result);
-        //}
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("users/recovery-password/{userId}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> RecoveryPassword([FromRoute] int userId)
+        {
+            var result = await _userSvc.RecoveryPassword(userId);
+            return StatusCode(result.StatusCode, result);
+        }
 
         [Authorize(Roles = "STAFF")]
         [HttpPut("staffs/profile")]

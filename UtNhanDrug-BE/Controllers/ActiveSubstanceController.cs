@@ -36,6 +36,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("active-substances-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetListActiveSubstance()
+        {
+            var result = await _activeSubstanceSvc.GetListActiveSubstance();
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
         [Route("active-substances/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -50,6 +60,7 @@ namespace UtNhanDrug_BE.Controllers
 
             return StatusCode(products.StatusCode, products);
         }
+
 
         [Authorize]
         [Route("active-substances/{id}")]

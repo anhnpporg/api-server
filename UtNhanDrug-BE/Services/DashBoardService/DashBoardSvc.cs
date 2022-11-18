@@ -101,7 +101,9 @@ namespace UtNhanDrug_BE.Services.DashBoardService
         {
             try
             {
-                DateTime today = DateTime.Today;
+                DateTime todaySystem = DateTime.Today;
+                var todayVN = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(todaySystem , "SE Asia Standard Time").ToShortDateString();
+                DateTime today = DateTime.ParseExact(todayVN, "d", null);
                 var query = from i in _context.Invoices
                             select i;
                 var query1 = from i in _context.GoodsReceiptNotes

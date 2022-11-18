@@ -16,6 +16,7 @@ namespace UtNhanDrug_BE.Services.ProductService
         Task<Response<ViewProductModel>> GetProductById(int id);
         Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id);
         Task<Response<List<ViewProductModel>>> GetAllProduct();
+        Task<Response<List<ViewProductModel>>> GetAllProduct(FilterProduct request);
         //Task<bool> CheckProduct(int brandId);
         Task<Response<List<ViewModel>>> GetListActiveSubstances(int productId);
         Task<Response<List<ViewModel>>> GetListRouteOfAdmin();

@@ -21,6 +21,7 @@ namespace UtNhanDrug_BE.Controllers
         {
             _supplierSvc = supplierSvc;
         }
+
         [Authorize]
         [Route("suppliers")]
         [HttpGet]
@@ -28,6 +29,16 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllSupplier()
         {
             var suppliers = await _supplierSvc.GetAllSupplier();
+            return StatusCode(suppliers.StatusCode, suppliers);
+        }
+
+        [Authorize]
+        [Route("suppliers-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetLítSupplier()
+        {
+            var suppliers = await _supplierSvc.GetListSupplier();
             return StatusCode(suppliers.StatusCode, suppliers);
         }
 

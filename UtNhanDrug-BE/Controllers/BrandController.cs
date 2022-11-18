@@ -34,6 +34,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("brands-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetListBrand()
+        {
+            var brands = await _brandSvc.GetListBrand();
+            return StatusCode(brands.StatusCode, brands);
+        }
+
+        [Authorize]
         [Route("brands/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]

@@ -691,42 +691,42 @@ namespace UtNhanDrug_BE.Services.ManagerService
         //    return false;
         //}
 
-        //public async Task<Response<string>> RecoveryPassword(int userId)
-        //{
-        //    string newPassword = KeyGenerator.GetUniqueKey(6);
+        public async Task<Response<string>> RecoveryPassword(int userId)
+        {
+            string newPassword = "123456";
 
-        //    var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-        //    if (userLogin != null)
-        //    {
-        //        string passwordEncode;
-        //        Random rnd = new Random();
-        //        int hashingId = rnd.Next(1, 3);
-        //        if (hashingId == 1)
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(newPassword);
-        //        }
-        //        else if (hashingId == 2)
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(newPassword);
-        //        }
-        //        else
-        //        {
-        //            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(newPassword);
-        //        }
-        //        userLogin.HashingAlgorithmId = hashingId;
-        //        userLogin.PasswordHash = passwordEncode;
-        //        var result = await _context.SaveChangesAsync();
-        //        if (result > 0) return new Response<string>(newPassword)
-        //        {
-        //            Message = "Tạo mật khẩu mới thành công"
-        //        };
-        //    }
-        //    return new Response<string>(null)
-        //    {
-        //        StatusCode = 400,
-        //        Message = "Tạo mật khẩu mới thất bại"
-        //    };
-        //}
+            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+            if (userLogin != null)
+            {
+                string passwordEncode;
+                Random rnd = new Random();
+                int hashingId = rnd.Next(1, 3);
+                if (hashingId == 1)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(newPassword);
+                }
+                else if (hashingId == 2)
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(newPassword);
+                }
+                else
+                {
+                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(newPassword);
+                }
+                userLogin.HashingAlgorithmId = hashingId;
+                userLogin.PasswordHash = passwordEncode;
+                var result = await _context.SaveChangesAsync();
+                if (result > 0) return new Response<string>(newPassword)
+                {
+                    Message = "Tạo mật khẩu mới thành công"
+                };
+            }
+            return new Response<string>(null)
+            {
+                StatusCode = 400,
+                Message = "Tạo mật khẩu mới thất bại"
+            };
+        }
 
         public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyEmail(int userId)
         {

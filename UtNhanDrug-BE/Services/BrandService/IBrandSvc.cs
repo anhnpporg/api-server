@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.BrandModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ResponseModel;
 
@@ -13,6 +14,7 @@ namespace UtNhanDrug_BE.Services.BrandService
         Task<Response<bool>> DeleteBrand(int brandId, int userId);
         Task<Response<ViewBrandModel>> GetBrandById(int brandId);
         Task<Response<List<ViewBrandModel>>> GetAllBrand();
+        Task<Response<List<ViewModel>>> GetListBrand();
         //Task<bool> CheckBrand(int brandId);
         Task<Response<List<ViewProductModel>>> GetListProduct(int brandId);
     }

@@ -26,13 +26,23 @@ namespace UtNhanDrug_BE.Controllers
             _productSvc = productSvc;
         }
 
+        //[Authorize]
+        //[Route("products")]
+        //[HttpGet]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> GetAllProduct()
+        //{
+        //    var products = await _productSvc.GetAllProduct();
+        //    return StatusCode(products.StatusCode, products);
+        //}
+        
         [Authorize]
         [Route("products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetAllProduct()
+        public async Task<ActionResult> GetProducts([FromQuery] FilterProduct request)
         {
-            var products = await _productSvc.GetAllProduct();
+            var products = await _productSvc.GetAllProduct(request);
             return StatusCode(products.StatusCode, products);
         }
         

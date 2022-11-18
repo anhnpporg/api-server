@@ -303,5 +303,41 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 };
             }
         }
+
+        public async Task<Response<List<ViewModel>>> GetListShelves()
+        {
+            try
+            {
+                var query = from c in _context.Shelves
+                            select c;
+                var result = await query.Where(x => x.IsActive == true).OrderByDescending(x => x.CreatedAt).Select(c => new ViewModel()
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                }).ToListAsync();
+                if (result.Count > 0)
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Thông tin tất cả các kệ thuốc"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewModel>>(null)
+                    {
+                        Message = "Không tìm thấy thông tin kệ thuốc nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
     }
 }

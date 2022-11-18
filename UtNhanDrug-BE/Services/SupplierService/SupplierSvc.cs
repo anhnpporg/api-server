@@ -28,11 +28,25 @@ namespace UtNhanDrug_BE.Services.SupplierService
         //    return false;
         //}
 
+        private async Task<bool> CheckName(string name)
+        {
+            var result = await _context.Suppliers.FirstOrDefaultAsync(x => x.Name == name);
+            if (result == null)
+            {
+                return true;
+            }
+            return false;
+        }
         public async Task<Response<bool>> CreateSupplier(int userId, CreateSupplierModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Tên nhà cung cấp đã tồn tại"
+                };
                 Supplier supplier = new Supplier()
                 {
                     Name = model.Name,
@@ -300,6 +314,42 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     Message = "Tìm kiếm lô hàng thấy bại"
                 };
             }    
+        }
+
+        public async Task<Response<List<ViewModel>>> GetListSupplier()
+        {
+            try
+            {
+                var query = from s in _context.Suppliers
+                            select s;
+
+                var result = await query.Where(x => x.IsActive == true).OrderByDescending(x => x.CreatedAt).Select(s => new ViewModel()
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                }).ToListAsync();
+                if (result.Count > 0)
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Danh sách nhà cung cấp đang hoạt động"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewModel>>(null)
+                    {
+                        Message = "Không tìm thấy nhà cung cấp nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewModel>>(null)
+                {
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }

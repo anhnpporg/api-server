@@ -23,12 +23,25 @@ namespace UtNhanDrug_BE.Services.BrandService
             _context = context;
             _productSvc = productSvc;
         }
-
+        private async Task<bool> CheckName (string name)
+        {
+            var result = await _context.Brands.FirstOrDefaultAsync(x => x.Name == name);
+            if(result == null)
+            {
+                return true;
+            }
+            return false;
+        }
         public async Task<Response<bool>> CreateBrand(int userId, CreateBrandModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Tên nhà sản xuất này đã tồn tại"
+                };
                 Brand brand = new Brand()
                 {
                     Name = model.Name,
@@ -296,6 +309,43 @@ namespace UtNhanDrug_BE.Services.BrandService
                 };
             }
             
+        }
+
+        public async Task<Response<List<ViewModel>>> GetListBrand()
+        {
+            try
+            {
+                var query = from b in _context.Brands
+                            select b;
+
+                var result = await query.Where(x => x.IsActive == true).OrderByDescending(x => x.CreatedAt).Select(b => new ViewModel()
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                }).ToListAsync();
+                if (result.Count > 0)
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Thông tin tất cả nhà sản xuất"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewModel>>(null)
+                    {
+                        Message = "Không tồn tại nhà sản xuất"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }

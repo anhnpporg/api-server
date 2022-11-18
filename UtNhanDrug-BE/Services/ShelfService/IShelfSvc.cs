@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ShelfModel;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ResponseModel;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Services.ShelfService
 {
@@ -13,6 +14,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
         Task<Response<bool>> DeleteShelf(int brandId, int userId);
         Task<Response<ViewShelfModel>> GetShelfById(int shelfId);
         Task<Response<List<ViewShelfModel>>> GetAllShelves();
+        Task<Response<List<ViewModel>>> GetListShelves();
         //Task<bool> CheckShelf(int brandId);
         Task<Response<List<ViewProductModel>>> GetListProduct(int shelfId);
     }

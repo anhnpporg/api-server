@@ -69,7 +69,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     IsDoseBasedOnBodyWeightUnit = false,
                     CreatedBy = userId
                 };
-                if(model.IsUseDose == true)
+                if (model.IsUseDose == true)
                 {
                     ProductUnitPrice du = new ProductUnitPrice()
                     {
@@ -91,7 +91,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Message = "Đơn vị tính không hợp lệ"
                     };
                 }
-                
+
 
                 //_context.ProductUnitPrices.Add(du);
 
@@ -151,7 +151,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
                 if (product != null)
                 {
-                    if(product.IsActive == true)
+                    if (product.IsActive == true)
                     {
                         product.IsActive = false;
                         product.UpdatedAt = DateTime.Now;
@@ -175,7 +175,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             Message = "Sản phẩm đang hoạt động"
                         };
                     }
-                    
+
                 }
                 return new Response<bool>(false)
                 {
@@ -192,7 +192,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Message = "Xoá sản phẩm thất bại"
                 };
             }
-            
+
         }
 
         public async Task<Response<List<ViewProductModel>>> GetAllProduct()
@@ -235,7 +235,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     UpdatedBy = p.UpdatedBy,
                     IsActive = p.IsActive,
                 }).ToListAsync();
-                if(data != null)
+                if (data != null)
                 {
                     foreach (var product in data)
                     {
@@ -332,8 +332,24 @@ namespace UtNhanDrug_BE.Services.ProductService
                         join b in _context.Batches on p.Id equals b.ProductId
                         where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue) || b.BatchBarcode.Contains(request.SearchValue)
                         select p;
+            var query1 = from pa in _context.ProductActiveSubstances
+                         select pa;
+            var query2 = from g in _context.GoodsReceiptNotes
+                         select g;
+            var data1 = await query1.Where(x => x.ActiveSubstance.IsActive == false).Select(x => new ViewModel()
+            {
+                Id = x.Product.Id,
+                Name = x.Product.Barcode
+            }).Distinct().ToListAsync();
+
+            var data2 = await query2.Where(x => x.Supplier.IsActive == false).Select(x => new ViewModel()
+            {
+                Id = x.Batch.Product.Id,
+                Name = x.Batch.Product.Barcode
+            }).Distinct().ToListAsync();
+
             var data = query.Distinct();
-            var result = await data.Select(p => new ViewProductModel()
+            var result = await data.Where(x => x.Brand.IsActive == true & x.IsActive == true).Select(p => new ViewProductModel()
             {
                 Id = p.Id,
                 DrugRegistrationNumber = p.DrugRegistrationNumber,
@@ -367,8 +383,36 @@ namespace UtNhanDrug_BE.Services.ProductService
                 UpdatedBy = p.UpdatedBy,
                 IsActive = p.IsActive,
             }).ToListAsync();
-            if(result.Count > 0)
+            if (result.Count > 0)
             {
+                //delete element has activesubstan deactive
+
+                foreach (var p1 in data1)
+                {
+                    foreach (var p in result)
+                    {
+                        if (p.Id == p1.Id)
+                        {
+                            result.Remove(p);
+                            break;
+                        }
+                    }
+                }
+                //delete element has supplier deactive
+
+                foreach (var p2 in data2)
+                {
+                    foreach (var p in result)
+                    {
+                        if (p.Id == p2.Id)
+                        {
+                            result.Remove(p);
+                            break;
+                        }
+                    }
+                }
+
+                //
                 foreach (var product in result)
                 {
                     var activeSubstance = await GetListActiveSubstances(product.Id);
@@ -394,7 +438,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 }
             }
             //paging
-            int totalRow = await data.CountAsync();
+            int totalRow = result.Count();
 
             var pagedResult = new PageResult<ViewProductModel>()
             {
@@ -423,7 +467,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var query3 = from u in _context.ProductUnitPrices
                          where u.ProductId == productId
                          select u;
-            var data = await query3.Where(x => x.IsDoseBasedOnBodyWeightUnit == true).Select(x => new ViewQuantityModel()
+            var data = await query3.Where(x => x.IsDoseBasedOnBodyWeightUnit == false).Select(x => new ViewQuantityModel()
             {
                 Id = x.Id,
                 Unit = x.Unit,
@@ -467,7 +511,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
         }
 
         public async Task<Response<List<ViewModel>>> GetListRouteOfAdmin()
@@ -481,7 +525,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Id = x.Id,
                     Name = x.Name
                 }).ToListAsync();
-                if(data != null)
+                if (data != null)
                 {
                     return new Response<List<ViewModel>>(data)
                     {
@@ -547,7 +591,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     UpdatedBy = x.UpdatedBy,
                     IsActive = x.IsActive,
                 }).FirstOrDefaultAsync();
-                if(data != null)
+                if (data != null)
                 {
                     var activeSubstance = await GetListActiveSubstances(data.Id);
                     data.ActiveSubstances = activeSubstance.Data;
@@ -648,9 +692,9 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Name = b.CreatedByNavigation.FullName
                     },
                 }).ToListAsync();
-                if(data != null)
+                if (data != null)
                 {
-                    if(data.Count > 0)
+                    if (data.Count > 0)
                     {
                         return new Response<List<ViewBatchModel>>(data)
                         {
@@ -677,6 +721,278 @@ namespace UtNhanDrug_BE.Services.ProductService
             catch (Exception)
             {
                 return new Response<List<ViewBatchModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
+        public async Task<Response<List<ViewProductModel>>> GetAllProduct(FilterProduct request)
+        {
+            try
+            {
+                var query = from p in _context.Products
+                            select p;
+                var query1 = from pa in _context.ProductActiveSubstances
+                             select pa;
+                var query2 = from g in _context.GoodsReceiptNotes
+                             select g;
+                //get product is active
+                if (request.IsProductActive == true)
+                {
+                    var data = await query2.Where(x => x.Batch.Product.Brand.IsActive == true & x.Supplier.IsActive == true & x.Batch.Product.IsActive == true).Select(p => new ViewProductModel()
+                    {
+                        Id = p.Batch.Product.Id,
+                        DrugRegistrationNumber = p.Batch.Product.DrugRegistrationNumber,
+                        Barcode = p.Batch.Product.Barcode,
+                        Name = p.Batch.Product.Name,
+                        Brand = new ViewModel()
+                        {
+                            Id = p.Batch.Product.Brand.Id,
+                            Name = p.Batch.Product.Brand.Name
+                        },
+                        Shelf = new ViewModel()
+                        {
+                            Id = p.Batch.Product.Shelf.Id,
+                            Name = p.Batch.Product.Shelf.Name
+                        },
+                        MininumInventory = p.Batch.Product.MininumInventory,
+                        RouteOfAdministration = new ViewModel()
+                        {
+                            Id = p.Batch.Product.RouteOfAdministration.Id,
+                            Name = p.Batch.Product.RouteOfAdministration.Name
+                        },
+                        IsUseDose = p.Batch.Product.IsUseDose,
+                        IsManagedInBatches = p.Batch.Product.IsManagedInBatches,
+                        CreatedAt = p.CreatedAt,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = p.CreatedByNavigation.Id,
+                            Name = p.CreatedByNavigation.FullName
+                        },
+                        UpdatedAt = p.Batch.Product.UpdatedAt,
+                        UpdatedBy = p.Batch.Product.UpdatedBy,
+                        IsActive = p.Batch.Product.IsActive,
+                    }).Distinct().ToListAsync();
+                    if (data != null)
+                    {
+                        foreach (var product in data)
+                        {
+                            var activeSubstance = await GetListActiveSubstances(product.Id);
+                            product.ActiveSubstances = activeSubstance.Data;
+                            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                            product.ProductUnits = productUnits.Data;
+                            var batches = await GetBatchesByProductId(product.Id);
+                            product.Batches = batches.Data;
+                        }
+                        return new Response<List<ViewProductModel>>(data)
+                        {
+                            Message = "Thông tin tất cả sản phẩm đang hoạt động"
+                        };
+                    }
+                    else
+                    {
+                        return new Response<List<ViewProductModel>>(null)
+                        {
+                            Message = "Hiện không có sản phẩm nào"
+                        };
+                    }
+                }
+                //get product is deactive by brand
+                if (request.IsBrandActive == true)
+                {
+                    var data = await query.Where(x => x.Brand.IsActive == false).Select(p => new ViewProductModel()
+                    {
+                        Id = p.Id,
+                        DrugRegistrationNumber = p.DrugRegistrationNumber,
+                        Barcode = p.Barcode,
+                        Name = p.Name,
+                        Brand = new ViewModel()
+                        {
+                            Id = p.Brand.Id,
+                            Name = p.Brand.Name
+                        },
+                        Shelf = new ViewModel()
+                        {
+                            Id = p.Shelf.Id,
+                            Name = p.Shelf.Name
+                        },
+                        MininumInventory = p.MininumInventory,
+                        RouteOfAdministration = new ViewModel()
+                        {
+                            Id = p.RouteOfAdministration.Id,
+                            Name = p.RouteOfAdministration.Name
+                        },
+                        IsUseDose = p.IsUseDose,
+                        IsManagedInBatches = p.IsManagedInBatches,
+                        CreatedAt = p.CreatedAt,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = p.CreatedByNavigation.Id,
+                            Name = p.CreatedByNavigation.FullName
+                        },
+                        UpdatedAt = p.UpdatedAt,
+                        UpdatedBy = p.UpdatedBy,
+                        IsActive = p.IsActive,
+                    }).ToListAsync();
+                    if (data != null)
+                    {
+                        foreach (var product in data)
+                        {
+                            var activeSubstance = await GetListActiveSubstances(product.Id);
+                            product.ActiveSubstances = activeSubstance.Data;
+                            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                            product.ProductUnits = productUnits.Data;
+                            var batches = await GetBatchesByProductId(product.Id);
+                            product.Batches = batches.Data;
+                        }
+                        return new Response<List<ViewProductModel>>(data)
+                        {
+                            Message = "Thông tin tất cả sản phẩm đang hoạt động"
+                        };
+                    }
+                    else
+                    {
+                        return new Response<List<ViewProductModel>>(null)
+                        {
+                            Message = "Hiện không có sản phẩm nào"
+                        };
+                    }
+                }
+
+                //get product is deactive by active substance 
+                if (request.IsActiveActiveSubstance == true)
+                {
+                    var data = await query1.Where(x => x.ActiveSubstance.IsActive == false).Select(p => new ViewProductModel()
+                    {
+                        Id = p.Product.Id,
+                        DrugRegistrationNumber = p.Product.DrugRegistrationNumber,
+                        Barcode = p.Product.Barcode,
+                        Name = p.Product.Name,
+                        Brand = new ViewModel()
+                        {
+                            Id = p.Product.Brand.Id,
+                            Name = p.Product.Brand.Name
+                        },
+                        Shelf = new ViewModel()
+                        {
+                            Id = p.Product.Shelf.Id,
+                            Name = p.Product.Shelf.Name
+                        },
+                        MininumInventory = p.Product.MininumInventory,
+                        RouteOfAdministration = new ViewModel()
+                        {
+                            Id = p.Product.RouteOfAdministration.Id,
+                            Name = p.Product.RouteOfAdministration.Name
+                        },
+                        IsUseDose = p.Product.IsUseDose,
+                        IsManagedInBatches = p.Product.IsManagedInBatches,
+                        CreatedAt = p.Product.CreatedAt,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = p.Product.CreatedByNavigation.Id,
+                            Name = p.Product.CreatedByNavigation.FullName
+                        },
+                        UpdatedAt = p.Product.UpdatedAt,
+                        UpdatedBy = p.Product.UpdatedBy,
+                        IsActive = p.Product.IsActive,
+                    }).Distinct().ToListAsync();
+                    if (data != null)
+                    {
+                        foreach (var product in data)
+                        {
+                            var activeSubstance = await GetListActiveSubstances(product.Id);
+                            product.ActiveSubstances = activeSubstance.Data;
+                            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                            product.ProductUnits = productUnits.Data;
+                            var batches = await GetBatchesByProductId(product.Id);
+                            product.Batches = batches.Data;
+                        }
+                        return new Response<List<ViewProductModel>>(data)
+                        {
+                            Message = "Thông tin tất cả sản phẩm đang hoạt động"
+                        };
+                    }
+                    else
+                    {
+                        return new Response<List<ViewProductModel>>(null)
+                        {
+                            Message = "Hiện không có sản phẩm nào"
+                        };
+                    }
+                }
+
+                //get product by supplier deactive
+                if (request.IsSupplierActive == true)
+                {
+                    var data = await query2.Where(x => x.Supplier.IsActive == false).Select(p => new ViewProductModel()
+                    {
+                        Id = p.Batch.Product.Id,
+                        DrugRegistrationNumber = p.Batch.Product.DrugRegistrationNumber,
+                        Barcode = p.Batch.Product.Barcode,
+                        Name = p.Batch.Product.Name,
+                        Brand = new ViewModel()
+                        {
+                            Id = p.Batch.Product.Brand.Id,
+                            Name = p.Batch.Product.Brand.Name
+                        },
+                        Shelf = new ViewModel()
+                        {
+                            Id = p.Batch.Product.Shelf.Id,
+                            Name = p.Batch.Product.Shelf.Name
+                        },
+                        MininumInventory = p.Batch.Product.MininumInventory,
+                        RouteOfAdministration = new ViewModel()
+                        {
+                            Id = p.Batch.Product.RouteOfAdministration.Id,
+                            Name = p.Batch.Product.RouteOfAdministration.Name
+                        },
+                        IsUseDose = p.Batch.Product.IsUseDose,
+                        IsManagedInBatches = p.Batch.Product.IsManagedInBatches,
+                        CreatedAt = p.Batch.Product.CreatedAt,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = p.Batch.Product.CreatedByNavigation.Id,
+                            Name = p.Batch.Product.CreatedByNavigation.FullName
+                        },
+                        UpdatedAt = p.Batch.Product.UpdatedAt,
+                        UpdatedBy = p.Batch.Product.UpdatedBy,
+                        IsActive = p.Batch.Product.IsActive,
+                    }).Distinct().ToListAsync();
+                    if (data != null)
+                    {
+                        foreach (var product in data)
+                        {
+                            var activeSubstance = await GetListActiveSubstances(product.Id);
+                            product.ActiveSubstances = activeSubstance.Data;
+                            var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
+                            product.ProductUnits = productUnits.Data;
+                            var batches = await GetBatchesByProductId(product.Id);
+                            product.Batches = batches.Data;
+                        }
+                        return new Response<List<ViewProductModel>>(data)
+                        {
+                            Message = "Thông tin tất cả sản phẩm đang hoạt động"
+                        };
+                    }
+                    else
+                    {
+                        return new Response<List<ViewProductModel>>(null)
+                        {
+                            Message = "Hiện không có sản phẩm nào"
+                        };
+                    }
+                }
+                return new Response<List<ViewProductModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Dữ liệu tìm kiếm không chính xác"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewProductModel>>(null)
                 {
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"

@@ -35,6 +35,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("shelves-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetListCategory()
+        {
+            var categories = await _shelfSvc.GetListShelves();
+            return StatusCode(categories.StatusCode, categories);
+        }
+
+        [Authorize]
         [Route("shelves/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
