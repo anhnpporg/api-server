@@ -9,12 +9,14 @@ using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ResponseModel;
 using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ShelfService
 {
     public class ShelfSvc : IShelfSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public ShelfSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
@@ -36,6 +38,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 {
                     Name = model.Name,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.Shelves.Add(shelf);
                 await _context.SaveChangesAsync();
@@ -275,7 +278,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 if (shelf != null)
                 {
                     shelf.Name = model.Name;
-                    shelf.UpdatedAt = DateTime.Now;
+                    shelf.UpdatedAt = today;
                     shelf.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

@@ -10,6 +10,7 @@ using UtNhanDrug_BE.Models.ModelHelper;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.ResponseModel;
 using UtNhanDrug_BE.Services.ProductService;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.BrandService
 {
@@ -17,6 +18,7 @@ namespace UtNhanDrug_BE.Services.BrandService
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly IProductSvc _productSvc;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
 
         public BrandSvc(ut_nhan_drug_store_databaseContext context, IProductSvc productSvc)
         {
@@ -46,6 +48,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                 {
                     Name = model.Name,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.Brands.Add(brand);
                 await _context.SaveChangesAsync();
@@ -75,7 +78,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                 if (brand != null)
                 {
                     brand.Name = model.Name;
-                    brand.UpdatedAt = DateTime.Now;
+                    brand.UpdatedAt = today;
                     brand.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

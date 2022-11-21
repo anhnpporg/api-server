@@ -13,6 +13,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.ResponseModel;
 using UtNhanDrug_BE.Services.ProductUnitService;
 using UtNhanDrug_BE.Services.BatchService;
+using UtNhanDrug_BE.Models.ActiveSubstanceModel;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -21,6 +23,7 @@ namespace UtNhanDrug_BE.Services.ProductService
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly IProductUnitPriceSvc _productUnitSvc;
         private readonly IBatchSvc _batchSvc;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
 
         public ProductSvc(ut_nhan_drug_store_databaseContext context, IProductUnitPriceSvc productUnitSvc, IBatchSvc batchSvc)
         {
@@ -53,6 +56,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     IsUseDose = model.IsUseDose,
                     IsManagedInBatches = model.IsManagedInBatches,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
@@ -67,7 +71,8 @@ namespace UtNhanDrug_BE.Services.ProductService
                     IsBaseUnit = true,
                     IsPackingSpecification = true,
                     IsDoseBasedOnBodyWeightUnit = false,
-                    CreatedBy = userId
+                    CreatedBy = userId,
+                    CreatedAt = today
                 };
                 if (model.IsUseDose == true)
                 {
@@ -79,7 +84,8 @@ namespace UtNhanDrug_BE.Services.ProductService
                         IsBaseUnit = false,
                         IsPackingSpecification = true,
                         IsDoseBasedOnBodyWeightUnit = true,
-                        CreatedBy = userId
+                        CreatedBy = userId,
+                        CreatedAt = today
                     };
                 }
                 else
@@ -108,7 +114,8 @@ namespace UtNhanDrug_BE.Services.ProductService
                             IsBaseUnit = false,
                             IsDoseBasedOnBodyWeightUnit = false,
                             IsPackingSpecification = true,
-                            CreatedBy = userId
+                            CreatedBy = userId,
+                            CreatedAt = today
                         };
                         _context.ProductUnitPrices.Add(x);
                     }
@@ -154,7 +161,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     if (product.IsActive == true)
                     {
                         product.IsActive = false;
-                        product.UpdatedAt = DateTime.Now;
+                        product.UpdatedAt = today;
                         product.UpdatedBy = userId;
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
@@ -166,7 +173,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     else
                     {
                         product.IsActive = true;
-                        product.UpdatedAt = DateTime.Now;
+                        product.UpdatedAt = today;
                         product.UpdatedBy = userId;
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
@@ -476,28 +483,29 @@ namespace UtNhanDrug_BE.Services.ProductService
             return data;
         }
 
-        public async Task<Response<List<ViewModel>>> GetListActiveSubstances(int productId)
+        public async Task<Response<List<ViewATS>>> GetListActiveSubstances(int productId)
         {
             try
             {
                 var query = from pas in _context.ProductActiveSubstances
                             where pas.ProductId == productId
                             select pas;
-                var data = await query.Select(x => new ViewModel()
+                var data = await query.Select(x => new ViewATS()
                 {
                     Id = x.ActiveSubstance.Id,
-                    Name = x.ActiveSubstance.Name
+                    Name = x.ActiveSubstance.Name,
+                    IsActive = (bool)x.ActiveSubstance.IsActive
                 }).ToListAsync();
                 if (data != null)
                 {
-                    return new Response<List<ViewModel>>(data)
+                    return new Response<List<ViewATS>>(data)
                     {
                         Message = "Thông tin hoạt chất của sản phẩm"
                     };
                 }
                 else
                 {
-                    return new Response<List<ViewModel>>(null)
+                    return new Response<List<ViewATS>>(null)
                     {
                         Message = "Sản phẩm không có hoạt chất nào"
                     };
@@ -505,7 +513,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             }
             catch (Exception)
             {
-                return new Response<List<ViewModel>>(null)
+                return new Response<List<ViewATS>>(null)
                 {
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
@@ -639,7 +647,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     product.RouteOfAdministrationId = model.RouteOfAdministrationId;
                     product.IsManagedInBatches = model.IsManagedInBatches;
                     product.IsUseDose = model.IsUseDose;
-                    product.UpdatedAt = DateTime.Now;
+                    product.UpdatedAt = today;
                     product.UpdatedBy = userId;
 
                     await _context.SaveChangesAsync();
@@ -741,43 +749,84 @@ namespace UtNhanDrug_BE.Services.ProductService
                 //get product is active
                 if (request.IsProductActive == true)
                 {
-                    var data = await query2.Where(x => x.Batch.Product.Brand.IsActive == true & x.Supplier.IsActive == true & x.Batch.Product.IsActive == true).Select(p => new ViewProductModel()
+                    var data1 = await query1.Where(x => x.ActiveSubstance.IsActive == false).Select(x => new ViewModel()
                     {
-                        Id = p.Batch.Product.Id,
-                        DrugRegistrationNumber = p.Batch.Product.DrugRegistrationNumber,
-                        Barcode = p.Batch.Product.Barcode,
-                        Name = p.Batch.Product.Name,
+                        Id = x.Product.Id,
+                        Name = x.Product.Barcode
+                    }).Distinct().ToListAsync();
+
+                    var data2 = await query2.Where(x => x.Supplier.IsActive == false).Select(x => new ViewModel()
+                    {
+                        Id = x.Batch.Product.Id,
+                        Name = x.Batch.Product.Barcode
+                    }).Distinct().ToListAsync();
+
+                    var data = query.Distinct();
+                    var result = await data.Where(x => x.Brand.IsActive == true & x.IsActive == true).Select(p => new ViewProductModel()
+                    {
+                        Id = p.Id,
+                        DrugRegistrationNumber = p.DrugRegistrationNumber,
+                        Barcode = p.Barcode,
+                        Name = p.Name,
                         Brand = new ViewModel()
                         {
-                            Id = p.Batch.Product.Brand.Id,
-                            Name = p.Batch.Product.Brand.Name
+                            Id = p.Brand.Id,
+                            Name = p.Brand.Name
                         },
                         Shelf = new ViewModel()
                         {
-                            Id = p.Batch.Product.Shelf.Id,
-                            Name = p.Batch.Product.Shelf.Name
+                            Id = p.Shelf.Id,
+                            Name = p.Shelf.Name
                         },
-                        MininumInventory = p.Batch.Product.MininumInventory,
+                        MininumInventory = p.MininumInventory,
                         RouteOfAdministration = new ViewModel()
                         {
-                            Id = p.Batch.Product.RouteOfAdministration.Id,
-                            Name = p.Batch.Product.RouteOfAdministration.Name
+                            Id = p.RouteOfAdministration.Id,
+                            Name = p.RouteOfAdministration.Name
                         },
-                        IsUseDose = p.Batch.Product.IsUseDose,
-                        IsManagedInBatches = p.Batch.Product.IsManagedInBatches,
+                        IsUseDose = p.IsUseDose,
+                        IsManagedInBatches = p.IsManagedInBatches,
                         CreatedAt = p.CreatedAt,
                         CreatedBy = new ViewModel()
                         {
                             Id = p.CreatedByNavigation.Id,
                             Name = p.CreatedByNavigation.FullName
                         },
-                        UpdatedAt = p.Batch.Product.UpdatedAt,
-                        UpdatedBy = p.Batch.Product.UpdatedBy,
-                        IsActive = p.Batch.Product.IsActive,
-                    }).Distinct().ToListAsync();
-                    if (data != null)
+                        UpdatedAt = p.UpdatedAt,
+                        UpdatedBy = p.UpdatedBy,
+                        IsActive = p.IsActive,
+                    }).ToListAsync();
+                    if (result.Count > 0)
                     {
-                        foreach (var product in data)
+                        //delete element has activesubstan deactive
+
+                        foreach (var p1 in data1)
+                        {
+                            foreach (var p in result)
+                            {
+                                if (p.Id == p1.Id)
+                                {
+                                    result.Remove(p);
+                                    break;
+                                }
+                            }
+                        }
+                        //delete element has supplier deactive
+
+                        foreach (var p2 in data2)
+                        {
+                            foreach (var p in result)
+                            {
+                                if (p.Id == p2.Id)
+                                {
+                                    result.Remove(p);
+                                    break;
+                                }
+                            }
+                        }
+
+                        //
+                        foreach (var product in result)
                         {
                             var activeSubstance = await GetListActiveSubstances(product.Id);
                             product.ActiveSubstances = activeSubstance.Data;
@@ -786,7 +835,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             var batches = await GetBatchesByProductId(product.Id);
                             product.Batches = batches.Data;
                         }
-                        return new Response<List<ViewProductModel>>(data)
+                        return new Response<List<ViewProductModel>>(result)
                         {
                             Message = "Thông tin tất cả sản phẩm đang hoạt động"
                         };
@@ -799,6 +848,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         };
                     }
                 }
+
                 //get product is deactive by brand
                 if (request.IsBrandActive == true)
                 {

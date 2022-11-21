@@ -7,12 +7,14 @@ using System.Linq;
 using UtNhanDrug_BE.Models.ResponseModel;
 using System;
 using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ProductUnitService
 {
     public class ProductUnitPriceSvc : IProductUnitPriceSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public ProductUnitPriceSvc(ut_nhan_drug_store_databaseContext context)
         {
 
@@ -39,7 +41,8 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                     IsBaseUnit = model.IsBaseUnit,
                     IsPackingSpecification = model.IsPackingSpecification,
                     IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
-                    CreatedBy = userId
+                    CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.ProductUnitPrices.Add(pu);
                 await _context.SaveChangesAsync();
@@ -198,6 +201,7 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                     pu.Unit = model.Unit;
                     pu.IsBaseUnit = model.IsBaseUnit;
                     pu.UpdatedBy = userId;
+                    pu.UpdatedAt = today;
                     pu.IsPackingSpecification = model.IsPackingSpecification;
                     pu.IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit;
 

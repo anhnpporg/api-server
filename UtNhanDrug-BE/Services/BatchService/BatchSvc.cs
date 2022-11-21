@@ -11,13 +11,14 @@ using UtNhanDrug_BE.Models.ResponseModel;
 using UtNhanDrug_BE.Models.GoodsReceiptNoteModel;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.InvoiceModel;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.BatchService
 {
     public class BatchSvc : IBatchSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
-
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public BatchSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
@@ -37,10 +38,11 @@ namespace UtNhanDrug_BE.Services.BatchService
                 Batch consignment = new Batch()
                 {
                     BatchBarcode = "#####",
-                    ProductId = model.ProductId,
+                    ProductId = (int)model.ProductId,
                     ManufacturingDate = model.ManufacturingDate,
                     ExpiryDate = model.ExpiryDate,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.Batches.Add(consignment);
                 await _context.SaveChangesAsync();
@@ -229,7 +231,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     c.ProductId = model.ProductId;
                     c.ManufacturingDate = model.ManufacturingDate;
                     c.ExpiryDate = model.ExpiryDate;
-                    c.UpdatedAt = DateTime.Now;
+                    c.UpdatedAt = today;
                     c.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -459,7 +461,8 @@ namespace UtNhanDrug_BE.Services.BatchService
                         Name = x.OrderDetail.Product.Name
                     },
                     UnitDose = x.OrderDetail.UnitDose,
-                    Use = x.OrderDetail.Use
+                    Use = x.OrderDetail.Use,
+                    CreatTime = x.OrderDetail.Invoice.CreatedAt
 
                 }).ToListAsync();
                 if(data != null)

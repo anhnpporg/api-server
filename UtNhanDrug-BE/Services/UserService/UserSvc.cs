@@ -23,6 +23,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly ISenderService _senderService;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         private const string defaultAvatar = "https://firebasestorage.googleapis.com/v0/b/utnhandrug.appspot.com/o/image-profile.png?alt=media&token=928ea13d-d43f-4c0e-a8ba-ab1999059530";
         public UserSvc(ut_nhan_drug_store_databaseContext context, ISenderService senderService)
         {
@@ -406,6 +407,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         {
                             PhoneNumber = model.PhoneNumber,
                             FullName = model.FullName,
+                            CreatedAt = today,
                             CreatedBy = userId
                         };
                         _context.Customers.Add(customer);
@@ -436,8 +438,8 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 await transaction.RollbackAsync();
                 return new Response<Customer>(null)
                 {
-                    StatusCode = 400,
-                    Message = "Khách hàng này đã tồn tại"
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
                 };
             }
             
@@ -451,6 +453,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 var user = new UserAccount()
                 {
                     FullName = fullname,
+                    CreatedAt = today
                 };
                 _context.UserAccounts.Add(user);
                 await _context.SaveChangesAsync();
@@ -550,7 +553,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                                 UrlAvartar = avatar,
                                 DateOfBirth = model.Dob,
                                 IsMale = model.IsMale,
-                                PhoneNumber = model.PhoneNumber,
+                                PhoneNumber = model.PhoneNumber
                             };
                             _context.Staffs.Add(s);
                             await _context.SaveChangesAsync();

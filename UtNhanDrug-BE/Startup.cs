@@ -41,6 +41,7 @@ namespace UtNhanDrug_BE
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
         }
 
         public IConfiguration Configuration { get; }
@@ -59,7 +60,6 @@ namespace UtNhanDrug_BE
                 o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
 
-
             services.AddApiVersioning(x =>
             {
                 x.DefaultApiVersion = new ApiVersion(1, 0);
@@ -71,7 +71,7 @@ namespace UtNhanDrug_BE
             services.RegisterSwaggerModule();
             
             //add scope
-
+            
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IInvoiceSvc, InvoiceSvc>();

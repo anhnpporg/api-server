@@ -6,6 +6,7 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
 {
     public class CreateInvoiceModel
     {
+        public int GoodsIssueNoteTypeId { get; set; }
         public int? CustomerId { get; set; }
         public decimal? BodyWeight { get; set; }
         public int? DayUse { get; set; }

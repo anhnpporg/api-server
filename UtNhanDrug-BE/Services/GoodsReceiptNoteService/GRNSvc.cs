@@ -11,12 +11,14 @@ using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.ResponseModel;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
     public class GRNSvc : IGRNSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public GRNSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
@@ -38,18 +40,20 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     foreach (var m in model)
                     {
                         // add supplier id, if null add object supplier
-                        if (m.SupplierId == null)
-                        {
-                            Supplier s = new Supplier()
+                        if(m.GoodsReceiptNoteTypeId == 1){
+                            if (m.SupplierId == null)
                             {
-                                Name = m.Supplier.Name,
-                                CreatedBy = userId
-                            };
-                            var supplier = _context.Suppliers.Add(s);
-                            await _context.SaveChangesAsync();
-                            m.SupplierId = s.Id;
+                                Supplier s = new Supplier()
+                                {
+                                    Name = m.Supplier.Name,
+                                    CreatedBy = userId,
+                                    CreatedAt = today
+                                };
+                                var supplier = _context.Suppliers.Add(s);
+                                await _context.SaveChangesAsync();
+                                m.SupplierId = s.Id;
+                            }
                         }
-
                         //batches 
                         foreach (var b in m.Batches)
                         {
@@ -59,7 +63,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 Batch s = new Batch()
                                 {
                                     BatchBarcode = "#####",
-                                    ProductId = b.Batch.ProductId,
+                                    ProductId = (int)b.Batch.ProductId,
                                     ManufacturingDate = b.Batch.ManufacturingDate,
                                     ExpiryDate = b.Batch.ExpiryDate,
                                     CreatedBy = userId,
@@ -75,7 +79,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             GoodsReceiptNote grn = new GoodsReceiptNote()
                             {
                                 GoodsReceiptNoteTypeId = m.GoodsReceiptNoteTypeId,
-                                BatchId = b.BatchId,
+                                BatchId = (int)b.BatchId,
                                 InvoiceId = m.InvoiceId,
                                 SupplierId = m.SupplierId,
                                 Quantity = b.Quantity,
@@ -87,6 +91,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             };
                             _context.GoodsReceiptNotes.Add(grn);
                             await _context.SaveChangesAsync();
+                            b.BatchId = null;
                         }
                     }
                     await transaction.CommitAsync();
@@ -106,7 +111,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 await transaction.RollbackAsync();
                 return new Response<bool>(false)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Tạo phiếu nhập hàng thất bại"
                 };
             }

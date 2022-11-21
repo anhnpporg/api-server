@@ -9,12 +9,14 @@ using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ModelHelper;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.ResponseModel;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 {
     public class ActiveSubstanceSvc : IActiveSubstanceSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
 
         public ActiveSubstanceSvc(ut_nhan_drug_store_databaseContext context)
         {
@@ -51,6 +53,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 {
                     Name = model.Name,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.ActiveSubstances.Add(a);
                 await _context.SaveChangesAsync();
@@ -273,7 +276,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 if (result != null)
                 {
                     result.Name = model.Name;
-                    result.UpdatedAt = DateTime.Now;
+                    result.UpdatedAt = today;
                     result.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();

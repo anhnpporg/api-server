@@ -32,7 +32,17 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _invoiceSvc.ViewInvoiceById(id);
             return StatusCode(result.StatusCode, result);
         }
-        
+
+        [Authorize]
+        [Route("invoices/barcode")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceByBarcode([FromQuery] string barcode)
+        {
+            var result = await _invoiceSvc.GetInvoiceByInvoiceBarcode(barcode);
+            return StatusCode(result.StatusCode, result);
+        }
+
         [Authorize]
         [Route("invoices")]
         [HttpGet]
@@ -62,6 +72,7 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _invoiceSvc.GetInvoiceCustomerId(id);
             return StatusCode(result.StatusCode, result);
         }
+
         
         [Authorize]
         [Route("invoices/{id}/invoice-detail")]

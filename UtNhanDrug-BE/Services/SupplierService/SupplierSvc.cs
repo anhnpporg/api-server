@@ -10,13 +10,14 @@ using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ResponseModel;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.SupplierService
 {
     public class SupplierSvc : ISupplierSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
-
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public SupplierSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
@@ -51,6 +52,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 {
                     Name = model.Name,
                     CreatedBy = userId,
+                    CreatedAt = today
                 };
                 _context.Suppliers.Add(supplier);
                 await _context.SaveChangesAsync();

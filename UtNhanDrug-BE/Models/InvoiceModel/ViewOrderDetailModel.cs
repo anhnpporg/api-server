@@ -1,4 +1,5 @@
-﻿using UtNhanDrug_BE.Models.ModelHelper;
+﻿using System;
+using UtNhanDrug_BE.Models.ModelHelper;
 
 namespace UtNhanDrug_BE.Models.InvoiceModel
 {
@@ -18,5 +19,6 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public decimal UnitPrice { get; set; }
         public int ConvertedQuantity { get; set; }
         public decimal TotalPrice { get; set; }
+        public DateTime CreatTime { get; set; }
     }
 }
