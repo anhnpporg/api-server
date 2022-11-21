@@ -85,6 +85,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("invoices/barcode/invoice-detail")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetInvoiceDetailByBarcode([FromQuery] string barcode)
+        {
+            var result = await _invoiceSvc.ViewOrderDetailByBarcode(barcode);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
         [Route("invoices")]
         [HttpPost]
         [MapToApiVersion("1.0")]
