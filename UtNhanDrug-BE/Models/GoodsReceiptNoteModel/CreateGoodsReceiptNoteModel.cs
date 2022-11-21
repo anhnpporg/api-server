@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.SupplierModel;
 
@@ -8,17 +9,17 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
     {
         [Required]
         public int GoodsReceiptNoteTypeId { get; set; }
-        public int? BatchId { get; set; }
         public int? InvoiceId { get; set; }
         public int? SupplierId { get; set; }
-        [Required]
-        public int Quantity { get; set; }
-        [Required]
-        public int ProductUnitPriceId { get; set; }
-        [Required]
-        public decimal TotalPrice { get; set; }
-
-        public CreateBatchModel? Batch { get; set; }
+        public List<BatchesModel> Batches { get; set; }
         public CreateSupplierModel? Supplier { get; set; }
+    }
+    public class BatchesModel
+    {
+        public int? BatchId { get; set; }
+        public int Quantity { get; set; }
+        public int ProductUnitPriceId { get; set; }
+        public decimal TotalPrice { get; set; }
+        public CreateBatchModel? Batch { get; set; }
     }
 }

@@ -21,6 +21,7 @@ namespace UtNhanDrug_BE.Controllers
         {
             _supplierSvc = supplierSvc;
         }
+
         [Authorize]
         [Route("suppliers")]
         [HttpGet]
@@ -28,7 +29,17 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllSupplier()
         {
             var suppliers = await _supplierSvc.GetAllSupplier();
-            return Ok(suppliers);
+            return StatusCode(suppliers.StatusCode, suppliers);
+        }
+
+        [Authorize]
+        [Route("suppliers-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetLítSupplier()
+        {
+            var suppliers = await _supplierSvc.GetListSupplier();
+            return StatusCode(suppliers.StatusCode, suppliers);
         }
 
         [Authorize]
@@ -38,8 +49,27 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetSupplierById([FromRoute] int id)
         {
             var supplier = await _supplierSvc.GetSupplierById(id);
-            if (supplier == null) return NotFound(new { message = "Not found this supplier" });
-            return Ok(supplier);
+            return StatusCode(supplier.StatusCode, supplier);
+        }
+
+        [Authorize]
+        [Route("suppliers/{id}/batches")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetBatchesBySupplierId([FromRoute] int id)
+        {
+            var batches = await _supplierSvc.GetListBatch(id);
+            return StatusCode(batches.StatusCode, batches);
+        }
+        
+        [Authorize]
+        [Route("suppliers/{id}/products")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetProductsBySupplierId([FromRoute] int id)
+        {
+            var products = await _supplierSvc.GetListProduct(id);
+            return StatusCode(products.StatusCode, products);
         }
 
         [Authorize]
@@ -57,11 +87,10 @@ namespace UtNhanDrug_BE.Controllers
             }
             catch (Exception)
             {
-                return BadRequest(new { message = "You are not login" });
+                return BadRequest(new { message = "Bạn chưa đăng nhập" });
             }
             var result = await _supplierSvc.CreateSupplier(userId, model);
-            if (!result) return BadRequest(new { message = "Create supplier fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -80,11 +109,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _supplierSvc.CheckSupplier(id);
-            if (!isExit) return NotFound(new { message = "Not found this supplier" });
             var result = await _supplierSvc.UpdateSupplier(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -104,11 +130,8 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _supplierSvc.CheckSupplier(id);
-            if (!isExit) return NotFound(new { message = "Not found this supplier" });
-            var result = await _supplierSvc.DeleteSupplier(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            var result = await _supplierSvc.IsDeleteSupplier(id, userId);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

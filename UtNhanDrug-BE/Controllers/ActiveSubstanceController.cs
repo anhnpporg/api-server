@@ -25,44 +25,54 @@ namespace UtNhanDrug_BE.Controllers
             _productSvc = productSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances")]
         [HttpGet]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetAllActiveSubstance()
         {
             var result = await _activeSubstanceSvc.GetAllActiveSubstance();
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
+        [Route("active-substances-active")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetListActiveSubstance()
+        {
+            var result = await _activeSubstanceSvc.GetListActiveSubstance();
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
         [Route("active-substances/{id}/products")]
         [HttpGet]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetProducts([FromRoute] int id)
         {
             var products = await _activeSubstanceSvc.GetListProducts(id);
-            foreach (var product in products)
+            foreach (var product in products.Data)
             {
                 var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance;
+                product.ActiveSubstances = activeSubstance.Data;
             }
 
-            return Ok(products);
+            return StatusCode(products.StatusCode, products);
         }
 
-        [Authorize(Roles = "MANAGER")]
+
+        [Authorize]
         [Route("active-substances/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> GetActiveSubstanceById([FromRoute] int id)
         {
             var result = await _activeSubstanceSvc.GetActiveSubstanceById(id);
-            if (result == null) return NotFound(new { message = "Not found this active substance" });
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("active-substances")]
         [HttpPost]
         [MapToApiVersion("1.0")]
@@ -71,8 +81,7 @@ namespace UtNhanDrug_BE.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
             int userId;
-            try
-            {
+            try { 
                 userId = Convert.ToInt32(claim[0].Value);
             }
             catch (Exception)
@@ -80,11 +89,10 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _activeSubstanceSvc.CreateActiveSubstance(userId, model);
-            if (!result) return BadRequest(new { message = "Create active substance fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("active-substances/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateBrand([FromRoute] int id, [FromForm] UpdateActiveSubstanceModel model)
@@ -100,14 +108,11 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _activeSubstanceSvc.CheckActiveSubstance(id);
-            if (!isExit) return NotFound(new { message = "Not found this active substance" });
             var result = await _activeSubstanceSvc.UpdateActiveSubstance(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("active-substances/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteBrand([FromRoute] int id)
@@ -124,11 +129,8 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _activeSubstanceSvc.CheckActiveSubstance(id);
-            if (!isExit) return NotFound(new { message = "Not found this active substance" });
             var result = await _activeSubstanceSvc.DeleteActiveSubstance(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
     }

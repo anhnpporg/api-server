@@ -8,7 +8,5 @@ namespace UtNhanDrug_BE.Models.ProductUnitModel
         public string Unit { get; set; }
         public double? ConversionValue { get; set; }
         public decimal? Price { get; set; }
-        public bool IsPackingSpecification { get; set; }
-        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
     }
 }

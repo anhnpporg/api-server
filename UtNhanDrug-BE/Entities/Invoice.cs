@@ -16,6 +16,7 @@ namespace UtNhanDrug_BE.Entities
 
         public int Id { get; set; }
         public int? CustomerId { get; set; }
+        public string Barcode { get; set; }
         public decimal? BodyWeight { get; set; }
         public int? DayUse { get; set; }
         public decimal TotalPrice { get; set; }

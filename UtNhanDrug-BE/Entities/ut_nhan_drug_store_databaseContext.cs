@@ -67,7 +67,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -103,7 +103,7 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("batches");
 
-                entity.HasIndex(e => e.BatchBarcode, "UQ__batches__2F575CEE2C7DEFF0")
+                entity.HasIndex(e => e.BatchBarcode, "UQ__batches__2F575CEEDFC02E77")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -117,7 +117,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -169,7 +169,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -205,7 +205,7 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("customers");
 
-                entity.HasIndex(e => e.PhoneNumber, "UQ__customer__A1936A6BDF5ABFE4")
+                entity.HasIndex(e => e.PhoneNumber, "UQ__customer__A1936A6BFC2CC019")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -213,7 +213,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -273,13 +273,13 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.CustomerPointTransactions)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__customer___custo__29221CFB");
+                    .HasConstraintName("FK__customer___custo__2A164134");
 
                 entity.HasOne(d => d.Invoice)
                     .WithMany(p => p.CustomerPointTransactions)
                     .HasForeignKey(d => d.InvoiceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__customer___invoi__2A164134");
+                    .HasConstraintName("FK__customer___invoi__2B0A656D");
             });
 
             modelBuilder.Entity<DataSettingSystemCustomerPoint>(entity =>
@@ -308,7 +308,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -332,12 +332,12 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.DiseaseCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__diseases__create__2FCF1A8A");
+                    .HasConstraintName("FK__diseases__create__30C33EC3");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.DiseaseUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__diseases__update__30C33EC3");
+                    .HasConstraintName("FK__diseases__update__31B762FC");
             });
 
             modelBuilder.Entity<EmailValidationStatus>(entity =>
@@ -382,18 +382,18 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.BatchId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_iss__batch__2645B050");
+                    .HasConstraintName("FK__goods_iss__batch__2739D489");
 
                 entity.HasOne(d => d.GoodsIssueNoteType)
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.GoodsIssueNoteTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_iss__goods__245D67DE");
+                    .HasConstraintName("FK__goods_iss__goods__25518C17");
 
                 entity.HasOne(d => d.OrderDetail)
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.OrderDetailId)
-                    .HasConstraintName("FK__goods_iss__order__25518C17");
+                    .HasConstraintName("FK__goods_iss__order__2645B050");
             });
 
             modelBuilder.Entity<GoodsIssueNoteType>(entity =>
@@ -425,7 +425,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -450,29 +450,29 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.BatchId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__batch__1332DBDC");
+                    .HasConstraintName("FK__goods_rec__batch__14270015");
 
                 entity.HasOne(d => d.CreatedByNavigation)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__creat__17036CC0");
+                    .HasConstraintName("FK__goods_rec__creat__17F790F9");
 
                 entity.HasOne(d => d.GoodsReceiptNoteType)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.GoodsReceiptNoteTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__goods__123EB7A3");
+                    .HasConstraintName("FK__goods_rec__goods__1332DBDC");
 
                 entity.HasOne(d => d.Invoice)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.InvoiceId)
-                    .HasConstraintName("FK__goods_rec__invoi__14270015");
+                    .HasConstraintName("FK__goods_rec__invoi__151B244E");
 
                 entity.HasOne(d => d.Supplier)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.SupplierId)
-                    .HasConstraintName("FK__goods_rec__suppl__151B244E");
+                    .HasConstraintName("FK__goods_rec__suppl__160F4887");
             });
 
             modelBuilder.Entity<GoodsReceiptNoteLog>(entity =>
@@ -498,12 +498,12 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsReceiptNoteLogs)
                     .HasForeignKey(d => d.GoodsReceiptNoteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__goods__19DFD96B");
+                    .HasConstraintName("FK__goods_rec__goods__1AD3FDA4");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.GoodsReceiptNoteLogs)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__goods_rec__updat__1AD3FDA4");
+                    .HasConstraintName("FK__goods_rec__updat__1BC821DD");
             });
 
             modelBuilder.Entity<GoodsReceiptNoteType>(entity =>
@@ -535,7 +535,16 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("invoices");
 
+                entity.HasIndex(e => e.Barcode, "UQ__invoices__C16E36F8D5E69C4A")
+                    .IsUnique();
+
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Barcode)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("barcode");
 
                 entity.Property(e => e.BodyWeight)
                     .HasColumnType("decimal(5, 2)")
@@ -544,7 +553,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -553,30 +562,30 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.DayUse).HasColumnName("day_use");
 
                 entity.Property(e => e.Discount)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("discount");
 
                 entity.Property(e => e.TotalPrice)
-                    .HasColumnType("smallmoney")
+                    .HasColumnType("money")
                     .HasColumnName("total_price");
 
                 entity.HasOne(d => d.CreatedByNavigation)
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoices__create__0F624AF8");
+                    .HasConstraintName("FK__invoices__create__10566F31");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK__invoices__custom__0D7A0286");
+                    .HasConstraintName("FK__invoices__custom__0E6E26BF");
             });
 
             modelBuilder.Entity<Manager>(entity =>
             {
                 entity.ToTable("managers");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__managers__1918BBDB8C7D7C9E")
+                entity.HasIndex(e => e.UserAccountId, "UQ__managers__1918BBDB6FB40A65")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -594,7 +603,7 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("order_detail");
 
-                entity.HasIndex(e => new { e.InvoiceId, e.ProductId }, "UQ__order_de__B1FDDA978FF98688")
+                entity.HasIndex(e => new { e.InvoiceId, e.ProductId }, "UQ__order_de__B1FDDA97762F7549")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -623,23 +632,23 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.InvoiceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__order_det__invoi__1EA48E88");
+                    .HasConstraintName("FK__order_det__invoi__1F98B2C1");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__order_det__produ__1F98B2C1");
+                    .HasConstraintName("FK__order_det__produ__208CD6FA");
             });
 
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("products");
 
-                entity.HasIndex(e => e.Barcode, "UQ__products__C16E36F8ADD6A590")
+                entity.HasIndex(e => e.Barcode, "UQ__products__C16E36F812438C09")
                     .IsUnique();
 
-                entity.HasIndex(e => e.DrugRegistrationNumber, "UQ__products__EF7E090970111347")
+                entity.HasIndex(e => e.DrugRegistrationNumber, "UQ__products__EF7E0909FE63738F")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -655,7 +664,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -725,7 +734,7 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("product_active_substance");
 
-                entity.HasIndex(e => new { e.ProductId, e.ActiveSubstanceId }, "UQ__product___12D3DF52D9056A3F")
+                entity.HasIndex(e => new { e.ProductId, e.ActiveSubstanceId }, "UQ__product___12D3DF52481B82F7")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -758,7 +767,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -829,7 +838,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -855,25 +864,25 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.SamplePrescriptionCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__creat__367C1819");
+                    .HasConstraintName("FK__sample_pr__creat__37703C52");
 
                 entity.HasOne(d => d.Disease)
                     .WithMany(p => p.SamplePrescriptions)
                     .HasForeignKey(d => d.DiseaseId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__disea__339FAB6E");
+                    .HasConstraintName("FK__sample_pr__disea__3493CFA7");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.SamplePrescriptionUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__sample_pr__updat__37703C52");
+                    .HasConstraintName("FK__sample_pr__updat__3864608B");
             });
 
             modelBuilder.Entity<SamplePrescriptionDetail>(entity =>
             {
                 entity.ToTable("sample_prescription_detail");
 
-                entity.HasIndex(e => new { e.SamplePrescriptionId, e.ProductId }, "UQ__sample_p__07C1DA1A242F1016")
+                entity.HasIndex(e => new { e.SamplePrescriptionId, e.ProductId }, "UQ__sample_p__07C1DA1A724E3C6F")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -881,7 +890,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -914,30 +923,30 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.SamplePrescriptionDetailCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__creat__40058253");
+                    .HasConstraintName("FK__sample_pr__creat__40F9A68C");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__produ__3C34F16F");
+                    .HasConstraintName("FK__sample_pr__produ__3D2915A8");
 
                 entity.HasOne(d => d.ProductUnitPrice)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.ProductUnitPriceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__produ__3D2915A8");
+                    .HasConstraintName("FK__sample_pr__produ__3E1D39E1");
 
                 entity.HasOne(d => d.SamplePrescription)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.SamplePrescriptionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__sampl__3B40CD36");
+                    .HasConstraintName("FK__sample_pr__sampl__3C34F16F");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.SamplePrescriptionDetailUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__sample_pr__updat__40F9A68C");
+                    .HasConstraintName("FK__sample_pr__updat__41EDCAC5");
             });
 
             modelBuilder.Entity<Shelf>(entity =>
@@ -949,7 +958,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -985,7 +994,7 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("staffs");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__staffs__1918BBDBA650BAFE")
+                entity.HasIndex(e => e.UserAccountId, "UQ__staffs__1918BBDB1D82124A")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -1025,7 +1034,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.CreatedBy).HasColumnName("created_by");
 
@@ -1071,7 +1080,7 @@ namespace UtNhanDrug_BE.Entities
                 entity.Property(e => e.CreatedAt)
                     .HasColumnType("datetime")
                     .HasColumnName("created_at")
-                    .HasDefaultValueSql("(getdate())");
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
 
                 entity.Property(e => e.FullName)
                     .IsRequired()
@@ -1088,10 +1097,10 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("user_login_data");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__user_log__1918BBDB87AFFB09")
+                entity.HasIndex(e => e.UserAccountId, "UQ__user_log__1918BBDB49BB3B0B")
                     .IsUnique();
 
-                entity.HasIndex(e => e.LoginName, "UQ__user_log__F6D56B57995A9170")
+                entity.HasIndex(e => e.LoginName, "UQ__user_log__F6D56B573A0AE27E")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");

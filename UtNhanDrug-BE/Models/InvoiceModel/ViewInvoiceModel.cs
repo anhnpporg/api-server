@@ -6,6 +6,7 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
     public class ViewInvoiceModel
     {
         public int Id { get; set; }
+        public string Barcode { get; set; }
         public ViewCustomer? Customer { get; set; }
         public decimal? BodyWeight { get; set; }
         public int? DayUse { get; set; }

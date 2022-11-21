@@ -6,12 +6,15 @@ using UtNhanDrug_BE.Models.SamplePrescriptionDetailModel;
 using System.Linq;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Hepper;
+using System;
 
 namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
 {
     public class SamplePrescriptionDetailSvc : ISamplePrescriptionDetailSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
 
         public SamplePrescriptionDetailSvc(ut_nhan_drug_store_databaseContext context)
         {
@@ -35,6 +38,7 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                 Frequency = model.Frequency,
                 Use = model.Use,
                 CreatedBy = userId,
+                CreatedAt = today
             };
             _context.SamplePrescriptionDetails.Add(spd);
             var result = await _context.SaveChangesAsync();
@@ -191,6 +195,7 @@ namespace UtNhanDrug_BE.Services.SamplePrescriptionDetailService
                 spd.Use = model.Use;
                 spd.Frequency = model.Frequency;
                 spd.UpdatedBy = userId;
+                spd.UpdatedAt = today;
                 spd.ProductUnitPriceId = model.ProductUnitPriceId;
                 await _context.SaveChangesAsync();
                 return true;

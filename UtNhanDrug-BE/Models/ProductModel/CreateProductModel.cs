@@ -19,8 +19,6 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public int MininumInventory { get; set; }
         public int RouteOfAdministrationId { get; set; }
         [Required]
-        public bool IsUseDose { get; set; }
-        [Required]
         public bool IsManagedInBatches { get; set; }
         [Required]
         public List<int> ActiveSubstances { get; set; }
@@ -28,11 +26,18 @@ namespace UtNhanDrug_BE.Models.ProductModel
         // create base unit
         public string Unit { get; set; }
         public decimal? Price { get; set; }
-        public bool IsPackingSpecification { get; set; }
-        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
 
         //create product unit (optional)
         public List<ProductUnitPriceModels> ProductUnits { get; set; }
+        //dose unit
+        [Required]
+        public bool IsUseDose { get; set; }
+        public DoseUnitPrice DoseUnitPrice { get; set; }
+    }
+    public class DoseUnitPrice
+    {
+        public string DoseUnit { get; set; }
+        public double ConversionValue { get; set; }
     }
 
 }

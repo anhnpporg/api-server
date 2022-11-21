@@ -10,6 +10,9 @@ using UtNhanDrug_BE.Services.ManagerService;
 using UtNhanDrug_BE.Services.ProductUnitService;
 using System.Linq;
 using UtNhanDrug_BE.Models.ModelHelper;
+using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Hepper.GenaralBarcode;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.InvoiceService
 {
@@ -18,6 +21,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly IUserSvc _userSvc;
         private readonly IProductUnitPriceSvc _unitSvc;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public InvoiceSvc(ut_nhan_drug_store_databaseContext context, IUserSvc userSvc, IProductUnitPriceSvc unitSvc)
         {
             _context = context;
@@ -26,16 +30,14 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         }
         public async Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
-            Invoice i = null;
-            GoodsIssueNote g = null;
-            try
+            if(model.GoodsIssueNoteTypeId == 1)
             {
                 if (model.CustomerId == null)
                 {
                     var customer = await _userSvc.CreateCustomer(UserId, model.Customer);
                     if (customer != null)
                     {
-                        model.CustomerId = customer.Id;
+                        model.CustomerId = customer.Data.Id;
                     }
                     else
                     {
@@ -46,20 +48,32 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         };
                     }
                 }
-                i = new Invoice()
+            }
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
+            {
+                
+                Invoice i = new Invoice()
                 {
                     CustomerId = model.CustomerId,
                     BodyWeight = model.BodyWeight,
+                    Barcode = "####",
                     DayUse = model.DayUse,
                     TotalPrice = 0,
-                    CreatedBy = UserId
+                    CreatedBy = UserId,
+                    CreatedAt = today
                 };
                 _context.Invoices.Add(i);
                 await _context.SaveChangesAsync();
 
+                if(i != null)
+                {
+                    var barcode = GenaralBarcode.CreateEan13Invoice(i.Id+"");
+                    i.Barcode = barcode;
+                    await _context.SaveChangesAsync();
+                }
                 foreach (OrderDetailModel x in model.Product)
                 {
-
                     decimal price = 0;
                     var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
 
@@ -84,7 +98,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         if (unit.Price == null)
                         {
                             var units = await _unitSvc.GetProductUnitByProductId(x.ProductId);
-                            foreach (var u in units)
+                            foreach (var u in units.Data)
                             {
                                 if (u.IsBaseUnit)
                                 {
@@ -96,10 +110,10 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         {
                             price = (decimal)unit.Price;
                         }
-
-                        g = new GoodsIssueNote()
+                        if (model.GoodsIssueNoteTypeId != 1) model.GoodsIssueNoteTypeId = 1;
+                        GoodsIssueNote g = new GoodsIssueNote()
                         {
-                            GoodsIssueNoteTypeId = 1,
+                            GoodsIssueNoteTypeId = model.GoodsIssueNoteTypeId,
                             OrderDetailId = o.Id,
                             BatchId = goods.BatchId,
                             Quantity = goods.Quantity,
@@ -112,23 +126,22 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         i.TotalPrice += o.TotalPrice;
                     }
                 }
-
-
-
-                await _context.SaveChangesAsync();
+                var r = await _context.SaveChangesAsync();
+                if (r > 0)
+                {
+                    await transaction.CommitAsync();
+                }
                 return new Response<bool>(true)
                 {
                     Message = "Tạo hoá đơn thành công"
                 };
-
             }
             catch (Exception e)
             {
-                _context.Invoices.Remove(i);
-                _context.GoodsIssueNotes.Remove(g);
+                await transaction.RollbackAsync();
                 return new Response<bool>(false)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Tạo hoá đơn thất bại",
                     Errors = new string[]{
                         e.Message
@@ -142,9 +155,10 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         {
             var query = from i in _context.Invoices
                         select i;
-            var data = await query.Select(x => new ViewInvoiceModel()
+            var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
+                Barcode = x.Barcode,
                 CreatedBy = new ViewModel()
                 {
                     Id = x.CreatedByNavigation.Id,
@@ -173,6 +187,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var data = await query.Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
+                Barcode = x.Barcode,
                 CreatedBy = new ViewModel()
                 {
                     Id = x.CreatedByNavigation.Id,
@@ -193,14 +208,58 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             return new Response<List<ViewInvoiceModel>>(data);
         }
 
+        public async Task<Response<ViewInvoiceModel>> GetInvoiceByInvoiceBarcode(string invoiceBarcode)
+        {
+            var query = from i in _context.Invoices
+                        where i.Barcode == invoiceBarcode
+                        select i;
+            var data = await query.Select(x => new ViewInvoiceModel()
+            {
+                Id = x.Id,
+                Barcode = x.Barcode,
+                CreatedBy = new ViewModel()
+                {
+                    Id = x.CreatedByNavigation.Id,
+                    Name = x.CreatedByNavigation.FullName
+                },
+                BodyWeight = x.BodyWeight,
+                CreatedAt = x.CreatedAt,
+                Customer = new ViewCustomer()
+                {
+                    Id = x.Customer.Id,
+                    PhoneNumber = x.Customer.PhoneNumber,
+                    FullName = x.Customer.FullName
+                },
+                DayUse = x.DayUse,
+                Discount = x.Discount,
+                TotalPrice = x.TotalPrice
+            }).FirstOrDefaultAsync();
+            if(data != null)
+            {
+                return new Response<ViewInvoiceModel>(data)
+                {
+                    Message = "Thông tin hoá đơn"
+                };
+            }
+            else
+            {
+                return new Response<ViewInvoiceModel>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Mã vạch hoá đơn không tồn tại"
+                };
+            }
+        }
+
         public async Task<Response<List<ViewInvoiceModel>>> GetInvoiceCustomerId(int customerId)
         {
             var query = from i in _context.Invoices
                         where i.CustomerId == customerId
                         select i;
-            var data = await query.Select(x => new ViewInvoiceModel()
+            var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
+                Barcode = x.Barcode,
                 CreatedBy = new ViewModel()
                 {
                     Id = x.CreatedByNavigation.Id,
@@ -229,6 +288,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var data = await query.Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
+                Barcode = x.Barcode,
                 CreatedBy = new ViewModel()
                 {
                     Id = x.CreatedByNavigation.Id,

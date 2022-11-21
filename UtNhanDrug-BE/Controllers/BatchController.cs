@@ -29,18 +29,17 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllbatches()
         {
             var disease = await _consignmentSvc.GetAllBatch();
-            return Ok(disease);
+            return StatusCode(disease.StatusCode, disease);
         }
 
         [Authorize]
-        [Route("products/{id}/batches")]
+        [Route("unit/{id}/inventory")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
+        public async Task<ActionResult> GetInventoryByUnitId([FromRoute] int id)
         {
-            var disease = await _consignmentSvc.GetBatchesByProductId(id);
-            if (disease == null) return NotFound(new { message = "Not found this batch" });
-            return Ok(disease);
+            var i = await _consignmentSvc.GetInventoryByUnitId(id);
+            return StatusCode(i.StatusCode, i);
         }
         
         [Authorize]
@@ -50,17 +49,36 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetbatchById([FromRoute] int id)
         {
             var disease = await _consignmentSvc.GetBatchById(id);
-            if (disease == null) return NotFound(new { message = "Not found this batch" });
-            return Ok(disease);
+            return StatusCode(disease.StatusCode, disease);
         }
         
         [Authorize]
-        [Route("batches/filter")]
+        [Route("batches/{id}/goods-receipt-note")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetbatchByBarcode([FromQuery] string barcode)
+        public async Task<ActionResult> GetGRNById([FromRoute] int id)
         {
-            var batch = await _consignmentSvc.GetBatchesByBarcode(barcode);
+            var grn = await _consignmentSvc.GetGRNByBatchId(id);
+            return StatusCode(grn.StatusCode, grn);
+        }
+
+        [Authorize]
+        [Route("batches/{id}/goods-issue-note")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGINById([FromRoute] int id)
+        {
+            var grn = await _consignmentSvc.GetGINByBatchId(id);
+            return StatusCode(grn.StatusCode, grn);
+        }
+        
+        [Authorize]
+        [Route("batches/barcode")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetbatchByBarcode([FromQuery] string batchBarcode)
+        {
+            var batch = await _consignmentSvc.GetBatchesByBarcode(batchBarcode);
             return StatusCode(batch.StatusCode, batch);
         }
 
@@ -82,8 +100,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _consignmentSvc.CreateBatch(userId, model);
-            if (!result) return BadRequest(new { message = "Create batch fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -102,11 +119,10 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this batch" });
+            //var isExit = await _consignmentSvc.CheckBatch(id);
+            //if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.UpdateBatch(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
         
         [Authorize]
@@ -126,11 +142,10 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
 
-            var isExit = await _consignmentSvc.CheckBatch(id);
-            if (!isExit) return NotFound(new { message = "Not found this batch" });
+            //var isExit = await _consignmentSvc.CheckBatch(id);
+            //if (!isExit) return NotFound(new { message = "Not found this batch" });
             var result = await _consignmentSvc.DeleteBatch(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

@@ -32,6 +32,7 @@ using UtNhanDrug_BE.Services.SamplePrescriptionService;
 using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.InvoiceService;
+using UtNhanDrug_BE.Services.DashBoardService;
 
 namespace UtNhanDrug_BE
 {
@@ -40,6 +41,7 @@ namespace UtNhanDrug_BE
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
         }
 
         public IConfiguration Configuration { get; }
@@ -58,7 +60,6 @@ namespace UtNhanDrug_BE
                 o.SerializerSettings.Converters.Add(new StringEnumConverter());
             });
 
-
             services.AddApiVersioning(x =>
             {
                 x.DefaultApiVersion = new ApiVersion(1, 0);
@@ -70,7 +71,7 @@ namespace UtNhanDrug_BE
             services.RegisterSwaggerModule();
             
             //add scope
-
+            
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IInvoiceSvc, InvoiceSvc>();
@@ -78,6 +79,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
+            services.AddTransient<IDashBoardSvc, DashBoardSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
             services.AddTransient<ISamplePrescriptionSvc, SamplePrescriptionSvc>();

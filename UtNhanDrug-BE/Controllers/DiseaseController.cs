@@ -22,7 +22,7 @@ namespace UtNhanDrug_BE.Controllers
             _diseaseSvc = diseaseSvc;
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("diseases")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -32,7 +32,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(disease);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("diseases/{id}")]
         [HttpGet]
         [MapToApiVersion("1.0")]
@@ -43,7 +43,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(disease);
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [Route("diseases")]
         [HttpPost]
         [MapToApiVersion("1.0")]
@@ -65,7 +65,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "create successfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPut("diseases/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateDisease([FromRoute] int id, [FromForm] UpdateDiseaseModel model)
@@ -88,7 +88,7 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize(Roles = "MANAGER")]
+        [Authorize]
         [HttpPatch("diseases/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteDisease([FromRoute] int id)

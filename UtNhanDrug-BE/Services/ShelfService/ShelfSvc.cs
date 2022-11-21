@@ -7,151 +7,340 @@ using UtNhanDrug_BE.Models.ShelfModel;
 using System.Linq;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Models.ModelHelper;
+using UtNhanDrug_BE.Models.ResponseModel;
+using Microsoft.EntityFrameworkCore.Storage;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.ShelfService
 {
     public class ShelfSvc : IShelfSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
         public ShelfSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
         }
 
-        public async Task<bool> CheckShelf(int shelfId)
-        {
-            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
-            if (shelf != null) return true;
-            return false;
-        }
+        //public async Task<bool> CheckShelf(int shelfId)
+        //{
+        //    var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
+        //    if (shelf != null) return true;
+        //    return false;
+        //}
 
-        public async Task<bool> CreateShelf(int userId, CreateShelfModel model)
+        public async Task<Response<bool>> CreateShelf(int userId, CreateShelfModel model)
         {
-            Shelf shelf = new Shelf()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                Name = model.Name,
-                CreatedBy = userId,
-            };
-            _context.Shelves.Add(shelf);
-            var result = await _context.SaveChangesAsync();
-            if (result > 0) return true;
-            return false;
-        }
-
-        public async Task<bool> DeleteShelf(int shelfId, int userId)
-        {
-            var category = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
-            if (category != null)
-            {
-                category.UpdatedAt = DateTime.Now;
-                category.UpdatedBy = userId;
-                category.IsActive = false;
+                Shelf shelf = new Shelf()
+                {
+                    Name = model.Name,
+                    CreatedBy = userId,
+                    CreatedAt = today
+                };
+                _context.Shelves.Add(shelf);
                 await _context.SaveChangesAsync();
-                return true;
+                await transaction.CommitAsync();
+                return new Response<bool>(true)
+                {
+                    Message = "Tạo kệ thuốc thành công"
+                };
             }
-            return false;
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Tạo kệ thuốc không thành công"
+                };
+            }
+            
         }
 
-        public async Task<List<ViewShelfModel>> GetAllShelves()
+        public async Task<Response<bool>> DeleteShelf(int shelfId, int userId)
         {
-            var query = from c in _context.Shelves
-                        select c;
-
-            var result = await query.Select(c => new ViewShelfModel()
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                Id = c.Id,
-                Name = c.Name,
-                IsActive = c.IsActive,
-                CreatedAt = c.CreatedAt,
-                CreatedBy = new ViewModel()
+                var category = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
+                if (category != null)
                 {
-                    Id = c.CreatedByNavigation.Id,
-                    Name = c.CreatedByNavigation.FullName
-                },
-                UpdatedAt = c.UpdatedAt,
-            }).ToListAsync();
+                    var query = from p in _context.Products
+                                select p;
+                    int count = await query.Where(x => x.ShelfId == shelfId).CountAsync();
+                    if(count > 0)
+                    {
+                        return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Kệ hàng còn chứa sản phẩm, xoá thất bại"
+                        };
+                    }
 
-            return result;
+                    if(category.IsActive == true)
+                    {
+                        category.IsActive = false;
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return new Response<bool>(true)
+                        {
+                            Message = "Kệ thuốc ngưng hoạt động"
+                        };
+                    }
+                    else
+                    {
+                        category.IsActive = true;
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return new Response<bool>(true)
+                        {
+                            Message = "Kệ thuốc hoạt động"
+                        };
+                    } 
+                }
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Kệ thuốc không tồn tại"
+                };
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+            
         }
 
-        public async Task<ViewShelfModel> GetShelfById(int shelfId)
+        public async Task<Response<List<ViewShelfModel>>> GetAllShelves()
         {
-            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
-            if (shelf != null)
+            try
             {
-                ViewShelfModel result = new ViewShelfModel()
+                var query = from c in _context.Shelves
+                            select c;
+                var result = await query.OrderByDescending(x => x.CreatedAt).Select(c => new ViewShelfModel()
                 {
-                    Id = shelf.Id,
-                    Name = shelf.Name,
-                    IsActive = shelf.IsActive,
-                    CreatedAt = shelf.CreatedAt,
+                    Id = c.Id,
+                    Name = c.Name,
+                    IsActive = c.IsActive,
+                    CreatedAt = c.CreatedAt,
                     CreatedBy = new ViewModel()
                     {
-                        Id = shelf.CreatedByNavigation.Id,
-                        Name = shelf.CreatedByNavigation.FullName
+                        Id = c.CreatedByNavigation.Id,
+                        Name = c.CreatedByNavigation.FullName
                     },
+                    UpdatedAt = c.UpdatedAt,
+                }).ToListAsync();
+                if(result.Count > 0)
+                {
+                    return new Response<List<ViewShelfModel>>(result)
+                    {
+                        Message = "Thông tin tất cả các kệ thuốc"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewShelfModel>>(null)
+                    {
+                        Message = "Không tìm thấy thông tin kệ thuốc nào"
+                    };
+                }
+            }catch (Exception)
+            {
+                return new Response<List<ViewShelfModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
                 };
-                return result;
             }
-            return null;
         }
 
-        public async Task<List<ViewProductModel>> GetListProduct(int categoryId)
+        public async Task<Response<ViewShelfModel>> GetShelfById(int shelfId)
         {
-            var query = from p in _context.Products
-                        where p.ShelfId == categoryId
-                        select p;
-
-            var data = await query.Select(p => new ViewProductModel()
+            try
             {
-                Id = p.Id,
-                DrugRegistrationNumber = p.DrugRegistrationNumber,
-                Barcode = p.Barcode,
-                Name = p.Name,
-                Brand = new ViewModel()
+                var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
+                if (shelf != null)
                 {
-                    Id = p.Brand.Id,
-                    Name = p.Brand.Name
-                },
-                Shelf = new ViewModel()
+                    ViewShelfModel result = new ViewShelfModel()
+                    {
+                        Id = shelf.Id,
+                        Name = shelf.Name,
+                        IsActive = shelf.IsActive,
+                        CreatedAt = shelf.CreatedAt,
+                        CreatedBy = new ViewModel()
+                        {
+                            Id = shelf.CreatedByNavigation.Id,
+                            Name = shelf.CreatedByNavigation.FullName
+                        },
+                    };
+                    return new Response<ViewShelfModel>(result)
+                    {
+                        Message = "Thông tin kệ thuốc"
+                    };
+                }
+                return new Response<ViewShelfModel>(null)
                 {
-                    Id = p.Shelf.Id,
-                    Name = p.Shelf.Name
-                },
-                MininumInventory = p.MininumInventory,
-                RouteOfAdministration = new ViewModel()
+                    StatusCode = 400,
+                    Message = "Kệ thuốc không tồn tại"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<ViewShelfModel>(null)
                 {
-                    Id = p.RouteOfAdministration.Id,
-                    Name = p.RouteOfAdministration.Name
-                },
-                IsUseDose = p.IsUseDose,
-                IsManagedInBatches = p.IsManagedInBatches,
-                CreatedAt = p.CreatedAt,
-                CreatedBy = new ViewModel()
-                {
-                    Id = p.CreatedByNavigation.Id,
-                    Name = p.CreatedByNavigation.FullName
-                },
-                UpdatedAt = p.UpdatedAt,
-                UpdatedBy = p.UpdatedBy,
-                IsActive = p.IsActive,
-            }).ToListAsync();
-
-            return data;
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
 
-        public async Task<bool> UpdateShelf(int categoryId, int userId, UpdateShelfModel model)
+        public async Task<Response<List<ViewProductModel>>> GetListProduct(int categoryId)
         {
-            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == categoryId);
-            if (shelf != null)
+            try
             {
-                shelf.Name = model.Name;
-                shelf.UpdatedAt = DateTime.Now;
-                shelf.UpdatedBy = userId;
-                await _context.SaveChangesAsync();
-                return true;
+                var query = from p in _context.Products
+                            where p.ShelfId == categoryId
+                            select p;
+
+                var data = await query.Select(p => new ViewProductModel()
+                {
+                    Id = p.Id,
+                    DrugRegistrationNumber = p.DrugRegistrationNumber,
+                    Barcode = p.Barcode,
+                    Name = p.Name,
+                    Brand = new ViewModel()
+                    {
+                        Id = p.Brand.Id,
+                        Name = p.Brand.Name
+                    },
+                    Shelf = new ViewModel()
+                    {
+                        Id = p.Shelf.Id,
+                        Name = p.Shelf.Name
+                    },
+                    MininumInventory = p.MininumInventory,
+                    RouteOfAdministration = new ViewModel()
+                    {
+                        Id = p.RouteOfAdministration.Id,
+                        Name = p.RouteOfAdministration.Name
+                    },
+                    IsUseDose = p.IsUseDose,
+                    IsManagedInBatches = p.IsManagedInBatches,
+                    CreatedAt = p.CreatedAt,
+                    CreatedBy = new ViewModel()
+                    {
+                        Id = p.CreatedByNavigation.Id,
+                        Name = p.CreatedByNavigation.FullName
+                    },
+                    UpdatedAt = p.UpdatedAt,
+                    UpdatedBy = p.UpdatedBy,
+                    IsActive = p.IsActive,
+                }).ToListAsync();
+                if(data.Count > 0)
+                {
+                    return new Response<List<ViewProductModel>>(data)
+                    {
+                        Message = "Thuốc có trong kệ"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewProductModel>>(null)
+                    {
+                        Message = "Không có thuốc nào trong kệ"
+                    };
+                }
             }
-            return false;
+            catch (Exception)
+            {
+                return new Response<List<ViewProductModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
+        public async Task<Response<bool>> UpdateShelf(int categoryId, int userId, UpdateShelfModel model)
+        {
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
+            {
+                var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == categoryId);
+                if (shelf != null)
+                {
+                    shelf.Name = model.Name;
+                    shelf.UpdatedAt = today;
+                    shelf.UpdatedBy = userId;
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new Response<bool>(true)
+                    {
+                        Message = "Cập nhật kệ thuốc thành công"
+                    };
+                }
+                else
+                {
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "không tìm thấy kệ thuốc này"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Cập nhật kệ thuốc thất bại"
+                };
+            }
+        }
+
+        public async Task<Response<List<ViewModel>>> GetListShelves()
+        {
+            try
+            {
+                var query = from c in _context.Shelves
+                            select c;
+                var result = await query.Where(x => x.IsActive == true).OrderByDescending(x => x.CreatedAt).Select(c => new ViewModel()
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                }).ToListAsync();
+                if (result.Count > 0)
+                {
+                    return new Response<List<ViewModel>>(result)
+                    {
+                        Message = "Thông tin tất cả các kệ thuốc"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewModel>>(null)
+                    {
+                        Message = "Không tìm thấy thông tin kệ thuốc nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewModel>>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }

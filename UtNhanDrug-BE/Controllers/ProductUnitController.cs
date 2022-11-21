@@ -29,7 +29,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProductUnitByProductId([FromRoute] int id)
         {
             var result = await _productUnitSvc.GetProductUnitByProductId(id);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -39,8 +39,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProductUnitById([FromRoute] int id)
         {
             var result = await _productUnitSvc.GetProductUnitById(id);
-            if (result == null) return NotFound(new { message = "Not found this product unit" });
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -61,8 +60,7 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _productUnitSvc.CreateProductUnit(userId, model);
-            if (!result) return BadRequest(new { message = "Create product unit fail" });
-            return Ok(new { message = "create successfully" });
+            return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
@@ -81,11 +79,8 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _productUnitSvc.CheckProductUnit(id);
-            if (!isExit) return NotFound(new { message = "Not found this product unit" });
             var result = await _productUnitSvc.UpdateProductUnit(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
