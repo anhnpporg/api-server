@@ -24,8 +24,8 @@ namespace UtNhanDrug_BE.Configurations
                     Title = "UtNhanDrug",
                     Version = "v1",
                     Description = "\nUtNhanDrug API - \n" +
-                    "\n Admin : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwicm9sZVVzZXJJZCI6IjEiLCJyb2xlIjoiTUFOQUdFUiIsIm5iZiI6MTY2NzQ5ODY5OSwiZXhwIjoxNjY4NzA4Mjk5LCJpYXQiOjE2Njc0OTg2OTl9.h3iTLptG4anWWUpfVnMxQPorjaWBjNDR4pDokVAbD0E\n"
-                    + "\n Staff : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6IkpXVCJ9.eyJ1c2VySWQiOiIxMyIsInJvbGVVc2VySWQiOiI2Iiwicm9sZSI6IlNUQUZGIiwibmJmIjoxNjY3NzYyNTA4LCJleHAiOjE2Njg5NzIxMDgsImlhdCI6MTY2Nzc2MjUwOH0.5olJV3ZWYxtNJAK7POhPaX8njmvBRBUxmme-cyu-8-c"
+                    "\n Admin : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwicm9sZVVzZXJJZCI6IjEiLCJyb2xlIjoiTUFOQUdFUiIsIm5iZiI6MTY2OTEwMjMzOCwiZXhwIjoxNjcwMzExOTM4LCJpYXQiOjE2NjkxMDIzMzh9.RNOmA5O8Lh_WkVD-CdK8XB_FMjcTFni55ohWz4qIre8\n"
+                    + "\n Staff : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImN0eSI6IkpXVCJ9.eyJ1c2VySWQiOiIxNCIsInJvbGVVc2VySWQiOiI3Iiwicm9sZSI6IlNUQUZGIiwibmJmIjoxNjY5MTAyMzcyLCJleHAiOjE2NzAzMTE5NzIsImlhdCI6MTY2OTEwMjM3Mn0.Zk4cOBZNp7qSfYKomchMgZ1Zoe9zdpt6OdafmZht8CA"
                     ,
                     Contact = new OpenApiContact()
                     {

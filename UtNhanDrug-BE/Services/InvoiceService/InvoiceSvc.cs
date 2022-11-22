@@ -28,7 +28,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             _userSvc = userSvc;
             _unitSvc = unitSvc;
         }
-        public async Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model)
+        public async Task<Response<InvoiceResponse>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
             if(model.GoodsIssueNoteTypeId == 1)
             {
@@ -41,7 +41,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     }
                     else
                     {
-                        return new Response<bool>(false)
+                        return new Response<InvoiceResponse>(new InvoiceResponse() {InvoiceId = -1 })
                         {
                             StatusCode = 400,
                             Message = "Khách hàng này đã tồn tại"
@@ -131,7 +131,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 {
                     await transaction.CommitAsync();
                 }
-                return new Response<bool>(true)
+                return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = i.Id })
                 {
                     Message = "Tạo hoá đơn thành công"
                 };
@@ -139,7 +139,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return new Response<bool>(false)
+                return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = -1 })
                 {
                     StatusCode = 500,
                     Message = "Tạo hoá đơn thất bại",
@@ -296,6 +296,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 },
                 BodyWeight = x.BodyWeight,
                 CreatedAt = x.CreatedAt,
+
                 Customer = new ViewCustomer()
                 {
                     Id = x.Customer.Id,
@@ -322,6 +323,45 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var query = from o in _context.OrderDetails
                         join g in _context.GoodsIssueNotes on o.Id equals g.OrderDetailId
                         where o.InvoiceId == id
+                        select new { o, g };
+            var data = await query.Select(x => new ViewOrderDetailModel()
+            {
+                Id = x.o.Id,
+                Batch = new ViewModel()
+                {
+                    Id = x.g.Batch.Id,
+                    Name = x.g.Batch.BatchBarcode
+                },
+                Quantity = x.g.Quantity,
+                Unit = x.g.Unit,
+                UnitPrice = x.g.UnitPrice,
+                ConvertedQuantity = x.g.ConvertedQuantity,
+                TotalPrice = x.o.TotalPrice,
+                DayUse = x.o.DayUse,
+                Dose = x.o.Dose,
+                Frequency = x.o.Frequency,
+                GoodsIssueNoteType = new ViewModel()
+                {
+                    Id = x.g.GoodsIssueNoteType.Id,
+                    Name = x.g.GoodsIssueNoteType.Name
+                },
+                Product = new ViewModel()
+                {
+                    Id = x.o.Product.Id,
+                    Name = x.o.Product.Name
+                },
+                UnitDose = x.o.UnitDose,
+                Use = x.o.Use
+
+            }).ToListAsync();
+            return new Response<List<ViewOrderDetailModel>>(data);
+        }
+
+        public async Task<Response<List<ViewOrderDetailModel>>> ViewOrderDetailByBarcode(string barcode)
+        {
+            var query = from o in _context.OrderDetails
+                        join g in _context.GoodsIssueNotes on o.Id equals g.OrderDetailId
+                        where o.Invoice.Barcode == barcode
                         select new { o, g };
             var data = await query.Select(x => new ViewOrderDetailModel()
             {

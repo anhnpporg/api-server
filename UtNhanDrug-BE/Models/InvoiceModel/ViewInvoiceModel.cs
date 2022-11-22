@@ -17,8 +17,8 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
     }
     public class ViewCustomer
     {
-        public int Id { get; set; }
-        public string PhoneNumber { get; set; }
-        public string FullName { get; set; }
+        public int? Id { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? FullName { get; set; }
     }
 }
