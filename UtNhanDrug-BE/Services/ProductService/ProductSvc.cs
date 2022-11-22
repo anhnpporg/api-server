@@ -100,11 +100,16 @@ namespace UtNhanDrug_BE.Services.ProductService
 
 
                 //_context.ProductUnitPrices.Add(du);
-
+                var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == product.Id).ToListAsync();
                 if (model.ProductUnits != null)
                 {
                     foreach (var productUnit in model.ProductUnits)
                     {
+                        foreach (var unitPrice in unit)
+                        {
+                            if (unitPrice.Unit == productUnit.Unit) return new Response<bool>(false) { StatusCode = 400, Message = "Đơn vị này đã tồn tại" };
+                        }
+
                         ProductUnitPrice x = new ProductUnitPrice()
                         {
                             ProductId = product.Id,

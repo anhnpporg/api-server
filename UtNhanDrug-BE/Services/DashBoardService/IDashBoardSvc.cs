@@ -10,5 +10,6 @@ namespace UtNhanDrug_BE.Services.DashBoardService
         Task<Response<List<TopSellingModel>>> GetTopSelling(SearchModel request);
         Task<Response<List<RecentSalesModel>>> GetRecentSales(SearchModel request);
         Task<Response<SaleModel>> GetSale();
+        //Task<Response<ChartModel>> GetChart(FilterChartModel request);
     }
 }
