@@ -28,7 +28,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             _userSvc = userSvc;
             _unitSvc = unitSvc;
         }
-        public async Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model)
+        public async Task<Response<InvoiceResponse>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
             if(model.GoodsIssueNoteTypeId == 1)
             {
@@ -41,7 +41,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     }
                     else
                     {
-                        return new Response<bool>(false)
+                        return new Response<InvoiceResponse>(new InvoiceResponse() {InvoiceId = -1 })
                         {
                             StatusCode = 400,
                             Message = "Khách hàng này đã tồn tại"
@@ -131,7 +131,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 {
                     await transaction.CommitAsync();
                 }
-                return new Response<bool>(true)
+                return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = i.Id })
                 {
                     Message = "Tạo hoá đơn thành công"
                 };
@@ -139,7 +139,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return new Response<bool>(false)
+                return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = -1 })
                 {
                     StatusCode = 500,
                     Message = "Tạo hoá đơn thất bại",

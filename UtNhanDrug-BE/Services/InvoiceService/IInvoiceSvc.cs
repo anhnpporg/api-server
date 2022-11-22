@@ -7,7 +7,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
 {
     public interface IInvoiceSvc
     {
-        Task<Response<bool>> CreateInvoice(int UserId, CreateInvoiceModel model);
+        Task<Response<InvoiceResponse>> CreateInvoice(int UserId, CreateInvoiceModel model);
         Task<Response<ViewInvoiceModel>> ViewInvoiceById(int Id);
         Task<Response<List<ViewInvoiceModel>>> GetAllInvoice();
         Task<Response<List<ViewInvoiceModel>>> GetInvoiceByUserId(int userId);

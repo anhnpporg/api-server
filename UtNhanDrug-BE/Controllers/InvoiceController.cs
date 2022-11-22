@@ -111,8 +111,9 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
+
             var result = await _invoiceSvc.CreateInvoice(userId, model);
-            return StatusCode(result.StatusCode, result);
+            return StatusCode(result.StatusCode, result.Data);
         }
 
     }
