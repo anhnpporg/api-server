@@ -32,6 +32,13 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == model.ProductId).ToListAsync();
+                foreach(var unitPrice in unit)
+                {
+                    if (unitPrice.Unit == model.Unit) return new Response<bool>(false) { StatusCode = 400, Message = "Đơn vị này đã tồn tại" };
+                }
+
+
                 ProductUnitPrice pu = new ProductUnitPrice()
                 {
                     ProductId = model.ProductId,

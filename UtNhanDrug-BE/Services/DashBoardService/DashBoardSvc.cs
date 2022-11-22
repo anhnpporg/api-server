@@ -7,17 +7,43 @@ using UtNhanDrug_BE.Models.ResponseModel;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UtNhanDrug_BE.Models.ModelHelper;
+using UtNhanDrug_BE.Hepper;
 
 namespace UtNhanDrug_BE.Services.DashBoardService
 {
     public class DashBoardSvc : IDashBoardSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly DateTime today = LocalDateTime.DateTimeNow();
 
         public DashBoardSvc(ut_nhan_drug_store_databaseContext context)
         {
             _context = context;
         }
+
+        //public Task<Response<ChartModel>> GetChart(FilterChartModel request)
+        //{
+        //    try
+        //    {
+        //        if(request.ByWeek == true)
+        //        {
+        //            List<Double> data = new List<double>();
+        //            var query = from i in _context.Invoices
+        //                        select i;
+        //            for(var i = 0; i < 7; i++)
+        //            {
+        //                var turnover = query.Where(x => x.CreatedAt == today.AddDays(-i));
+        //            }
+        //        }
+
+
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //    }
+        //}
+
         public async Task<Response<List<RecentSalesModel>>> GetRecentSales(SearchModel request)
         {
             try
