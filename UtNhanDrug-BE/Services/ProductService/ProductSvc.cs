@@ -483,6 +483,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 Id = x.Id,
                 Unit = x.Unit,
+                UnitPrice = x.Price,
                 CurrentQuantity = (int)(currentQuantity / x.ConversionValue)
             }).ToListAsync();
             return data;

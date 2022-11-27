@@ -23,22 +23,22 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
     }
     public class NoteLog
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string Note { get; set; }
         public DateTime? UpdateAt { get; set; }
-        public ViewModel UpdateBy { get; set; }
+        public ViewModel? UpdateBy { get; set; }
     }
     public class ViewBatch
     {
-        public int Id { get; set; }
-        public string Barcode { get; set; }
+        public int? Id { get; set; }
+        public string? Barcode { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
     }
     public class ViewSupplierData
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public int? Id { get; set; }
+        public string? Name { get; set; }
         public bool? IsActive { get; set; }
     }
 }

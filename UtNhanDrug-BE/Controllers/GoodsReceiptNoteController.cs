@@ -21,6 +21,7 @@ namespace UtNhanDrug_BE.Controllers
         {
             _grnSvc = grnSvc;
         }
+
         [Authorize]
         [Route("goods-receipt-notes")]
         [HttpGet]
@@ -28,6 +29,16 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllGRN()
         {
             var result = await _grnSvc.GetAllGoodsReceiptNote();
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [Route("goods-receipt-note-type/{id}/goods-receipt-notes")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGRNByType([FromRoute] int id)
+        {
+            var result = await _grnSvc.GetGoodsReceiptNoteByType(id);
             return StatusCode(result.StatusCode, result);
         }
 
@@ -55,7 +66,7 @@ namespace UtNhanDrug_BE.Controllers
         [Route("goods-receipt-notes")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateGRN([FromBody] List<CreateGoodsReceiptNoteModel> model)
+        public async Task<ActionResult> CreateGRN([FromBody] CreateGoodsReceiptNoteModel model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();

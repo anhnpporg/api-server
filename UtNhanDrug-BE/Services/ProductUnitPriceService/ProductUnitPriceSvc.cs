@@ -8,6 +8,7 @@ using UtNhanDrug_BE.Models.ResponseModel;
 using System;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Hepper;
+using UtNhanDrug_BE.Models.ProductUnitPriceModel;
 
 namespace UtNhanDrug_BE.Services.ProductUnitService
 {
@@ -234,6 +235,31 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                     Message = "Cập nhật thông tin đơn vị thành công"
                 };
             }
+        }
+
+        public async Task<Response<ViewBaseUnitModel>> GetBaseUnit(int productId)
+        {
+            var query = from pu in _context.ProductUnitPrices
+                        where pu.ProductId == productId
+                        select pu;
+            var data = await query.Where(x => x.IsBaseUnit == true).Select(x => new ViewBaseUnitModel()
+            {
+                Id = x.Id,
+                BaseUnit = x.Unit,
+                BasePrice = x.Price
+            }).FirstOrDefaultAsync();
+            if (data != null)
+            {
+                return new Response<ViewBaseUnitModel>(data)
+                {
+                    Message = "Thành công"
+                };
+            }
+            else return new Response<ViewBaseUnitModel>(null)
+            {
+                StatusCode = 400,
+                Message = "Không tìm thấy"
+            };
         }
     }
 }

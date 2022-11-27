@@ -9,11 +9,12 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public int GoodsIssueNoteTypeId { get; set; }
         public int? CustomerId { get; set; }
         public decimal? BodyWeight { get; set; }
+        public int? UsePoint { get; set; } = 0;
         public int? DayUse { get; set; }
         [Required]
         public List<OrderDetailModel> Product { get; set; }
 
-        public CreateCustomerModel Customer { get; set; }
+        public CreateCustomerModel? Customer { get; set; }
     }
 
     public class OrderDetailModel

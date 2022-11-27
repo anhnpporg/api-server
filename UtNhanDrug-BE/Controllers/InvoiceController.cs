@@ -113,7 +113,7 @@ namespace UtNhanDrug_BE.Controllers
             }
 
             var result = await _invoiceSvc.CreateInvoice(userId, model);
-            return StatusCode(result.StatusCode, result.Data);
+            return StatusCode(result.StatusCode, result);
         }
 
     }

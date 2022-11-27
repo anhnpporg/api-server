@@ -22,18 +22,23 @@ namespace UtNhanDrug_BE.Services.ShelfService
             _context = context;
         }
 
-        //public async Task<bool> CheckShelf(int shelfId)
-        //{
-        //    var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
-        //    if (shelf != null) return true;
-        //    return false;
-        //}
+        private async Task<bool> CheckShelf(string name)
+        {
+            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Name == name);
+            if (shelf == null) return true;
+            return false;
+        }
 
         public async Task<Response<bool>> CreateShelf(int userId, CreateShelfModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                if (await CheckShelf(model.Name) == false) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Tên kệ hàng đã tồn tại"
+                };
                 Shelf shelf = new Shelf()
                 {
                     Name = model.Name,
@@ -71,17 +76,18 @@ namespace UtNhanDrug_BE.Services.ShelfService
                     var query = from p in _context.Products
                                 select p;
                     int count = await query.Where(x => x.ShelfId == shelfId).CountAsync();
-                    if(count > 0)
-                    {
-                        return new Response<bool>(false)
-                        {
-                            StatusCode = 400,
-                            Message = "Kệ hàng còn chứa sản phẩm, xoá thất bại"
-                        };
-                    }
+                    
 
                     if(category.IsActive == true)
                     {
+                        if (count > 0)
+                        {
+                            return new Response<bool>(false)
+                            {
+                                StatusCode = 400,
+                                Message = "Kệ hàng còn chứa sản phẩm, xoá thất bại"
+                            };
+                        }
                         category.IsActive = false;
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
@@ -166,22 +172,24 @@ namespace UtNhanDrug_BE.Services.ShelfService
         {
             try
             {
-                var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == shelfId);
-                if (shelf != null)
+                var qyery = from s in _context.Shelves
+                            where s.Id == shelfId
+                            select s;
+                var data = await qyery.Select(x => new ViewShelfModel()
                 {
-                    ViewShelfModel result = new ViewShelfModel()
+                    Id = x.Id,
+                    Name = x.Name,
+                    IsActive = x.IsActive,
+                    CreatedAt = x.CreatedAt,
+                    CreatedBy = new ViewModel()
                     {
-                        Id = shelf.Id,
-                        Name = shelf.Name,
-                        IsActive = shelf.IsActive,
-                        CreatedAt = shelf.CreatedAt,
-                        CreatedBy = new ViewModel()
-                        {
-                            Id = shelf.CreatedByNavigation.Id,
-                            Name = shelf.CreatedByNavigation.FullName
-                        },
-                    };
-                    return new Response<ViewShelfModel>(result)
+                        Id = x.CreatedByNavigation.Id,
+                        Name = x.CreatedByNavigation.FullName
+                    },
+                }).FirstOrDefaultAsync();
+                if(data != null)
+                {
+                    return new Response<ViewShelfModel>(data)
                     {
                         Message = "Thông tin kệ thuốc"
                     };
@@ -196,7 +204,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
             {
                 return new Response<ViewShelfModel>(null)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Đã có lỗi xảy ra"
                 };
             }
@@ -277,6 +285,11 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == categoryId);
                 if (shelf != null)
                 {
+                    if (await CheckShelf(model.Name) == false) return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Tên kệ hàng đã tồn tại"
+                    };
                     shelf.Name = model.Name;
                     shelf.UpdatedAt = today;
                     shelf.UpdatedBy = userId;

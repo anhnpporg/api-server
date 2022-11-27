@@ -275,6 +275,11 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 var result = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Id == id);
                 if (result != null)
                 {
+                    if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Tên hoạt chất đã tồn tại"
+                    };
                     result.Name = model.Name;
                     result.UpdatedAt = today;
                     result.UpdatedBy = userId;
@@ -296,7 +301,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 await transaction.RollbackAsync();
                 return new Response<bool>(false)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Đã có lỗi xảy ra"
                 };
             }
@@ -335,7 +340,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
             {
                 return new Response<List<ViewModel>>(null)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Đã có lỗi xảy ra"
                 };
             }

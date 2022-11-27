@@ -127,39 +127,39 @@ namespace UtNhanDrug_BE.Services.DashBoardService
         {
             try
             {
-                DateTime todaySystem = DateTime.Today;
-                var todayVN = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(todaySystem , "SE Asia Standard Time").ToShortDateString();
-                DateTime today = DateTime.ParseExact(todayVN, "d", null);
+                //DateTime todaySystem = DateTime.Today;
+                //var todayVN = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(todaySystem , "SE Asia Standard Time").ToShortDateString();
+                DateTime todayConvert = DateTime.ParseExact(today.ToShortDateString(), "d", null);
                 var query = from i in _context.Invoices
                             select i;
                 var query1 = from i in _context.GoodsReceiptNotes
                              select i;
-                var quantityOrderNow = await query.Where(x => x.CreatedAt >= today).CountAsync();
+                var quantityOrderNow = await query.Where(x => x.CreatedAt >= todayConvert).CountAsync();
                 double percentQuantityOrder = 0;
-                var quantityOrderYesterday = await query.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).CountAsync();
-                if(quantityOrderYesterday > 0)
+                var quantityOrderYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).CountAsync();
+                if(quantityOrderYesterday != 0)
                 {
                     percentQuantityOrder = ((quantityOrderNow - quantityOrderYesterday) / quantityOrderYesterday) * 100;
                 }
 
-                var turnoverNow = await query.Where(x => x.CreatedAt >= today).Select(x => x.TotalPrice).SumAsync();
+                var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
                 double percentTurnover = 0;
-                var turnoverYesterday = await query.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).Select(x => x.TotalPrice).SumAsync();
-                if(turnoverYesterday > 0)
+                var turnoverYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
+                if(turnoverYesterday != 0)
                 {
                     percentTurnover = (double)(((turnoverNow - turnoverYesterday) / turnoverYesterday) * 100);
                 }
-                var costNow = await query1.Where(x => x.CreatedAt >= today).Select(x => x.TotalPrice).SumAsync();
+                var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
                 double percentCost = 0;
-                var costYesterday = await query1.Where(x => x.CreatedAt >= today.AddDays(-1) & x.CreatedAt < today).Select(x => x.TotalPrice).SumAsync();
-                if(costYesterday > 0)
+                var costYesterday = await query1.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
+                if(costYesterday != 0)
                 {
                     percentCost = (double)(((costNow - costYesterday) / costYesterday) * 100);
                 }
                 decimal profitNow = turnoverNow - costNow;
                 double PercentProfit = 0;
                 decimal profitYesterday = turnoverYesterday - costYesterday;
-                if(profitYesterday > 0)
+                if(profitYesterday != 0)
                 {
                     PercentProfit = (double)(((profitNow - profitYesterday) / profitYesterday) * 100);
                 }
@@ -198,7 +198,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     if (request.ByDay == true & request.ByMonth == false & request.ByYear == false)
                     {
                         var query = from g in _context.GoodsIssueNotes
-                                    where g.OrderDetail.Invoice.CreatedAt == DateTime.Now
+                                    where g.OrderDetail.Invoice.CreatedAt.Date == today.Date
                                     select g;
                         var result = query.Select(x => x.Batch.Product).Distinct();
                         var data = await result.Take(request.Size).Select(y => new TopSellingModel()
@@ -218,8 +218,8 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     }
                     else if (request.ByDay == false & request.ByMonth == true & request.ByYear == false)
                     {
-                        var month = DateTime.Now.Month;
-                        var year = DateTime.Now.Year;
+                        var month = today.Month;
+                        var year = today.Year;
                         var query = from g in _context.GoodsIssueNotes
                                     where g.OrderDetail.Invoice.CreatedAt.Month == month & g.OrderDetail.Invoice.CreatedAt.Year == year
                                     select g;
@@ -241,7 +241,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     }
                     else if (request.ByDay == false & request.ByMonth == false & request.ByYear == true)
                     {
-                        var year = DateTime.Now.Year;
+                        var year = today.Year;
                         var query = from g in _context.GoodsIssueNotes
                                     where g.OrderDetail.Invoice.CreatedAt.Year == year
                                     select g;
