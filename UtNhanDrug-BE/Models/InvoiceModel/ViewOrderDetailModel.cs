@@ -6,6 +6,7 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
     public class ViewOrderDetailModel
     {
         public int Id { get; set; }
+        public int? OrderDetailId { get; set; }
         public ViewModel Product { get; set; }
         public double? Dose { get; set; }
         public int? UnitDose { get; set; }
@@ -18,6 +19,8 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public string Unit { get; set; }
         public decimal UnitPrice { get; set; }
         public int ConvertedQuantity { get; set; }
+        public int returnedQuantity { get; set; }
+        //public string BaseUnit { get; set; }
         public decimal TotalPrice { get; set; }
         public DateTime CreatTime { get; set; }
     }

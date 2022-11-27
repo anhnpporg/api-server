@@ -11,8 +11,8 @@ namespace UtNhanDrug_BE.Models.ShelfModel
         public string Name { get; set; }
         public List<ViewProductModel> Products { get; set; }
         public bool? IsActive { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public ViewModel CreatedBy { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public ViewModel? CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int? UpdatedBy { get; set; }
     }

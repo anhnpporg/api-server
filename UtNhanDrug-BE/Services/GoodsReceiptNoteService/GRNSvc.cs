@@ -12,16 +12,19 @@ using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Models.ResponseModel;
 using UtNhanDrug_BE.Hepper;
+using UtNhanDrug_BE.Services.ProductUnitService;
 
 namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
     public class GRNSvc : IGRNSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
+        private readonly IProductUnitPriceSvc _pu;
         private readonly DateTime today = LocalDateTime.DateTimeNow();
-        public GRNSvc(ut_nhan_drug_store_databaseContext context)
+        public GRNSvc(ut_nhan_drug_store_databaseContext context, IProductUnitPriceSvc pu)
         {
             _context = context;
+            _pu = pu;
         }
         //public async Task<bool> CheckGoodsReceiptNote(int id)
         //{
@@ -30,19 +33,30 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //    return true;
         //}
 
-        public async Task<Response<bool>> CreateGoodsReceiptNote(int userId, List<CreateGoodsReceiptNoteModel> model)
+        public async Task<Response<bool>> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                if (model.Count > 0)
+                if (model != null)
                 {
-                    foreach (var m in model)
+                    if (model.GoodsReceiptNoteTypeId == 1)
                     {
-                        // add supplier id, if null add object supplier
-                        if(m.GoodsReceiptNoteTypeId == 1){
+                        foreach (var m in model.CreateModel)
+                        {
+                            
+                            
+                            // add supplier id, if null add object supplier
                             if (m.SupplierId == null)
                             {
+                                var suplierQuery = from su in _context.Suppliers
+                                                   select su;
+                                var supplierName = await suplierQuery.Where(x => x.Name == m.Supplier.Name).FirstOrDefaultAsync();
+                                if (supplierName != null) return new Response<bool>(false)
+                                {
+                                    StatusCode = 400,
+                                    Message = "Nhà sản xuất đã tồn tại"
+                                };
                                 Supplier s = new Supplier()
                                 {
                                     Name = m.Supplier.Name,
@@ -53,52 +67,186 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 await _context.SaveChangesAsync();
                                 m.SupplierId = s.Id;
                             }
-                        }
-                        //batches 
-                        foreach (var b in m.Batches)
-                        {
-                            var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
-                            if (b.BatchId == null)
+                            if (m.SupplierId == null)
                             {
-                                Batch s = new Batch()
+                                await transaction.RollbackAsync();
+                                return new Response<bool>(false)
                                 {
-                                    BatchBarcode = "#####",
-                                    ProductId = (int)b.Batch.ProductId,
-                                    ManufacturingDate = b.Batch.ManufacturingDate,
-                                    ExpiryDate = b.Batch.ExpiryDate,
-                                    CreatedBy = userId,
+                                    StatusCode = 400,
+                                    Message = "Vui lòng nhập nhà cung cấp"
                                 };
-                                var batch = _context.Batches.Add(s);
-                                await _context.SaveChangesAsync();
-                                s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
-                                await _context.SaveChangesAsync();
-                                b.BatchId = s.Id;
                             }
-                            int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
-                            decimal baseUnitPrice = b.TotalPrice / convertedQuantity;
-                            GoodsReceiptNote grn = new GoodsReceiptNote()
+
+                            //batches 
+                            foreach (var b in m.Batches)
                             {
-                                GoodsReceiptNoteTypeId = m.GoodsReceiptNoteTypeId,
-                                BatchId = (int)b.BatchId,
-                                InvoiceId = m.InvoiceId,
-                                SupplierId = m.SupplierId,
-                                Quantity = b.Quantity,
-                                Unit = unit.Unit,
-                                TotalPrice = b.TotalPrice,
-                                ConvertedQuantity = convertedQuantity,
-                                BaseUnitPrice = baseUnitPrice,
-                                CreatedBy = userId
+                                var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
+                                if (b.BatchId == null)
+                                {
+                                    Batch s = new Batch()
+                                    {
+                                        BatchBarcode = "#####",
+                                        ProductId = (int)b.Batch.ProductId,
+                                        ManufacturingDate = b.Batch.ManufacturingDate,
+                                        ExpiryDate = b.Batch.ExpiryDate,
+                                        CreatedBy = userId,
+                                    };
+                                    var batch = _context.Batches.Add(s);
+                                    await _context.SaveChangesAsync();
+                                    s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                    await _context.SaveChangesAsync();
+                                    b.BatchId = s.Id;
+                                }
+                                int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
+                                decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
+                                GoodsReceiptNote grn = new GoodsReceiptNote()
+                                {
+                                    GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
+                                    BatchId = (int)b.BatchId,
+                                    SupplierId = m.SupplierId,
+                                    Quantity = (int)b.Quantity,
+                                    Unit = unit.Unit,
+                                    TotalPrice = (decimal)b.TotalPrice,
+                                    ConvertedQuantity = convertedQuantity,
+                                    BaseUnitPrice = baseUnitPrice,
+                                    CreatedBy = userId
+                                };
+                                _context.GoodsReceiptNotes.Add(grn);
+                                await _context.SaveChangesAsync();
+                                b.BatchId = null;
+                            }
+
+                            await transaction.CommitAsync();
+                            return new Response<bool>(true)
+                            {
+                                Message = "Tạo phiếu nhập hàng từ nhà cung cấp thành công"
                             };
-                            _context.GoodsReceiptNotes.Add(grn);
-                            await _context.SaveChangesAsync();
-                            b.BatchId = null;
+
                         }
                     }
-                    await transaction.CommitAsync();
-                    return new Response<bool>(true)
+                    else if (model.GoodsReceiptNoteTypeId == 2)
                     {
-                        Message = "Tạo phiếu nhập hàng thành công"
-                    };
+                        var queryGRN = from g in _context.GoodsReceiptNotes
+                                       where g.InvoiceId == model.InvoiceId
+                                       select g;
+                        var dataGRN = await queryGRN.FirstOrDefaultAsync();
+                        if(dataGRN != null)
+                        {
+                            await transaction.RollbackAsync();
+                            return new Response<bool>(false)
+                            {
+                                StatusCode = 400,
+                                Message = "Đã nhập hàng từ hoá đơn này"
+                            };
+                        }
+                        if (model.IsFull == false)
+                        {
+                            foreach (var m in model.CreateModel)
+                            {
+                                //batches 
+                                foreach (var b in m.Batches)
+                                {
+                                    var query = from g in _context.GoodsIssueNotes
+                                                where g.OrderDetail.InvoiceId == model.InvoiceId
+                                                select g;
+                                    var gin = await query.Where(x => x.BatchId == b.BatchId).FirstOrDefaultAsync();
+                                    if (gin.Quantity < b.Quantity) 
+                                    {
+                                        await transaction.RollbackAsync();
+                                        return new Response<bool>(false)
+                                        {
+                                            StatusCode = 400,
+                                            Message = "Số lượng nhập lại từ khách hàng không hợp lệ"
+                                        };
+                                    }
+                                    var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
+                                    var query1 = from batch in _context.Batches
+                                                 where batch.Id == b.BatchId
+                                                 select batch;
+                                    var productId = await query1.Select(x => x.ProductId).FirstOrDefaultAsync();
+                                    var baseUnit = await _pu.GetBaseUnit(productId);
+                                    if (b.BatchId == null)
+                                    {
+                                        Batch s = new Batch()
+                                        {
+                                            BatchBarcode = "#####",
+                                            ProductId = (int)b.Batch.ProductId,
+                                            ManufacturingDate = b.Batch.ManufacturingDate,
+                                            ExpiryDate = b.Batch.ExpiryDate,
+                                            CreatedBy = userId,
+                                        };
+                                        var batch = _context.Batches.Add(s);
+                                        await _context.SaveChangesAsync();
+                                        s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                        await _context.SaveChangesAsync();
+                                        b.BatchId = s.Id;
+                                    }
+                                    int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
+                                    //decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
+                                    GoodsReceiptNote grn = new GoodsReceiptNote()
+                                    {
+                                        GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
+                                        BatchId = (int)b.BatchId,
+                                        InvoiceId = model.InvoiceId,
+                                        Quantity = (int)b.Quantity,
+                                        Unit = unit.Unit,
+                                        TotalPrice = (decimal)b.TotalPrice,
+                                        ConvertedQuantity = convertedQuantity,
+                                        BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
+                                        CreatedBy = userId
+                                    };
+                                    _context.GoodsReceiptNotes.Add(grn);
+                                    await _context.SaveChangesAsync();
+                                    b.BatchId = null;
+                                }
+
+                                await transaction.CommitAsync();
+                                return new Response<bool>(true)
+                                {
+                                    Message = "nhập hàng từ hoá đơn thành công"
+                                };
+                            }
+                        }
+                        else
+                        {
+                            var query = from g in _context.GoodsIssueNotes
+                                        where g.OrderDetail.InvoiceId == model.InvoiceId
+                                        select g;
+                            var gin = await query.ToListAsync();
+                            foreach (var o in gin)
+                            {
+                                var query1 = from b in _context.Batches
+                                             where b.Id == o.BatchId
+                                             select b;
+                                var productId = await query1.Select(x => x.ProductId).FirstOrDefaultAsync();
+                                var baseUnit = await _pu.GetBaseUnit(productId);
+                                GoodsReceiptNote grn = new GoodsReceiptNote()
+                                {
+                                    GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
+                                    BatchId = o.BatchId,
+                                    InvoiceId = model.InvoiceId,
+                                    Quantity = (int)o.Quantity,
+                                    Unit = o.Unit,
+                                    TotalPrice = (decimal)o.UnitPrice*o.Quantity,
+                                    ConvertedQuantity = o.ConvertedQuantity,
+                                    BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
+                                    CreatedBy = userId
+                                };
+                                _context.GoodsReceiptNotes.Add(grn);
+                                await _context.SaveChangesAsync();
+                            }
+                            await transaction.CommitAsync();
+                            return new Response<bool>(true)
+                            {
+                                Message = "nhập hàng từ hoá đơn thành công"
+                            };
+
+                        }
+                    }
+                    //else if (model.GoodsReceiptNoteTypeId == 3)
+                    //{
+
+                    //}
                 }
                 return new Response<bool>(false)
                 {
@@ -192,7 +340,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             {
                 return new Response<List<ViewGoodsReceiptNoteModel>>(null)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Đã có lỗi xảy ra"
                 };
             }
@@ -255,7 +403,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             {
                 return new Response<ViewGoodsReceiptNoteModel>(null)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Đã có lỗi xảy ra"
                 };
             }
@@ -385,8 +533,74 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 await transaction.RollbackAsync();
                 return new Response<bool>(false)
                 {
-                    StatusCode = 400,
+                    StatusCode = 500,
                     Message = "Cập nhật không thành công"
+                };
+            }
+        }
+
+        public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGoodsReceiptNoteByType(int type)
+        {
+            try
+            {
+                var query = from grn in _context.GoodsReceiptNotes
+                            select grn;
+                var data = await query.OrderByDescending(x => x.CreatedAt).Where(x => x.GoodsReceiptNoteTypeId == type).Select(x => new ViewGoodsReceiptNoteModel()
+                {
+                    Id = x.Id,
+                    GoodsReceiptNoteType = new ViewModel()
+                    {
+                        Id = x.GoodsReceiptNoteType.Id,
+                        Name = x.GoodsReceiptNoteType.Name
+                    },
+                    Batch = new ViewBatch()
+                    {
+                        Id = x.Batch.Id,
+                        Barcode = x.Batch.BatchBarcode,
+                        ManufacturingDate = x.Batch.ManufacturingDate,
+                        ExpiryDate = x.Batch.ExpiryDate
+                    },
+                    Supplier = new ViewSupplierData()
+                    {
+                        Id = x.Supplier.Id,
+                        Name = x.Supplier.Name,
+                        IsActive = x.Supplier.IsActive
+                    },
+                    Quantity = x.Quantity,
+                    Unit = x.Unit,
+                    InvoiceId = x.InvoiceId,
+                    ConvertedQuantity = x.ConvertedQuantity,
+                    TotalPrice = x.TotalPrice,
+                    BaseUnitPrice = x.BaseUnitPrice,
+                    CreatedBy = x.CreatedBy,
+                    CreatedAt = x.CreatedAt,
+                }).ToListAsync();
+                if (data.Count > 0)
+                {
+                    foreach (var d in data)
+                    {
+                        var notes = await GetListNoteLog(d.Id);
+                        d.Note = notes.Data;
+                    }
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(data)
+                    {
+                        Message = "Thông tin tất cả phiếu nhập hàng"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                    {
+                        Message = "Không có phiếu nhập hàng nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
                 };
             }
         }
