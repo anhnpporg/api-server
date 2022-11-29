@@ -20,8 +20,13 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public decimal UnitPrice { get; set; }
         public int ConvertedQuantity { get; set; }
         public int returnedQuantity { get; set; }
-        //public string BaseUnit { get; set; }
+        public ViewBaseProductUnit? ViewBaseProductUnit { get; set; }
         public decimal TotalPrice { get; set; }
         public DateTime CreatTime { get; set; }
+    }
+    public class ViewBaseProductUnit
+    {
+        public string? BaseUnit { get; set; }
+        public decimal? BaseUnitPrice { get; set; }
     }
 }

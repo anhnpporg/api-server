@@ -46,7 +46,7 @@ namespace UtNhanDrug_BE.Controllers
         [Route("product-units")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateProductUnit([FromForm] CreateProductUnitPriceModel model)
+        public async Task<ActionResult> CreateProductUnit([FromBody] List<CreateProductUnitPriceModel> model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -59,14 +59,14 @@ namespace UtNhanDrug_BE.Controllers
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _productUnitSvc.CreateProductUnit(userId, model);
+            var result = await _productUnitSvc.AddProductUnit(userId, model);
             return StatusCode(result.StatusCode, result);
         }
 
         [Authorize]
         [HttpPut("product-units/{id}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateProductUnit([FromRoute] int id, [FromForm] UpdateProductUnitPriceModel model)
+        public async Task<ActionResult> UpdateProductUnit([FromRoute] int id, [FromBody] List<UpdateProductUnitPriceModel> model)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
@@ -80,6 +80,15 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _productUnitSvc.UpdateProductUnit(id, userId, model);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [HttpDelete("products-units/{id}")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> DeleteProductUnit([FromRoute] int id)
+        {
+            var result = await _productUnitSvc.RemoveProductUnit( id);
             return StatusCode(result.StatusCode, result);
         }
     }

@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Models.ActiveSubstanceModel;
+using UtNhanDrug_BE.Models.ProductActiveSubstance;
 using UtNhanDrug_BE.Models.ProductModel;
-using UtNhanDrug_BE.Services.BatchService;
+using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
 using UtNhanDrug_BE.Services.ProductService;
-using UtNhanDrug_BE.Services.ProductUnitService;
 
 namespace UtNhanDrug_BE.Controllers
 {
@@ -20,10 +20,12 @@ namespace UtNhanDrug_BE.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductSvc _productSvc;
+        private readonly IPASSvc _pasSvc;
 
-        public ProductController(IProductSvc productSvc)
+        public ProductController(IProductSvc productSvc, IPASSvc pasSvc)
         {
             _productSvc = productSvc;
+            _pasSvc = pasSvc;
         }
 
         //[Authorize]
@@ -108,6 +110,16 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("products/active-substance")]
+        [HttpPost]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> AddActiveSubstance([FromBody] List<CreatePASModel> model)
+        {
+            var result = await _pasSvc.AddPAS(model);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
         [HttpPut("products/{id}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> UpdateProduct([FromRoute] int id, [FromForm] UpdateProductModel model)
@@ -144,6 +156,15 @@ namespace UtNhanDrug_BE.Controllers
                 return BadRequest(new { message = "You are not login" });
             }
             var result = await _productSvc.DeleteProduct(id, userId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [HttpDelete("products/active-substance")]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> DeleteActiveSubstance([FromForm] RemoveActiveSubstanceModel model)
+        {
+            var result = await _pasSvc.RemovePAS(model);
             return StatusCode(result.StatusCode, result);
         }
     }
