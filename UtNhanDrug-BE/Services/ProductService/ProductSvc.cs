@@ -60,8 +60,10 @@ namespace UtNhanDrug_BE.Services.ProductService
                 };
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
+
                 product.Barcode = GenaralBarcode.CreateEan13Product(product.Id + "");
                 await _context.SaveChangesAsync();
+
                 ProductUnitPrice pu = new ProductUnitPrice()
                 {
                     ProductId = product.Id,
@@ -74,6 +76,9 @@ namespace UtNhanDrug_BE.Services.ProductService
                     CreatedBy = userId,
                     CreatedAt = today
                 };
+                _context.ProductUnitPrices.Add(pu);
+                await _context.SaveChangesAsync();
+
                 if (model.IsUseDose == true)
                 {
                     ProductUnitPrice du = new ProductUnitPrice()
@@ -87,16 +92,18 @@ namespace UtNhanDrug_BE.Services.ProductService
                         CreatedBy = userId,
                         CreatedAt = today
                     };
+                    _context.ProductUnitPrices.Add(du);
+                    await _context.SaveChangesAsync();
                 }
-                else
-                {
-                    await transaction.RollbackAsync();
-                    return new Response<bool>(false)
-                    {
-                        StatusCode = 400,
-                        Message = "Đơn vị tính không hợp lệ"
-                    };
-                }
+                //else
+                //{
+                //    await transaction.RollbackAsync();
+                //    return new Response<bool>(false)
+                //    {
+                //        StatusCode = 400,
+                //        Message = "Đơn vị tính không hợp lệ"
+                //    };
+                //}
 
 
                 //_context.ProductUnitPrices.Add(du);

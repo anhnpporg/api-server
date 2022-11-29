@@ -2,11 +2,10 @@
 {
     public class UpdateProductUnitPriceModel
     {
+        public int ProductId { get; set; }
+        public int ProductUnitId { get; set; }
         public string Unit { get; set; }
         public double? ConversionValue { get; set; }
         public decimal? Price { get; set; }
-        public bool IsPackingSpecification { get; set; }
-        public bool IsDoseBasedOnBodyWeightUnit { get; set; }
-        public bool IsBaseUnit { get; set; }
     }
 }

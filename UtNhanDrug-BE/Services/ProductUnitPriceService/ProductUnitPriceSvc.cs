@@ -28,39 +28,50 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
         //    return true;
         //}
 
-        public async Task<Response<bool>> CreateProductUnit(int userId, CreateProductUnitPriceModel model)
+        public async Task<Response<bool>> AddProductUnit(int userId, List<CreateProductUnitPriceModel> model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == model.ProductId).ToListAsync();
-                foreach(var unitPrice in unit)
+                if (model.Count > 0)
                 {
-                    if (unitPrice.Unit == model.Unit) return new Response<bool>(false) { StatusCode = 400, Message = "Đơn vị này đã tồn tại" };
+                    foreach (var pu in model)
+                    {
+                        //_context.ProductUnitPrices.Add(du);
+                        var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == pu.ProductId).ToListAsync();
+                        foreach (var unitPrice in unit)
+                        {
+                            if (unitPrice.Unit == pu.Unit) return new Response<bool>(false) { StatusCode = 400, Message = "Đơn vị này đã tồn tại" };
+                        }
+
+                        ProductUnitPrice x = new ProductUnitPrice()
+                        {
+                            ProductId = pu.ProductId,
+                            Unit = pu.Unit,
+                            ConversionValue = pu.ConversionValue,
+                            Price = pu.Price,
+                            IsBaseUnit = false,
+                            IsDoseBasedOnBodyWeightUnit = false,
+                            IsPackingSpecification = true,
+                            CreatedBy = userId,
+                            CreatedAt = today
+                        };
+                        _context.ProductUnitPrices.Add(x);
+                    }
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new Response<bool>(true)
+                    {
+                        Message = "Thêm đơn vị mới thành công"
+                    };
                 }
-
-
-                ProductUnitPrice pu = new ProductUnitPrice()
+                return new Response<bool>(false)
                 {
-                    ProductId = model.ProductId,
-                    Unit = model.Unit,
-                    ConversionValue = model.ConversionValue,
-                    Price = model.Price,
-                    IsBaseUnit = model.IsBaseUnit,
-                    IsPackingSpecification = model.IsPackingSpecification,
-                    IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit,
-                    CreatedBy = userId,
-                    CreatedAt = today
-                };
-                _context.ProductUnitPrices.Add(pu);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return new Response<bool>(true)
-                {
-                    Message = "Tạo đơn vị tính thành công"
+                    StatusCode = 400,
+                    Message = "Không có gì để thêm"
                 };
             }
-            catch(Exception)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 return new Response<bool>(false)
@@ -152,7 +163,7 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
             try
             {
                 var pu = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == productUnitId);
-                if(pu != null)
+                if (pu != null)
                 {
                     var data = new ViewProductUnitPriceModel()
                     {
@@ -192,39 +203,81 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
 
         }
 
-        public async Task<Response<bool>> UpdateProductUnit(int productUnitId, int userId, UpdateProductUnitPriceModel model)
+        public async Task<Response<bool>> UpdateProductUnit(int productUnitId, int userId, List<UpdateProductUnitPriceModel> model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                var pu = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == productUnitId);
-                if (pu != null)
+                if (model.Count > 0)
                 {
-                    pu.ConversionValue = model.ConversionValue;
-                    pu.Price = model.Price;
-                    pu.Unit = model.Unit;
-                    pu.IsBaseUnit = model.IsBaseUnit;
-                    pu.UpdatedBy = userId;
-                    pu.UpdatedAt = today;
-                    pu.IsPackingSpecification = model.IsPackingSpecification;
-                    pu.IsDoseBasedOnBodyWeightUnit = model.IsDoseBasedOnBodyWeightUnit;
-
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                    foreach (var u in model)
+                    {
+                        var productUnit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == u.ProductUnitId);
+                        var query = from pu in _context.ProductUnitPrices
+                                    where pu.ProductId == u.ProductId
+                                    select pu;
+                        var puId = await query.Where(x => x.IsBaseUnit == true).Select(x => x.Id).FirstOrDefaultAsync();
+                        if (productUnit != null)
+                        {
+                            if (puId > 0)
+                            {
+                                if (puId == u.ProductUnitId)
+                                {
+                                    productUnit.Unit = u.Unit;
+                                    productUnit.Price = u.Price;
+                                    productUnit.UpdatedAt = today;
+                                    productUnit.UpdatedBy = userId;
+                                }
+                                else
+                                {
+                                    productUnit.Unit = u.Unit;
+                                    productUnit.Price = u.Price;
+                                    productUnit.ConversionValue = u.ConversionValue;
+                                    productUnit.UpdatedAt = today;
+                                    productUnit.UpdatedBy = userId;
+                                }
+                                await _context.SaveChangesAsync();
+                                await transaction.CommitAsync();
+                                return new Response<bool>(true)
+                                {
+                                    Message = "Cập nhật đơn vị thành công"
+                                };
+                            }
+                            else
+                            {
+                                return new Response<bool>(false)
+                                {
+                                    StatusCode = 400,
+                                    Message = "Không tìm thấy đơn vị cơ bản"
+                                };
+                            }
+                        }
+                        else
+                        {
+                            await transaction.RollbackAsync();
+                            return new Response<bool>(false)
+                            {
+                                StatusCode = 400,
+                                Message = "Không tìm thấy đơn vị để cập nhật"
+                            };
+                        }
+                    }
                     return new Response<bool>(true)
                     {
-                        Message = "Cập nhật thông tin đơn vị tính thành công"
+                        Message = "Không có gì xảy ra"
                     };
                 }
-                return new Response<bool>(false)
+                else
                 {
-                    StatusCode = 400,
-                    Message = "Không tìm thấy đơn vị tính này"
-                };
+                    return new Response<bool>(true)
+                    {
+                        Message = "Không có gì thay đổi"
+                    };
+                }
             }
             catch (Exception)
             {
@@ -260,6 +313,57 @@ namespace UtNhanDrug_BE.Services.ProductUnitService
                 StatusCode = 400,
                 Message = "Không tìm thấy"
             };
+        }
+
+        public async Task<Response<bool>> RemoveProductUnit(int productUnitId)
+        {
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
+            {
+                var query = from pu in _context.ProductUnitPrices
+                            where pu.Id == productUnitId
+                            select pu;
+                var data = await query.FirstOrDefaultAsync();
+                if (data != null)
+                {
+                    if (data.IsBaseUnit == true)
+                    {
+                        return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Không thể xoá đơn vị cơ bản"
+                        };
+                    }
+                    else
+                    {
+                        _context.ProductUnitPrices.Remove(data);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                        return new Response<bool>(true)
+                        {
+                            Message = "Xoá thành công"
+                        };
+                    }
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 400,
+                        Message = "Không tìm thấy đơn vị này"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return new Response<bool>(false)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
         }
     }
 }

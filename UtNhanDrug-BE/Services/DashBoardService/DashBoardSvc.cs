@@ -135,7 +135,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                 var query1 = from i in _context.GoodsReceiptNotes
                              select i;
                 var quantityOrderNow = await query.Where(x => x.CreatedAt >= todayConvert).CountAsync();
-                double percentQuantityOrder = 0;
+                double percentQuantityOrder = 100;
                 var quantityOrderYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).CountAsync();
                 if(quantityOrderYesterday != 0)
                 {
@@ -143,25 +143,25 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                 }
 
                 var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
-                double percentTurnover = 0;
+                double percentTurnover = 100;
                 var turnoverYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
                 if(turnoverYesterday != 0)
                 {
                     percentTurnover = (double)(((turnoverNow - turnoverYesterday) / turnoverYesterday) * 100);
                 }
                 var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
-                double percentCost = 0;
+                double percentCost = 100;
                 var costYesterday = await query1.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
                 if(costYesterday != 0)
                 {
                     percentCost = (double)(((costNow - costYesterday) / costYesterday) * 100);
                 }
                 decimal profitNow = turnoverNow - costNow;
-                double PercentProfit = 0;
+                double PercentProfit = 100;
                 decimal profitYesterday = turnoverYesterday - costYesterday;
                 if(profitYesterday != 0)
                 {
-                    PercentProfit = (double)(((profitNow - profitYesterday) / profitYesterday) * 100);
+                    PercentProfit = (double)(((profitNow - profitYesterday) / Math.Abs(profitYesterday)) * 100);
                 }
                 SaleModel saleModel = new SaleModel()
                 {

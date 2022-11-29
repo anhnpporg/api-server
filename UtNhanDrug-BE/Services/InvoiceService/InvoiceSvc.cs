@@ -183,6 +183,15 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                                 };
                             }
 
+                            if (model.UsePoint * toMoney > i.TotalPrice)
+                            {
+                                await transaction.RollbackAsync();
+                                return new Response<InvoiceResponse>(null)
+                                {
+                                    StatusCode = 400,
+                                    Message = "Điểm tích luỹ quá giá trị đơn hàng"
+                                };
+                            }
                             // save transaction use point
                             CustomerPointTransaction cpt = new CustomerPointTransaction()
                             {
@@ -193,9 +202,9 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             };
                             await _context.CustomerPointTransactions.AddAsync(cpt);
                             await _context.SaveChangesAsync();
-
+                            //var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Id == model.CustomerId);
                             i.Discount = (int)cpt.Point * toMoney;
-                            totalPoint = (float)(totalPoint - cpt.Point);
+                            totalPoint = (float)(totalPoint - model.UsePoint);
                             await _context.SaveChangesAsync();
                         }
                     }
@@ -214,7 +223,10 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         await _context.CustomerPointTransactions.AddAsync(cpt1);
                         await _context.SaveChangesAsync();
 
+                        var customer = await _context.Customers.FirstOrDefaultAsync(x => x.Id == model.CustomerId);
+
                         totalPoint = (float)(totalPoint + cpt1.Point);
+                        customer.TotalPoint = totalPoint;
                         await _context.SaveChangesAsync();
                     }
                     i.TotalPrice -= i.Discount;
@@ -532,7 +544,8 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             }).ToListAsync();
             foreach (var d in data)
             {
-                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, d.OrderDetailId);
+                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, id);
+                d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);
             }
             return new Response<List<ViewOrderDetailModel>>(data);
         }
@@ -543,6 +556,10 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         join g in _context.GoodsIssueNotes on o.Id equals g.OrderDetailId
                         where o.Invoice.Barcode == barcode
                         select new { o, g };
+            var invoiceQuery = from i in _context.Invoices
+                               where i.Barcode == barcode
+                               select i;
+            int invoiceId = await invoiceQuery.Select(x => x.Id).FirstOrDefaultAsync();
             var data = await query.Select(x => new ViewOrderDetailModel()
             {
                 Id = x.o.Id,
@@ -576,23 +593,32 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             }).ToListAsync();
             foreach(var d in data)
             {
-                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, d.OrderDetailId);
+                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, invoiceId);
+                d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);
             }
             return new Response<List<ViewOrderDetailModel>>(data);
         }
 
-        private async Task<int> GetReturnedQuantityOfInvoice(int? batchId, int? orderDetailId)
+        private async Task<int> GetReturnedQuantityOfInvoice(int? batchId, int? invoiceId)
         {
-            int returnedQuantity = 0;
-            var query = from gin in _context.GoodsIssueNotes
-                        where gin.OrderDetailId == orderDetailId
-                        select gin;
-            var data = await query.Where(x => x.BatchId == batchId & x.GoodsIssueNoteTypeId == 2).FirstOrDefaultAsync();
-            if(data != null)
-            {
-                returnedQuantity = data.Quantity;
-            }
+            var query = from grn in _context.GoodsReceiptNotes
+                        where grn.InvoiceId == invoiceId
+                        select grn;
+            var returnedQuantity = await query.Where(x => x.BatchId == batchId & x.GoodsReceiptNoteTypeId == 2).Select(x => x.ConvertedQuantity).SumAsync();
             return returnedQuantity;
+        }
+
+        private async Task<ViewBaseProductUnit> GetBaseUnit(int? productId)
+        {
+            var query = from pu in _context.ProductUnitPrices
+                        where pu.ProductId == productId
+                        select pu;
+            var data = await query.Where(x => x.IsBaseUnit == true).Select(x => new ViewBaseProductUnit()
+            {
+                BaseUnit = x.Unit,
+                BaseUnitPrice = x.Price
+            }).FirstOrDefaultAsync();
+            return data;
         }
     }
 }
