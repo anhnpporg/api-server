@@ -508,23 +508,27 @@ namespace UtNhanDrug_BE.Services.ProductService
                         where b.Id == batchId
                         select b;
             var p = await ba.Select(x => x.Product).FirstOrDefaultAsync();
-            if(p.IsManagedInBatches == false)
-            {
-                var query4 = from u in _context.ProductUnitPrices
-                             where u.ProductId == p.Id
-                             select u;
-                var data1 = await query4.Where(x => x.IsDoseBasedOnBodyWeightUnit == false).Select(x => new ViewQuantityModel()
-                {
-                    Id = x.Id,
-                    Unit = x.Unit,
-                    UnitPrice = x.Price,
-                    CurrentQuantity = 0
-                }).ToListAsync();
-                return data1;
-            }
             var query = from g in _context.GoodsReceiptNotes
                         where g.BatchId == batchId
                         select g;
+            var data2 = await query.ToListAsync();
+            if(data2.Count == 0)
+            {
+                if (p.IsManagedInBatches == false)
+                {
+                    var query4 = from u in _context.ProductUnitPrices
+                                 where u.ProductId == p.Id
+                                 select u;
+                    var data1 = await query4.Where(x => x.IsDoseBasedOnBodyWeightUnit == false).Select(x => new ViewQuantityModel()
+                    {
+                        Id = x.Id,
+                        Unit = x.Unit,
+                        UnitPrice = x.Price,
+                        CurrentQuantity = 0
+                    }).ToListAsync();
+                    return data1;
+                }
+            }
             var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
 
             var productId = await query.Select(x => x.Batch.ProductId).FirstOrDefaultAsync();

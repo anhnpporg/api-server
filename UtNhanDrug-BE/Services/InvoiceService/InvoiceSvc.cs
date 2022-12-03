@@ -16,6 +16,7 @@ using UtNhanDrug_BE.Hepper;
 using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Services.ProductService;
 using UtNhanDrug_BE.Models.ProductModel;
+using UtNhanDrug_BE.Services.HandlerService;
 
 namespace UtNhanDrug_BE.Services.InvoiceService
 {
@@ -25,13 +26,15 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         private readonly IUserSvc _userSvc;
         private readonly IProductUnitPriceSvc _unitSvc;
         private readonly IProductSvc _pSvc;
+        private readonly IHandlerSvc _handler;
         private readonly DateTime today = LocalDateTime.DateTimeNow();
-        public InvoiceSvc(ut_nhan_drug_store_databaseContext context, IUserSvc userSvc, IProductUnitPriceSvc unitSvc, IProductSvc pSvc)
+        public InvoiceSvc(ut_nhan_drug_store_databaseContext context, IUserSvc userSvc, IProductUnitPriceSvc unitSvc, IProductSvc pSvc, IHandlerSvc handler)
         {
             _context = context;
             _userSvc = userSvc;
             _unitSvc = unitSvc;
             _pSvc = pSvc;
+            _handler = handler;
         }
         public async Task<Response<InvoiceResponse>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
@@ -87,23 +90,23 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     foreach (OrderDetailModel x in model.Product)
                     {
 
-                        var products = await _pSvc.GetAllProduct(new FilterProduct{ IsProductActive = true });
-                        if(products.Data != null)
-                        {
-                            foreach (var product in products.Data)
-                            {
-                                if (x.ProductId != product.Id)
-                                {
-                                    await transaction.RollbackAsync();
-                                    return new Response<InvoiceResponse>(null)
-                                    {
-                                        StatusCode = 400,
-                                        Message = "Sản phẩm " + product.Name + " đang bị lỗi, không thể bán"
-                                    };
-                                }
+                        //var products = await _pSvc.GetAllProduct(new FilterProduct{ IsProductActive = false });
+                        //if(products.Data != null)
+                        //{
+                        //    foreach (var product in products.Data)
+                        //    {
+                        //        if (x.ProductId != product.Id)
+                        //        {
+                        //            await transaction.RollbackAsync();
+                        //            return new Response<InvoiceResponse>(null)
+                        //            {
+                        //                StatusCode = 400,
+                        //                Message = "Sản phẩm " + product.Name + " đang bị lỗi, không thể bán"
+                        //            };
+                        //        }
 
-                            }
-                        }
+                        //    }
+                        //}
                         OrderDetail o = new OrderDetail()
                         {
                             InvoiceId = i.Id,
@@ -260,8 +263,12 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     }
                     i.TotalPrice -= i.Discount;
                     await _context.SaveChangesAsync();
-
+                    foreach (OrderDetailModel x in model.Product)
+                    {
+                        await _handler.CheckQuantityOfProduct(x.ProductId);
+                    }
                     await transaction.CommitAsync();
+                    
                     return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = i.Id })
                     {
                         Message = "Tạo hoá đơn thành công"
@@ -327,6 +334,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         }
                     }
                     await transaction.CommitAsync();
+                    
                     return new Response<InvoiceResponse>(null)
                     {
                         Message = "Tạo hoá đơn thành công"

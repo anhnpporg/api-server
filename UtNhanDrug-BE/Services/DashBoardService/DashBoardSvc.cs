@@ -43,7 +43,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
 
         //    }
         //}
-
+        
         public async Task<Response<List<RecentSalesModel>>> GetRecentSales(SearchModel request)
         {
             try

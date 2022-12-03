@@ -33,6 +33,7 @@ using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.InvoiceService;
 using UtNhanDrug_BE.Services.DashBoardService;
+using UtNhanDrug_BE.Services.HandlerService;
 
 namespace UtNhanDrug_BE
 {
@@ -80,6 +81,7 @@ namespace UtNhanDrug_BE
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
+            services.AddTransient<IHandlerSvc, HandlerSvc>();
             services.AddTransient<IDashBoardSvc, DashBoardSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
