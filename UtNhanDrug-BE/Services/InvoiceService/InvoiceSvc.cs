@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using UtNhanDrug_BE.Hepper.GenaralBarcode;
 using UtNhanDrug_BE.Hepper;
 using UtNhanDrug_BE.Models.BatchModel;
+using UtNhanDrug_BE.Services.ProductService;
+using UtNhanDrug_BE.Models.ProductModel;
 
 namespace UtNhanDrug_BE.Services.InvoiceService
 {
@@ -22,12 +24,14 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly IUserSvc _userSvc;
         private readonly IProductUnitPriceSvc _unitSvc;
+        private readonly IProductSvc _pSvc;
         private readonly DateTime today = LocalDateTime.DateTimeNow();
-        public InvoiceSvc(ut_nhan_drug_store_databaseContext context, IUserSvc userSvc, IProductUnitPriceSvc unitSvc)
+        public InvoiceSvc(ut_nhan_drug_store_databaseContext context, IUserSvc userSvc, IProductUnitPriceSvc unitSvc, IProductSvc pSvc)
         {
             _context = context;
             _userSvc = userSvc;
             _unitSvc = unitSvc;
+            _pSvc = pSvc;
         }
         public async Task<Response<InvoiceResponse>> CreateInvoice(int UserId, CreateInvoiceModel model)
         {
@@ -82,9 +86,24 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
                     {
-                        
-                        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
 
+                        var products = await _pSvc.GetAllProduct(new FilterProduct{ IsProductActive = true });
+                        if(products.Data != null)
+                        {
+                            foreach (var product in products.Data)
+                            {
+                                if (x.ProductId != product.Id)
+                                {
+                                    await transaction.RollbackAsync();
+                                    return new Response<InvoiceResponse>(null)
+                                    {
+                                        StatusCode = 400,
+                                        Message = "Sản phẩm " + product.Name + " đang bị lỗi, không thể bán"
+                                    };
+                                }
+
+                            }
+                        }
                         OrderDetail o = new OrderDetail()
                         {
                             InvoiceId = i.Id,
@@ -94,11 +113,19 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             Frequency = x.Frequency,
                             DayUse = x.DayUse,
                             Use = x.Use,
-                            TotalPrice = 0
+                            TotalPrice = 0,
                         };
                         _context.OrderDetails.Add(o);
                         await _context.SaveChangesAsync();
-
+                        if (x.GoodsIssueNote.Count() == 0)
+                        {
+                            await transaction.RollbackAsync();
+                            return new Response<InvoiceResponse>(null)
+                            {
+                                StatusCode = 400,
+                                Message = "Vui lòng thêm lô sản phẩm"
+                            };
+                        }
                         foreach (var goods in x.GoodsIssueNote)
                         {
                             decimal price = 0;
@@ -144,9 +171,11 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             _context.GoodsIssueNotes.Add(g);
                             await _context.SaveChangesAsync();
                             o.TotalPrice += g.UnitPrice * g.Quantity;
-                            i.TotalPrice += o.TotalPrice;
+                            //i.TotalPrice += o.TotalPrice;
                             await _context.SaveChangesAsync();
                         }
+                        i.TotalPrice += o.TotalPrice;
+                        await _context.SaveChangesAsync();
                     }
                     //Convert point
                     decimal toMoney = 1000;
@@ -242,6 +271,15 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
                     {
+                        if (x.GoodsIssueNote.Count() == 0)
+                        {
+                            await transaction.RollbackAsync();
+                            return new Response<InvoiceResponse>(null)
+                            {
+                                StatusCode = 400,
+                                Message = "Vui lòng thêm lô sản phẩm"
+                            };
+                        }
                         decimal price = 0;
                         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
                         foreach (var goods in x.GoodsIssueNote)
@@ -544,7 +582,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             }).ToListAsync();
             foreach (var d in data)
             {
-                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, id);
+                d.ReturnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, id);
                 d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);
             }
             return new Response<List<ViewOrderDetailModel>>(data);
@@ -593,7 +631,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             }).ToListAsync();
             foreach(var d in data)
             {
-                d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, invoiceId);
+                d.ReturnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, invoiceId);
                 d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);
             }
             return new Response<List<ViewOrderDetailModel>>(data);

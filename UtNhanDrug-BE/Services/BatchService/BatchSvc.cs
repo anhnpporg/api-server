@@ -462,7 +462,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     },
                     UnitDose = x.OrderDetail.UnitDose,
                     Use = x.OrderDetail.Use,
-                    CreatTime = x.OrderDetail.Invoice.CreatedAt
+                    //CreatTime = x.OrderDetail.Invoice.CreatedAt
 
                 }).ToListAsync();
                 if(data != null)
@@ -498,5 +498,6 @@ namespace UtNhanDrug_BE.Services.BatchService
                 };
             }
         }
+
     }
 }

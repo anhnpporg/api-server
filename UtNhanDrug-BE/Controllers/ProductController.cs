@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
+using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ProductActiveSubstance;
 using UtNhanDrug_BE.Models.ProductModel;
 using UtNhanDrug_BE.Services.ProductActiveSubstanceService;
@@ -55,7 +56,7 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProductPaging([FromQuery] ProductFilterRequest request)
         {
             var products = await _productSvc.GetProductFilter(request);
-            return Ok(products);
+            return StatusCode(products.StatusCode, products);
         }
         
         [Authorize]
@@ -69,12 +70,12 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
-        [Route("products/{id}/batches")]
+        [Route("products/batches")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetbatchesByProductId([FromRoute] int id)
+        public async Task<ActionResult> GetbatchesByProductId([FromQuery] SearchBatchRequest request)
         {
-            var disease = await _productSvc.GetBatchesByProductId(id);
+            var disease = await _productSvc.GetBatchesByProductId(request);
             return StatusCode(disease.StatusCode, disease);
         }
 

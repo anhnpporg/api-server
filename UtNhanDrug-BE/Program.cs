@@ -25,5 +25,6 @@ namespace UtNhanDrug_BE
                     // Port for http & https
                     webBuilder.UseUrls("http://*;https://*");
                 });
+
     }
 }

@@ -91,6 +91,25 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
                                 if (b.BatchId == null)
                                 {
+                                    if(b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
+                                    {
+                                        await transaction.RollbackAsync();
+                                        return new Response<bool>(false)
+                                        {
+                                            StatusCode = 400,
+                                            Message = "Ngày sản xuất phải lớn hơn ngày hết hạn"
+                                        };
+                                    }
+                                    var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == b.Batch.ProductId);
+                                    if(product.IsManagedInBatches == false)
+                                    {
+                                        await transaction.RollbackAsync();
+                                        return new Response<bool>(false)
+                                        {
+                                            StatusCode = 400,
+                                            Message = "Sản phẩm này không quản lí theo lô, không thể tạo thêm lô"
+                                        };
+                                    }
                                     Batch s = new Batch()
                                     {
                                         BatchBarcode = "#####",

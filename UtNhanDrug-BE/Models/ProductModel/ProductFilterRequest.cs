@@ -5,5 +5,6 @@ namespace UtNhanDrug_BE.Models.ProductModel
     public class ProductFilterRequest : PagingRequestBase
     {
         public string SearchValue { get; set; }
+        public bool IsSale { get; set; }
     }
 }
