@@ -8,7 +8,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 {
     public interface IGRNSvc
     {
-        Task<Response<bool>> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model);
+        Task<Response<List<GRNResponse>>> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model);
         Task<Response<bool>> UpdateGoodsReceiptNote(int id, int userId, UpdateGoodsReceiptNoteModel model);
         //Task<bool> DeleteConsignment(int id, int userId);
         Task<Response<ViewGoodsReceiptNoteModel>> GetGoodsReceiptNoteById(int id);

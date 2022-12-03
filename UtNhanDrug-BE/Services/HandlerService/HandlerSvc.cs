@@ -57,6 +57,25 @@ namespace UtNhanDrug_BE.Services.HandlerService
             }
         }
 
+        public async Task CheckQuantityOfProduct()
+        {
+            var queryProduct = from p in _context.Products
+                               select p;
+            var products = await queryProduct.ToListAsync();
+            foreach (var p in products)
+            {
+                int currentQuantity = await GetCurrentQuantityOfProduct(p.Id);
+                if (currentQuantity < p.MininumInventory)
+                {
+                    // lưu vào bảng thông báo -> lọc trường hợp thông báo rồi
+
+                    // Thông báo số lượng hiện tạo dưới hạn mức tồn kho
+                    NotificationModel notification = new NotificationModel { Title = "Sản phẩm dưới hạn mức tồn kho", Body = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho" };
+                    await _noti.SendNotification(notification);
+                }
+            }
+        }
+
         private async Task<int> GetCurrentQuantityOfProduct(int productId)
         {
 

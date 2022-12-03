@@ -6,5 +6,6 @@ namespace UtNhanDrug_BE.Services.HandlerService
     {
         Task CheckExpiryBatch();
         Task CheckQuantityOfProduct(int productId);
+        Task CheckQuantityOfProduct();
     }
 }

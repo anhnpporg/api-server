@@ -89,24 +89,18 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
                     {
+                        var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
+                        bool checkValidProduct = await CheckValidProduct(x.ProductId);
+                        if(checkValidProduct == false)
+                        {
+                            await transaction.RollbackAsync();
+                            return new Response<InvoiceResponse>(null)
+                            {
+                                StatusCode = 400,
+                                Message = "Sản phẩm " + product.Name + " đang bị lỗi, không thể bán"
+                            };
+                        }
 
-                        //var products = await _pSvc.GetAllProduct(new FilterProduct{ IsProductActive = false });
-                        //if(products.Data != null)
-                        //{
-                        //    foreach (var product in products.Data)
-                        //    {
-                        //        if (x.ProductId != product.Id)
-                        //        {
-                        //            await transaction.RollbackAsync();
-                        //            return new Response<InvoiceResponse>(null)
-                        //            {
-                        //                StatusCode = 400,
-                        //                Message = "Sản phẩm " + product.Name + " đang bị lỗi, không thể bán"
-                        //            };
-                        //        }
-
-                        //    }
-                        //}
                         OrderDetail o = new OrderDetail()
                         {
                             InvoiceId = i.Id,
@@ -383,6 +377,23 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 CurrentQuantity = (int)(currentQuantity / x.ConversionValue)
             }).ToListAsync();
             return data;
+        }
+
+        private async Task<bool> CheckValidProduct(int productId)
+        {
+            var products = await _pSvc.GetAllProduct(new FilterProduct { IsProductActive = true });
+            if (products.Data != null)
+            {
+                foreach (var product in products.Data)
+                {
+                    if (productId == product.Id)
+                    {
+                        return true;
+                    }
+
+                }
+            }
+            return false;
         }
 
         public async Task<Response<List<ViewInvoiceModel>>> GetAllInvoice()
