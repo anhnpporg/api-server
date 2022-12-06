@@ -33,7 +33,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //    return true;
         //}
 
-        public async Task<Response<bool>> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model)
+        public async Task<Response<List<GRNResponse>>> CreateGoodsReceiptNote(int userId, CreateGoodsReceiptNoteModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
@@ -44,12 +44,13 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     {
                         if (model.CreateModel.Count <= 0)
                         {
-                            return new Response<bool>(false)
+                            return new Response<List<GRNResponse>>(null)
                             {
                                 StatusCode = 400,
                                 Message = "Vui lòng chọn sản phẩm để trả"
                             };
                         }
+                        List<GRNResponse> grns = new List<GRNResponse>();
                         foreach (var m in model.CreateModel)
                         {
 
@@ -59,8 +60,8 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             {
                                 var suplierQuery = from su in _context.Suppliers
                                                    select su;
-                                var supplierName = await suplierQuery.Where(x => x.Name == m.Supplier.Name).FirstOrDefaultAsync();
-                                if (supplierName != null) return new Response<bool>(false)
+                                var supplierName = await suplierQuery.Where(x => x.Name.ToLower() == m.Supplier.Name.ToLower()).FirstOrDefaultAsync();
+                                if (supplierName != null) return new Response<List<GRNResponse>>(null)
                                 {
                                     StatusCode = 400,
                                     Message = "Nhà sản xuất đã tồn tại"
@@ -78,19 +79,46 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             if (m.SupplierId == null)
                             {
                                 await transaction.RollbackAsync();
-                                return new Response<bool>(false)
+                                return new Response<List<GRNResponse>>(null)
                                 {
                                     StatusCode = 400,
                                     Message = "Vui lòng nhập nhà cung cấp"
                                 };
                             }
 
+                            
                             //batches 
                             foreach (var b in m.Batches)
                             {
                                 var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
                                 if (b.BatchId == null)
                                 {
+                                    if(b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
+                                    {
+                                        await transaction.RollbackAsync();
+                                        return new Response<List<GRNResponse>>(null)
+                                        {
+                                            StatusCode = 400,
+                                            Message = "Ngày sản xuất phải lớn hơn ngày hết hạn"
+                                        };
+                                    }
+                                    var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == b.Batch.ProductId);
+                                    if(product.IsManagedInBatches == false)
+                                    {
+                                        await transaction.RollbackAsync();
+                                        return new Response<List<GRNResponse>>(null)
+                                        {
+                                            StatusCode = 400,
+                                            Message = "Sản phẩm này không quản lí theo lô, không thể tạo thêm lô"
+                                        };
+                                    }
+
+                                    var checkExitBatch = await CheckExitBath((DateTime)b.Batch.ExpiryDate, (int)b.Batch.ProductId);
+                                    if (checkExitBatch == true) return new Response<List<GRNResponse>>(null)
+                                    {
+                                        StatusCode = 400,
+                                        Message = "Lô có ngày hết hạn này đã tồn tại"
+                                    };
                                     Batch s = new Batch()
                                     {
                                         Barcode = "#####",
@@ -123,16 +151,15 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 };
                                 _context.GoodsReceiptNotes.Add(grn);
                                 await _context.SaveChangesAsync();
+                                grns.Add(new GRNResponse { GRNId = grn.Id});
                                 b.BatchId = null;
                             }
-
-                            await transaction.CommitAsync();
-                            return new Response<bool>(true)
-                            {
-                                Message = "Tạo phiếu nhập hàng từ nhà cung cấp thành công"
-                            };
-
                         }
+                        await transaction.CommitAsync();
+                        return new Response<List<GRNResponse>>(grns)
+                        {
+                            Message = "Tạo phiếu nhập hàng từ nhà cung cấp thành công"
+                        };
                     }
                     else if (model.GoodsReceiptNoteTypeId == 2)
                     {
@@ -141,13 +168,14 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         {
                             if (model.CreateModel.Count <= 0)
                             {
-                                return new Response<bool>(false)
+                                return new Response<List<GRNResponse>>(null)
                                 {
                                     StatusCode = 400,
                                     Message = "Vui lòng chọn sản phẩm để trả"
                                 };
                             }
                             decimal totalPrice = 0;
+                            List<GRNResponse> grns = new List<GRNResponse>();
                             foreach (var m in model.CreateModel)
                             {
                                 //batches 
@@ -167,7 +195,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     if ((gin.ConvertedQuantity - grnQuantity) < b.Quantity * unit.ConversionValue)
                                     {
                                         await transaction.RollbackAsync();
-                                        return new Response<bool>(false)
+                                        return new Response<List<GRNResponse>>(null)
                                         {
                                             StatusCode = 400,
                                             Message = "Số lượng nhập lại từ khách hàng không hợp lệ"
@@ -213,6 +241,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     };
                                     _context.GoodsReceiptNotes.Add(grn);
                                     await _context.SaveChangesAsync();
+                                    grns.Add(new GRNResponse { GRNId = grn.Id });
                                     b.BatchId = null;
                                     totalPrice += grn.ConvertedQuantity * grn.BaseUnitPrice;
                                 }
@@ -244,7 +273,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 await _context.SaveChangesAsync();
 
                                 await transaction.CommitAsync();
-                                return new Response<bool>(true)
+                                return new Response<List<GRNResponse>>(grns)
                                 {
                                     Message = "nhập hàng từ hoá đơn thành công"
                                 };
@@ -259,7 +288,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             if (dataGRN != null)
                             {
                                 await transaction.RollbackAsync();
-                                return new Response<bool>(false)
+                                return new Response<List<GRNResponse>>(null)
                                 {
                                     StatusCode = 400,
                                     Message = "Đã nhập hàng từ hoá đơn này, không thể nhập lại tất cả"
@@ -271,6 +300,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         select g;
                             var gin = await query.ToListAsync();
                             decimal totalPrice = 0;
+                            List<GRNResponse> grns = new List<GRNResponse>();
                             foreach (var o in gin)
                             {
                                 var query1 = from b in _context.Batches
@@ -293,6 +323,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 };
                                 _context.GoodsReceiptNotes.Add(grn);
                                 await _context.SaveChangesAsync();
+                                grns.Add(new GRNResponse { GRNId = grn.Id });
                                 totalPrice += grn.TotalPrice;
                             }
 
@@ -302,27 +333,31 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
                             int point = (int)(totalPrice / toPoint);
                             var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
-                            //get customer total point
-                            var query2 = from c in _context.Customers
-                                         where c.Id == customer.Id
-                                         select c;
-                            float totalPoint = (float)await query2.Select(x => x.TotalPoint).FirstOrDefaultAsync();
-
-                            CustomerPointTransaction cpt = new CustomerPointTransaction()
+                            if(customer != null)
                             {
-                                CustomerId = (int)customer.Id,
-                                InvoiceId = (int)model.InvoiceId,
-                                Point = point,
-                                IsReciept = false,
-                            };
-                            await _context.CustomerPointTransactions.AddAsync(cpt);
+                                var query2 = from c in _context.Customers
+                                             where c.Id == customer.Id
+                                             select c;
+                                float totalPoint = (float)await query2.Select(x => x.TotalPoint).FirstOrDefaultAsync();
 
-                            totalPoint -= point;
-                            customer.TotalPoint = totalPoint;
+                                CustomerPointTransaction cpt = new CustomerPointTransaction()
+                                {
+                                    CustomerId = (int)customer.Id,
+                                    InvoiceId = (int)model.InvoiceId,
+                                    Point = point,
+                                    IsReciept = false,
+                                };
+                                await _context.CustomerPointTransactions.AddAsync(cpt);
+
+                                totalPoint -= point;
+                                customer.TotalPoint = totalPoint;
+                            }
+                            //get customer total point
+                            
                             await _context.SaveChangesAsync();
 
                             await transaction.CommitAsync();
-                            return new Response<bool>(true)
+                            return new Response<List<GRNResponse>>(grns)
                             {
                                 Message = "nhập hàng từ hoá đơn thành công"
                             };
@@ -334,7 +369,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
                     //}
                 }
-                return new Response<bool>(false)
+                return new Response<List<GRNResponse>>(null)
                 {
                     StatusCode = 400,
                     Message = "Không tìm thấy sản phẩm để nhập hàng"
@@ -343,7 +378,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
             catch
             {
                 await transaction.RollbackAsync();
-                return new Response<bool>(false)
+                return new Response<List<GRNResponse>>(null)
                 {
                     StatusCode = 500,
                     Message = "Tạo phiếu nhập hàng thất bại"
@@ -366,6 +401,17 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //    var currentQuantity = totalQuantity - saledQuantity;
         //    return currentQuantity;
         //}
+        private async Task<bool> CheckExitBath(DateTime expiryDate, int productId)
+        {
+            var queryBatch = from b in _context.Batches
+                             where b.ProductId == productId & b.IsActive == true & b.ExpiryDate == expiryDate
+                             select b;
+            var data = await queryBatch.FirstOrDefaultAsync();
+
+            if (data != null) return true;
+            return false;
+        }
+
         public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetAllGoodsReceiptNote()
         {
             try
@@ -643,6 +689,73 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     {
                         Id = x.Batch.Id,
                         Barcode = x.Batch.Barcode,
+                        ManufacturingDate = x.Batch.ManufacturingDate,
+                        ExpiryDate = x.Batch.ExpiryDate
+                    },
+                    Supplier = new ViewSupplierData()
+                    {
+                        Id = x.Supplier.Id,
+                        Name = x.Supplier.Name,
+                        IsActive = x.Supplier.IsActive
+                    },
+                    Quantity = x.Quantity,
+                    Unit = x.Unit,
+                    InvoiceId = x.InvoiceId,
+                    ConvertedQuantity = x.ConvertedQuantity,
+                    TotalPrice = x.TotalPrice,
+                    BaseUnitPrice = x.BaseUnitPrice,
+                    CreatedBy = x.CreatedBy,
+                    CreatedAt = x.CreatedAt,
+                }).ToListAsync();
+                if (data.Count > 0)
+                {
+                    foreach (var d in data)
+                    {
+                        var notes = await GetListNoteLog(d.Id);
+                        d.Note = notes.Data;
+                    }
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(data)
+                    {
+                        Message = "Thông tin tất cả phiếu nhập hàng"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                    {
+                        Message = "Không có phiếu nhập hàng nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
+        public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGoodsReceiptNoteByStaff(int staffId)
+        {
+            try
+            {
+                var query = from grn in _context.GoodsReceiptNotes
+                            where grn.CreatedBy == staffId
+                            select grn;
+                var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewGoodsReceiptNoteModel()
+                {
+                    Id = x.Id,
+                    GoodsReceiptNoteType = new ViewModel()
+                    {
+                        Id = x.GoodsReceiptNoteType.Id,
+                        Name = x.GoodsReceiptNoteType.Name
+                    },
+                    Batch = new ViewBatch()
+                    {
+                        Id = x.Batch.Id,
+                        Barcode = x.Batch.BatchBarcode,
                         ManufacturingDate = x.Batch.ManufacturingDate,
                         ExpiryDate = x.Batch.ExpiryDate
                     },

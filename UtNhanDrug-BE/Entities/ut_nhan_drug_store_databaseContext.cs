@@ -289,13 +289,9 @@ namespace UtNhanDrug_BE.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.SoLanTichDiemToiThieu).HasColumnName("so_lan_tich_diem_toi_thieu");
+                entity.Property(e => e.ToMoney).HasColumnName("to_money");
 
-                entity.Property(e => e.TichDiemChoHoaDonGiamGiaBangDiemThuong).HasColumnName("tich_diem_cho_hoa_don_giam_gia_bang_diem_thuong");
-
-                entity.Property(e => e.TyLeQuyDoiDiemThuong).HasColumnName("ty_le_quy_doi_diem_thuong");
-
-                entity.Property(e => e.TyLeQuyDoiThanhTien).HasColumnName("ty_le_quy_doi_thanh_tien");
+                entity.Property(e => e.ToPoint).HasColumnName("to_point");
             });
 
             modelBuilder.Entity<Disease>(entity =>
@@ -566,12 +562,12 @@ namespace UtNhanDrug_BE.Entities
                 entity.HasOne(d => d.Batch)
                     .WithMany(p => p.InventorySystemReports)
                     .HasForeignKey(d => d.BatchId)
-                    .HasConstraintName("FK__inventory__batch__3864608B");
+                    .HasConstraintName("FK__inventory__batch__625A9A57");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.InventorySystemReports)
                     .HasForeignKey(d => d.ProductId)
-                    .HasConstraintName("FK__inventory__produ__395884C4");
+                    .HasConstraintName("FK__inventory__produ__634EBE90");
             });
 
             modelBuilder.Entity<Invoice>(entity =>

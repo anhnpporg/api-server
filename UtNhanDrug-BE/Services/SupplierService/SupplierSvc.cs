@@ -31,7 +31,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
 
         private async Task<bool> CheckName(string name)
         {
-            var result = await _context.Suppliers.FirstOrDefaultAsync(x => x.Name == name);
+            var result = await _context.Suppliers.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
             if (result == null)
             {
                 return true;

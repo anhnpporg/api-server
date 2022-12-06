@@ -32,18 +32,24 @@ namespace UtNhanDrug_BE.Services.ProductService
             _productUnitSvc = productUnitSvc;
         }
 
-        //public async Task<bool> CheckProduct(int id)
-        //{
-        //    var result = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
-        //    if (result != null) return true;
-        //    return false;
-        //}
+        private async Task<bool> CheckDrugRegistrationNumber(string drugRegistrationNumber)
+        {
+            var result = await _context.Products.FirstOrDefaultAsync(x => x.DrugRegistrationNumber.ToLower() == drugRegistrationNumber.ToLower())  ;
+            if (result != null) return true;
+            return false;
+        }
 
         public async Task<Response<bool>> CreateProduct(int userId, CreateProductModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
+                var checkExit = await CheckDrugRegistrationNumber(model.DrugRegistrationNumber);
+                if (checkExit == true) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Mã đăng kí của sản phẩm bị trùng"
+                };
                 Product product = new Product()
                 {
                     DrugRegistrationNumber = model.DrugRegistrationNumber,
@@ -60,6 +66,22 @@ namespace UtNhanDrug_BE.Services.ProductService
                 };
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
+
+                //Tạo lô mặc định nếu không quản lí theo lô
+                if (model.IsManagedInBatches == false)
+                {
+                    Batch consignment = new Batch()
+                    {
+                        BatchBarcode = "#####",
+                        ProductId = product.Id,
+                        CreatedBy = userId,
+                        CreatedAt = today
+                    };
+                    _context.Batches.Add(consignment);
+                    await _context.SaveChangesAsync();
+                    consignment.BatchBarcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
+                    await _context.SaveChangesAsync();
+                }
 
                 product.Barcode = GenaralBarcode.CreateEan13Product(product.Id + "");
                 await _context.SaveChangesAsync();
@@ -104,8 +126,6 @@ namespace UtNhanDrug_BE.Services.ProductService
                 //        Message = "Đơn vị tính không hợp lệ"
                 //    };
                 //}
-
-
                 //_context.ProductUnitPrices.Add(du);
                 var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == product.Id).ToListAsync();
                 if (model.ProductUnits != null)
@@ -131,6 +151,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         };
                         _context.ProductUnitPrices.Add(x);
                     }
+                    await _context.SaveChangesAsync();
                 }
                 if (model.ActiveSubstances != null)
                 {
@@ -262,7 +283,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         product.ActiveSubstances = activeSubstance.Data;
                         var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                         product.ProductUnits = productUnits.Data;
-                        var batches = await GetBatchesByProductId(product.Id);
+                        var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id});
                         product.Batches = batches.Data;
                     }
                     return new Response<List<ViewProductModel>>(data)
@@ -288,12 +309,12 @@ namespace UtNhanDrug_BE.Services.ProductService
             }
         }
 
-        public async Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id)
+        public async Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(SearchBatchRequest request)
         {
             try
             {
                 var query = from b in _context.Batches
-                            where b.ProductId == id
+                            where b.ProductId == request.ProductId
                             select b;
                 var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
                 {
@@ -314,6 +335,10 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Name = x.CreatedByNavigation.FullName
                     },
                 }).ToListAsync();
+                if(request.IsSale == true)
+                {
+                    data = data.Where(x => x.ExpiryDate > today || x.ExpiryDate == null).ToList();
+                }
                 foreach (var x in data)
                 {
                     var currentQuantity = await GetCurrentQuantity(x.Id);
@@ -349,7 +374,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
                         join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue) || b.Barcode.Contains(request.SearchValue)
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue) || b.BatchBarcode.Contains(request.SearchValue)
                         select p;
             var query1 = from pa in _context.ProductActiveSubstances
                          select pa;
@@ -443,6 +468,16 @@ namespace UtNhanDrug_BE.Services.ProductService
                     {
                         batches = new List<ViewBatchModel>();
                         var batch = await _batchSvc.GetBatchesByBarcode(request.SearchValue);
+                        if(batch.Data.ExpiryDate <= today)
+                        {
+                            return new PageResult<ViewProductModel>()
+                            {
+                                Message = "Sản phẩm lô hàng này đã hết hạn sử dụng",
+                                TotalRecords = 0,
+                                PageSize = 0,
+                                StatusCode = 400
+                            };
+                        }
                         if (batch.Data != null)
                         {
                             batches.Add(batch.Data);
@@ -450,7 +485,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     }
                     else
                     {
-                        var b = await GetBatchesByProductId(product.Id);
+                        var b = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id, IsSale = request.IsSale});
                         batches = b.Data;
                     }
                     product.Batches = batches;
@@ -463,7 +498,8 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 TotalRecords = totalRow,
                 PageSize = request.PageSize,
-                Items = result
+                Items = result,
+                StatusCode = 200
             };
 
             return pagedResult;
@@ -471,9 +507,31 @@ namespace UtNhanDrug_BE.Services.ProductService
 
         private async Task<List<ViewQuantityModel>> GetCurrentQuantity(int batchId)
         {
+            var ba = from b in _context.Batches
+                        where b.Id == batchId
+                        select b;
+            var p = await ba.Select(x => x.Product).FirstOrDefaultAsync();
             var query = from g in _context.GoodsReceiptNotes
                         where g.BatchId == batchId
                         select g;
+            var data2 = await query.ToListAsync();
+            if(data2.Count == 0)
+            {
+                if (p.IsManagedInBatches == false)
+                {
+                    var query4 = from u in _context.ProductUnitPrices
+                                 where u.ProductId == p.Id
+                                 select u;
+                    var data1 = await query4.Where(x => x.IsDoseBasedOnBodyWeightUnit == false).Select(x => new ViewQuantityModel()
+                    {
+                        Id = x.Id,
+                        Unit = x.Unit,
+                        UnitPrice = x.Price,
+                        CurrentQuantity = 0
+                    }).ToListAsync();
+                    return data1;
+                }
+            }
             var totalQuantity = await query.Select(x => x.ConvertedQuantity).SumAsync();
 
             var productId = await query.Select(x => x.Batch.ProductId).FirstOrDefaultAsync();
@@ -618,7 +676,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     data.ActiveSubstances = activeSubstance.Data;
                     var productUnits = await _productUnitSvc.GetProductUnitByProductId(data.Id);
                     data.ProductUnits = productUnits.Data;
-                    var batches = await GetBatchesByProductId(data.Id);
+                    var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = data.Id});
                     data.Batches = batches.Data;
                     return new Response<ViewProductModel>(data)
                     {
@@ -845,7 +903,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             product.ActiveSubstances = activeSubstance.Data;
                             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                             product.ProductUnits = productUnits.Data;
-                            var batches = await GetBatchesByProductId(product.Id);
+                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id});
                             product.Batches = batches.Data;
                         }
                         return new Response<List<ViewProductModel>>(result)
@@ -907,7 +965,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             product.ActiveSubstances = activeSubstance.Data;
                             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                             product.ProductUnits = productUnits.Data;
-                            var batches = await GetBatchesByProductId(product.Id);
+                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id });
                             product.Batches = batches.Data;
                         }
                         return new Response<List<ViewProductModel>>(data)
@@ -969,7 +1027,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             product.ActiveSubstances = activeSubstance.Data;
                             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                             product.ProductUnits = productUnits.Data;
-                            var batches = await GetBatchesByProductId(product.Id);
+                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id });
                             product.Batches = batches.Data;
                         }
                         return new Response<List<ViewProductModel>>(data)
@@ -1031,7 +1089,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             product.ActiveSubstances = activeSubstance.Data;
                             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                             product.ProductUnits = productUnits.Data;
-                            var batches = await GetBatchesByProductId(product.Id);
+                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id });
                             product.Batches = batches.Data;
                         }
                         return new Response<List<ViewProductModel>>(data)

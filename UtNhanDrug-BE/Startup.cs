@@ -34,11 +34,18 @@ using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.InvoiceService;
 using UtNhanDrug_BE.Services.DashBoardService;
 using UtNhanDrug_BE.Services.ProfileUserService;
+using UtNhanDrug_BE.Services.HandlerService;
+using UtNhanDrug_BE.Services.PointService;
+using UtNhanDrug_BE.Services.InventorySystemReportsService;
+using Quartz;
+using UtNhanDrug_BE.Services.ScheduleService;
+using System;
 
 namespace UtNhanDrug_BE
 {
     public class Startup
     {
+        
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -48,8 +55,10 @@ namespace UtNhanDrug_BE
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
+        [System.Obsolete]
         public void ConfigureServices(IServiceCollection services)
         {
+
             // Add Firebase Services
             AddFireBaseAsync();
             services.AddCors();
@@ -78,9 +87,13 @@ namespace UtNhanDrug_BE
             services.AddTransient<IInvoiceSvc, InvoiceSvc>();
             services.AddTransient<IUserSvc, UserSvc>();
             services.AddTransient<IProfileUserSvc, ProfileUserSvc>();
+            services.AddTransient<IPointSvc, PointSvc>();
+            services.AddTransient<IInventoryReport, InventoryReport>();
+            services.AddTransient<SchedulerService>();
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
+            services.AddTransient<IHandlerSvc,HandlerSvc>();
             services.AddTransient<IDashBoardSvc, DashBoardSvc>();
             services.AddTransient<IPASSvc, PASSvc>();
             services.AddTransient<IProductSvc, ProductSvc>();
@@ -104,6 +117,31 @@ namespace UtNhanDrug_BE
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
+
+            services.AddQuartz(q =>
+            {
+                // base Quartz scheduler, job and trigger configuration
+                q.UseMicrosoftDependencyInjectionScopedJobFactory();
+                // Just use the name of your job that you created in the Jobs folder.
+                var jobKey = new JobKey("SendEmailJob");
+                q.AddJob<SchedulerService>(opts => opts.WithIdentity(jobKey));
+
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey)
+                    .WithIdentity("SendEmailJob-trigger")
+                    //This Cron interval can be described as "run every minute" (when second is zero)
+                    .WithCronSchedule("0 0 1 * * ?", x => x
+                            .InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))
+                    
+                );
+            });
+
+            // ASP.NET Core hosting
+            services.AddQuartzServer(options =>
+            {
+                // when shutting down we want jobs to complete gracefully
+                options.WaitForJobsToComplete = true;
+            });
 
 
         }

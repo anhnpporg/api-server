@@ -13,6 +13,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
     {
         private readonly FcmNotificationSetting _fcmNotificationSetting;
         private readonly String tokenDevice = "eE2bKSwCPJt52AZaOclYpO:APA91bHlQfi1sTUz7OuEiLl_r6BMYm9oYRjkgKxUU00isxZoKVIUuTmdTq4z5WgVl1sPvZpOdCOodpo-OCwru1pPylFqFJ9D3cOuTR6WjD1ysLWsoj_ggftJmmma5DjNxiyWIbnKPTsz";
+        private readonly String tokenDevice1 = "eE2bKSwCPJt52AZaOclYpO:APA91bHxtV41prYkvAXIKjumNUoAIpgAnFOV47BMp2zqQFzckzepn43VqQGTjhzg1apcuu8zviTR8CEj4NwO3jhMfTXua-a8MmcigdfcsspstIbF1z6uw9axMj0EZO9Ye2Eh62MJADoi";
         public NotificationService(IOptions<FcmNotificationSetting> settings)
         {
             _fcmNotificationSetting = settings.Value;
@@ -31,7 +32,7 @@ namespace UtNhanDrug_BE.Services.FcmNotificationService
                 HttpClient httpClient = new HttpClient();
 
                 string authorizationKey = string.Format("keyy={0}", settings.ServerKey);
-                string deviceToken = tokenDevice;
+                string deviceToken = tokenDevice1;
 
                 httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", authorizationKey);
                 httpClient.DefaultRequestHeaders.Accept
