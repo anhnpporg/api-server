@@ -30,12 +30,22 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("notification/filter")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetFilterNotification()
+        {
+            var result = await _inventoryReport.ViewFilterNoti();
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
         [Route("notification")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetNotification()
+        public async Task<ActionResult> GetAllNotification()
         {
-            var result = await _inventoryReport.ViewNoti();
+            var result = await _inventoryReport.ViewAllNoti();
             return StatusCode(result.StatusCode, result);
         }
 

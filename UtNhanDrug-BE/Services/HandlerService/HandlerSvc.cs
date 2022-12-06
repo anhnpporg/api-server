@@ -34,10 +34,29 @@ namespace UtNhanDrug_BE.Services.HandlerService
                 if(checkExit == true)
                 {
                     //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
-                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "lô " + i.Barcode + " đã hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
+                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô " + i.Barcode + " đã hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
 
                     //Gửi thông báo cho manager
                     await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô đã hết hạn, vui lòng kiểm tra" });
+                }
+            }
+        }
+
+        public async Task CheckExpiryBatch1()
+        {
+            var query = from b in _context.Batches
+                        select b;
+            var data = await query.Where(b => (b.ExpiryDate.Value.Month - today.Month == 3 && b.ExpiryDate.Value.Year - today.Year == 0) & b.IsActive == true).ToListAsync();
+            foreach (var i in data)
+            {
+                var checkExit = await CheckExitNotiBatch1(i.Id);
+                if (checkExit == true)
+                {
+                    //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
+                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô " + i.Barcode + " sắp hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
+
+                    //Gửi thông báo cho manager
+                    await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô sắp hết hạn, vui lòng kiểm tra" });
                 }
             }
         }
@@ -48,6 +67,18 @@ namespace UtNhanDrug_BE.Services.HandlerService
                             where i.ProductId == productId
                             select i;
             var data = await queryNoti.Where(x => x.CreatedAt.Date == today.Date).FirstOrDefaultAsync();
+            if (data != null)
+            {
+                return false;
+            }
+            return true;
+        }
+        private async Task<bool> CheckExitNotiBatch1(int batchId)
+        {
+            var queryNoti = from i in _context.InventorySystemReports
+                            where i.BatchId == batchId & i.Batch.IsActive == true
+                            select i;
+            var data = await queryNoti.FirstOrDefaultAsync();
             if (data != null)
             {
                 return false;
