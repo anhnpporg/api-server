@@ -72,14 +72,14 @@ namespace UtNhanDrug_BE.Services.ProductService
                 {
                     Batch consignment = new Batch()
                     {
-                        BatchBarcode = "#####",
+                        Barcode = "#####",
                         ProductId = product.Id,
                         CreatedBy = userId,
                         CreatedAt = today
                     };
                     _context.Batches.Add(consignment);
                     await _context.SaveChangesAsync();
-                    consignment.BatchBarcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
+                    consignment.Barcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
                     await _context.SaveChangesAsync();
                 }
 
@@ -374,7 +374,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
                         join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue) || b.BatchBarcode.Contains(request.SearchValue)
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue) || b.Barcode.Contains(request.SearchValue)
                         select p;
             var query1 = from pa in _context.ProductActiveSubstances
                          select pa;

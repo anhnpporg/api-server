@@ -69,6 +69,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 Supplier s = new Supplier()
                                 {
                                     Name = m.Supplier.Name,
+                                    PhoneNumber = m.Supplier.PhoneNumber,
                                     CreatedBy = userId,
                                     CreatedAt = today
                                 };
@@ -755,7 +756,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Batch = new ViewBatch()
                     {
                         Id = x.Batch.Id,
-                        Barcode = x.Batch.BatchBarcode,
+                        Barcode = x.Batch.Barcode,
                         ManufacturingDate = x.Batch.ManufacturingDate,
                         ExpiryDate = x.Batch.ExpiryDate
                     },

@@ -51,6 +51,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 Supplier supplier = new Supplier()
                 {
                     Name = model.Name,
+                    PhoneNumber = model.PhoneNumber,
                     CreatedBy = userId,
                     CreatedAt = today
                 };
