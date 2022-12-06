@@ -42,7 +42,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 {
                     if (model.GoodsReceiptNoteTypeId == 1)
                     {
-                        if(model.CreateModel.Count <= 0)
+                        if (model.CreateModel.Count <= 0)
                         {
                             return new Response<bool>(false)
                             {
@@ -52,8 +52,8 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         }
                         foreach (var m in model.CreateModel)
                         {
-                            
-                            
+
+
                             // add supplier id, if null add object supplier
                             if (m.SupplierId == null)
                             {
@@ -93,7 +93,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 {
                                     Batch s = new Batch()
                                     {
-                                        BatchBarcode = "#####",
+                                        Barcode = "#####",
                                         ProductId = (int)b.Batch.ProductId,
                                         ManufacturingDate = b.Batch.ManufacturingDate,
                                         ExpiryDate = b.Batch.ExpiryDate,
@@ -102,7 +102,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     };
                                     var batch = _context.Batches.Add(s);
                                     await _context.SaveChangesAsync();
-                                    s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                    s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
                                     await _context.SaveChangesAsync();
                                     b.BatchId = s.Id;
                                 }
@@ -136,7 +136,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     }
                     else if (model.GoodsReceiptNoteTypeId == 2)
                     {
-                        
+
                         if (model.IsFull == false)
                         {
                             if (model.CreateModel.Count <= 0)
@@ -164,7 +164,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                                        select gn;
                                     int grnQuantity = await invoiceQuery.Select(x => x.ConvertedQuantity).SumAsync();
 
-                                    if ((gin.ConvertedQuantity - grnQuantity) < b.Quantity*unit.ConversionValue) 
+                                    if ((gin.ConvertedQuantity - grnQuantity) < b.Quantity * unit.ConversionValue)
                                     {
                                         await transaction.RollbackAsync();
                                         return new Response<bool>(false)
@@ -173,7 +173,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                             Message = "Số lượng nhập lại từ khách hàng không hợp lệ"
                                         };
                                     }
-                                    
+
                                     var query2 = from batch in _context.Batches
                                                  where batch.Id == b.BatchId
                                                  select batch;
@@ -183,7 +183,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     {
                                         Batch s = new Batch()
                                         {
-                                            BatchBarcode = "#####",
+                                            Barcode = "#####",
                                             ProductId = (int)b.Batch.ProductId,
                                             ManufacturingDate = b.Batch.ManufacturingDate,
                                             ExpiryDate = b.Batch.ExpiryDate,
@@ -192,7 +192,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         };
                                         var batch = _context.Batches.Add(s);
                                         await _context.SaveChangesAsync();
-                                        s.BatchBarcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                        s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
                                         await _context.SaveChangesAsync();
                                         b.BatchId = s.Id;
                                     }
@@ -209,12 +209,12 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         ConvertedQuantity = convertedQuantity,
                                         BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
                                         CreatedBy = userId,
-                                         CreatedAt = today
+                                        CreatedAt = today
                                     };
                                     _context.GoodsReceiptNotes.Add(grn);
                                     await _context.SaveChangesAsync();
                                     b.BatchId = null;
-                                    totalPrice += grn.ConvertedQuantity*grn.BaseUnitPrice;
+                                    totalPrice += grn.ConvertedQuantity * grn.BaseUnitPrice;
                                 }
 
                                 //Convert point
@@ -225,8 +225,8 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
                                 //get customer total point
                                 var query1 = from c in _context.Customers
-                                            where c.Id == customer.Id
-                                            select c;
+                                             where c.Id == customer.Id
+                                             select c;
                                 float totalPoint = (float)await query1.Select(x => x.TotalPoint).FirstOrDefaultAsync();
 
                                 CustomerPointTransaction cpt = new CustomerPointTransaction()
@@ -285,10 +285,10 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     InvoiceId = model.InvoiceId,
                                     Quantity = (int)o.Quantity,
                                     Unit = o.Unit,
-                                    TotalPrice = (decimal)o.UnitPrice*o.Quantity,
+                                    TotalPrice = (decimal)o.UnitPrice * o.Quantity,
                                     ConvertedQuantity = o.ConvertedQuantity,
                                     BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
-                                    CreatedBy = userId, 
+                                    CreatedBy = userId,
                                     CreatedAt = today
                                 };
                                 _context.GoodsReceiptNotes.Add(grn);
@@ -383,7 +383,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Batch = new ViewBatch()
                     {
                         Id = x.Batch.Id,
-                        Barcode = x.Batch.BatchBarcode,
+                        Barcode = x.Batch.Barcode,
                         ManufacturingDate = x.Batch.ManufacturingDate,
                         ExpiryDate = x.Batch.ExpiryDate
                     },
@@ -451,7 +451,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Batch = new ViewBatch()
                     {
                         Id = c.Batch.Id,
-                        Barcode = c.Batch.BatchBarcode,
+                        Barcode = c.Batch.Barcode,
                         ManufacturingDate = c.Batch.ManufacturingDate,
                         ExpiryDate = c.Batch.ExpiryDate
                     },
@@ -642,7 +642,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Batch = new ViewBatch()
                     {
                         Id = x.Batch.Id,
-                        Barcode = x.Batch.BatchBarcode,
+                        Barcode = x.Batch.Barcode,
                         ManufacturingDate = x.Batch.ManufacturingDate,
                         ExpiryDate = x.Batch.ExpiryDate
                     },

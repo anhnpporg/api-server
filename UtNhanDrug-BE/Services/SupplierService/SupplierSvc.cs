@@ -71,7 +71,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     Message = "Tạo nhà cung cấp thất bại"
                 };
             }
-            
+
         }
 
         public async Task<Response<bool>> IsDeleteSupplier(int supplierId, int userId)
@@ -82,7 +82,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 var supplier = await _context.Suppliers.FirstOrDefaultAsync(x => x.Id == supplierId);
                 if (supplier != null)
                 {
-                    if(supplier.IsActive == false)
+                    if (supplier.IsActive == false)
                     {
                         supplier.IsActive = true;
                         await _context.SaveChangesAsync();
@@ -102,7 +102,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                             Message = "Đã ngừng hoạt động"
                         };
                     }
-                    
+
                 }
                 return new Response<bool>(false)
                 {
@@ -118,7 +118,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
         }
 
         public async Task<Response<List<ViewSupplierModel>>> GetAllSupplier()
@@ -157,7 +157,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
         }
 
         public async Task<Response<List<ViewProductModel>>> GetListProduct(int supplierId)
@@ -235,7 +235,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     StatusCode = 400
                 };
             }
-            
+
         }
 
         public async Task<Response<bool>> UpdateSupplier(int supplierId, int userId, UpdateSupplierModel model)
@@ -288,7 +288,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewBatchModel()
                 {
                     Id = x.Batch.Id,
-                    BatchBarcode = x.Batch.BatchBarcode,
+                    BatchBarcode = x.Batch.Barcode,
                     ManufacturingDate = x.Batch.ManufacturingDate,
                     ExpiryDate = x.Batch.ExpiryDate,
                     CreatedBy = new ViewModel()
@@ -320,7 +320,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     StatusCode = 400,
                     Message = "Tìm kiếm lô hàng thấy bại"
                 };
-            }    
+            }
         }
 
         public async Task<Response<List<ViewModel>>> GetListSupplier()

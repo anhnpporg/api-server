@@ -12,6 +12,5 @@ namespace UtNhanDrug_BE.Entities
         public int TyLeQuyDoiThanhTien { get; set; }
         public int SoLanTichDiemToiThieu { get; set; }
         public bool TichDiemChoHoaDonGiamGiaBangDiemThuong { get; set; }
-        public bool TichDiemChoHoaDonThanhToanBangDiemThuong { get; set; }
     }
 }

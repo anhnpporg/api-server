@@ -37,7 +37,7 @@ namespace UtNhanDrug_BE.Services.BatchService
             {
                 Batch consignment = new Batch()
                 {
-                    BatchBarcode = "#####",
+                    Barcode = "#####",
                     ProductId = (int)model.ProductId,
                     ManufacturingDate = model.ManufacturingDate,
                     ExpiryDate = model.ExpiryDate,
@@ -46,14 +46,15 @@ namespace UtNhanDrug_BE.Services.BatchService
                 };
                 _context.Batches.Add(consignment);
                 await _context.SaveChangesAsync();
-                consignment.BatchBarcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
+                consignment.Barcode = GenaralBarcode.CreateEan13Batch(consignment.Id + "");
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return new Response<bool>(true)
                 {
                     Message = "Tạo lô hàng thành công"
                 };
-            }catch (Exception)
+            }
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 return new Response<bool>(false)
@@ -72,7 +73,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 var result = await _context.Batches.FirstOrDefaultAsync(x => x.Id == id);
                 if (result != null)
                 {
-                    if(result.IsActive == false)
+                    if (result.IsActive == false)
                     {
                         result.IsActive = true;
                         await _context.SaveChangesAsync();
@@ -118,7 +119,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
                 {
                     Id = x.Id,
-                    BatchBarcode = x.BatchBarcode,
+                    BatchBarcode = x.Barcode,
                     Product = new ViewModel()
                     {
                         Id = x.Product.Id,
@@ -139,7 +140,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     var currentQuantity = await GetCurrentQuantity(x.Id);
                     x.CurrentQuantity = currentQuantity;
                 }
-                if(data.Count > 0)
+                if (data.Count > 0)
                 {
                     return new Response<List<ViewBatchModel>>(data)
                     {
@@ -162,7 +163,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
         }
 
         public async Task<Response<ViewBatchModel>> GetBatchById(int id)
@@ -175,7 +176,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 var data = await query.Select(x => new ViewBatchModel()
                 {
                     Id = x.Id,
-                    BatchBarcode = x.BatchBarcode,
+                    BatchBarcode = x.Barcode,
                     Product = new ViewModel()
                     {
                         Id = x.Product.Id,
@@ -191,7 +192,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                         Name = x.CreatedByNavigation.FullName
                     },
                 }).FirstOrDefaultAsync();
-                if(data != null)
+                if (data != null)
                 {
                     var currentQuantity = await GetCurrentQuantity(data.Id);
                     data.CurrentQuantity = currentQuantity;
@@ -217,7 +218,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     StatusCode = 400
                 };
             }
-            
+
         }
 
         public async Task<Response<bool>> UpdateBatch(int id, int userId, UpdateBatchModel model)
@@ -254,7 +255,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
                 };
-            }   
+            }
         }
 
         //quantity
@@ -279,7 +280,7 @@ namespace UtNhanDrug_BE.Services.BatchService
             {
                 Id = x.Id,
                 Unit = x.Unit,
-                CurrentQuantity = (int)(currentQuantity /x.ConversionValue)
+                CurrentQuantity = (int)(currentQuantity / x.ConversionValue)
             }).ToListAsync();
             return data;
         }
@@ -287,12 +288,12 @@ namespace UtNhanDrug_BE.Services.BatchService
         public async Task<Response<ViewBatchModel>> GetBatchesByBarcode(string barcode)
         {
             var query = from b in _context.Batches
-                        where b.BatchBarcode.Equals(barcode)
+                        where b.Barcode.Equals(barcode)
                         select b;
             var data = await query.Select(x => new ViewBatchModel()
             {
                 Id = x.Id,
-                BatchBarcode = x.BatchBarcode,
+                BatchBarcode = x.Barcode,
                 Product = new ViewModel()
                 {
                     Id = x.Product.Id,
@@ -308,7 +309,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     Name = x.CreatedByNavigation.FullName
                 },
             }).FirstOrDefaultAsync();
-            if(data != null)
+            if (data != null)
             {
                 var currentQuantity = await GetCurrentQuantity(data.Id);
                 data.CurrentQuantity = currentQuantity;
@@ -317,7 +318,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     Message = "Successfully"
                 };
             }
-            
+
             return new Response<ViewBatchModel>(data)
             {
                 StatusCode = 400,
@@ -341,7 +342,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                 Batch = new ViewBatch()
                 {
                     Id = x.Batch.Id,
-                    Barcode = x.Batch.BatchBarcode,
+                    Barcode = x.Batch.Barcode,
                     ManufacturingDate = x.Batch.ManufacturingDate,
                     ExpiryDate = x.Batch.ExpiryDate
                 },
@@ -361,7 +362,8 @@ namespace UtNhanDrug_BE.Services.BatchService
                 CreatedAt = x.CreatedAt,
             }).ToListAsync();
 
-            if(data.Count == 0){
+            if (data.Count == 0)
+            {
                 return new Response<List<ViewGoodsReceiptNoteModel>>(data)
                 {
                     StatusCode = 400,
@@ -400,7 +402,7 @@ namespace UtNhanDrug_BE.Services.BatchService
             var data1 = await query1.Select(xx => new ViewQuantityInventoryModel()
             {
                 BatchId = xx.Id,
-                BatchBarcode = xx.BatchBarcode,
+                BatchBarcode = xx.Barcode,
                 ExpiryDate = xx.ExpiryDate,
                 ManufacturingDate = xx.ManufacturingDate
             }).ToListAsync();
@@ -417,15 +419,15 @@ namespace UtNhanDrug_BE.Services.BatchService
             foreach (var x in data1)
             {
                 var currentQuantity = await GetCurrentQuantity(x.BatchId);
-                foreach(var xx in currentQuantity)
+                foreach (var xx in currentQuantity)
                 {
-                    if(unitId == xx.Id)
+                    if (unitId == xx.Id)
                     {
                         x.Unit = xx.Unit;
                         x.CurrentQuantity = xx.CurrentQuantity;
                     }
                 }
-                
+
             }
             return new Response<List<ViewQuantityInventoryModel>>(data1);
         }
@@ -443,7 +445,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     Batch = new ViewModel()
                     {
                         Id = x.Batch.Id,
-                        Name = x.Batch.BatchBarcode
+                        Name = x.Batch.Barcode
                     },
                     Quantity = x.Quantity,
                     Unit = x.Unit,
@@ -465,7 +467,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                     CreatTime = x.OrderDetail.Invoice.CreatedAt
 
                 }).ToListAsync();
-                if(data != null)
+                if (data != null)
                 {
                     if (data.Count == 0)
                     {
@@ -487,7 +489,7 @@ namespace UtNhanDrug_BE.Services.BatchService
                         Message = "Không có phiếu nhập hàng cho lô sản phẩm này"
                     };
                 }
-                
+
             }
             catch (Exception)
             {

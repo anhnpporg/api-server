@@ -55,7 +55,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                if(model.GoodsIssueNoteTypeId == 1)
+                if (model.GoodsIssueNoteTypeId == 1)
                 {
                     //create invoice
                     Invoice i = new Invoice()
@@ -82,7 +82,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
                     {
-                        
+
                         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
 
                         OrderDetail o = new OrderDetail()
@@ -237,7 +237,8 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     {
                         Message = "Tạo hoá đơn thành công"
                     };
-                }else if (model.GoodsIssueNoteTypeId == 2)
+                }
+                else if (model.GoodsIssueNoteTypeId == 2)
                 {
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
@@ -422,7 +423,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Discount = x.Discount,
                 TotalPrice = x.TotalPrice
             }).FirstOrDefaultAsync();
-            if(data != null)
+            if (data != null)
             {
                 return new Response<ViewInvoiceModel>(data)
                 {
@@ -518,7 +519,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Batch = new ViewModel()
                 {
                     Id = x.g.Batch.Id,
-                    Name = x.g.Batch.BatchBarcode
+                    Name = x.g.Batch.Barcode
                 },
                 Quantity = x.g.Quantity,
                 Unit = x.g.Unit,
@@ -567,7 +568,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Batch = new ViewModel()
                 {
                     Id = x.g.Batch.Id,
-                    Name = x.g.Batch.BatchBarcode
+                    Name = x.g.Batch.Barcode
                 },
                 Quantity = x.g.Quantity,
                 Unit = x.g.Unit,
@@ -591,7 +592,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Use = x.o.Use
 
             }).ToListAsync();
-            foreach(var d in data)
+            foreach (var d in data)
             {
                 d.returnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, invoiceId);
                 d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);

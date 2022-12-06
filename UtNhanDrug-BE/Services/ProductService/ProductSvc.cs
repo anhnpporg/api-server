@@ -298,7 +298,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 var data = await query.OrderBy(x => x.ExpiryDate).Select(x => new ViewBatchModel()
                 {
                     Id = x.Id,
-                    BatchBarcode = x.BatchBarcode,
+                    BatchBarcode = x.Barcode,
                     Product = new ViewModel()
                     {
                         Id = x.Product.Id,
@@ -349,7 +349,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
                         join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue) || b.BatchBarcode.Contains(request.SearchValue)
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Equals(request.SearchValue) || b.Barcode.Contains(request.SearchValue)
                         select p;
             var query1 = from pa in _context.ProductActiveSubstances
                          select pa;
@@ -697,7 +697,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 var data = await query.Select(b => new ViewBatchModel()
                 {
                     Id = b.Id,
-                    BatchBarcode = b.BatchBarcode,
+                    BatchBarcode = b.Barcode,
                     Product = new ViewModel()
                     {
                         Id = b.Product.Id,

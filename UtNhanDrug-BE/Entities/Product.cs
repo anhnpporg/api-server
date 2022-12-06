@@ -10,6 +10,7 @@ namespace UtNhanDrug_BE.Entities
         public Product()
         {
             Batches = new HashSet<Batch>();
+            InventorySystemReports = new HashSet<InventorySystemReport>();
             OrderDetails = new HashSet<OrderDetail>();
             ProductActiveSubstances = new HashSet<ProductActiveSubstance>();
             ProductUnitPrices = new HashSet<ProductUnitPrice>();
@@ -21,7 +22,7 @@ namespace UtNhanDrug_BE.Entities
         public string Barcode { get; set; }
         public string Name { get; set; }
         public int BrandId { get; set; }
-        public int ShelfId { get; set; }
+        public int? ShelfId { get; set; }
         public int RouteOfAdministrationId { get; set; }
         public int MininumInventory { get; set; }
         public bool IsUseDose { get; set; }
@@ -38,6 +39,7 @@ namespace UtNhanDrug_BE.Entities
         public virtual Shelf Shelf { get; set; }
         public virtual UserAccount UpdatedByNavigation { get; set; }
         public virtual ICollection<Batch> Batches { get; set; }
+        public virtual ICollection<InventorySystemReport> InventorySystemReports { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         public virtual ICollection<ProductActiveSubstance> ProductActiveSubstances { get; set; }
         public virtual ICollection<ProductUnitPrice> ProductUnitPrices { get; set; }

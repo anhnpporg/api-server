@@ -18,6 +18,7 @@ namespace UtNhanDrug_BE.Entities
             CustomerCreatedByNavigations = new HashSet<Customer>();
             CustomerUpdatedByNavigations = new HashSet<Customer>();
             DiseaseCreatedByNavigations = new HashSet<Disease>();
+            DiseaseDeletedByNavigations = new HashSet<Disease>();
             DiseaseUpdatedByNavigations = new HashSet<Disease>();
             GoodsReceiptNoteLogs = new HashSet<GoodsReceiptNoteLog>();
             GoodsReceiptNotes = new HashSet<GoodsReceiptNote>();
@@ -27,7 +28,9 @@ namespace UtNhanDrug_BE.Entities
             ProductUnitPriceUpdatedByNavigations = new HashSet<ProductUnitPrice>();
             ProductUpdatedByNavigations = new HashSet<Product>();
             SamplePrescriptionCreatedByNavigations = new HashSet<SamplePrescription>();
+            SamplePrescriptionDeletedByNavigations = new HashSet<SamplePrescription>();
             SamplePrescriptionDetailCreatedByNavigations = new HashSet<SamplePrescriptionDetail>();
+            SamplePrescriptionDetailDeletedByNavigations = new HashSet<SamplePrescriptionDetail>();
             SamplePrescriptionDetailUpdatedByNavigations = new HashSet<SamplePrescriptionDetail>();
             SamplePrescriptionUpdatedByNavigations = new HashSet<SamplePrescription>();
             ShelfCreatedByNavigations = new HashSet<Shelf>();
@@ -53,6 +56,7 @@ namespace UtNhanDrug_BE.Entities
         public virtual ICollection<Customer> CustomerCreatedByNavigations { get; set; }
         public virtual ICollection<Customer> CustomerUpdatedByNavigations { get; set; }
         public virtual ICollection<Disease> DiseaseCreatedByNavigations { get; set; }
+        public virtual ICollection<Disease> DiseaseDeletedByNavigations { get; set; }
         public virtual ICollection<Disease> DiseaseUpdatedByNavigations { get; set; }
         public virtual ICollection<GoodsReceiptNoteLog> GoodsReceiptNoteLogs { get; set; }
         public virtual ICollection<GoodsReceiptNote> GoodsReceiptNotes { get; set; }
@@ -62,7 +66,9 @@ namespace UtNhanDrug_BE.Entities
         public virtual ICollection<ProductUnitPrice> ProductUnitPriceUpdatedByNavigations { get; set; }
         public virtual ICollection<Product> ProductUpdatedByNavigations { get; set; }
         public virtual ICollection<SamplePrescription> SamplePrescriptionCreatedByNavigations { get; set; }
+        public virtual ICollection<SamplePrescription> SamplePrescriptionDeletedByNavigations { get; set; }
         public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetailCreatedByNavigations { get; set; }
+        public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetailDeletedByNavigations { get; set; }
         public virtual ICollection<SamplePrescriptionDetail> SamplePrescriptionDetailUpdatedByNavigations { get; set; }
         public virtual ICollection<SamplePrescription> SamplePrescriptionUpdatedByNavigations { get; set; }
         public virtual ICollection<Shelf> ShelfCreatedByNavigations { get; set; }

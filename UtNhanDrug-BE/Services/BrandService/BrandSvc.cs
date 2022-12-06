@@ -25,10 +25,10 @@ namespace UtNhanDrug_BE.Services.BrandService
             _context = context;
             _productSvc = productSvc;
         }
-        private async Task<bool> CheckName (string name)
+        private async Task<bool> CheckName(string name)
         {
             var result = await _context.Brands.FirstOrDefaultAsync(x => x.Name == name);
-            if(result == null)
+            if (result == null)
             {
                 return true;
             }
@@ -69,7 +69,7 @@ namespace UtNhanDrug_BE.Services.BrandService
             }
         }
 
-        public async Task<Response<bool>> UpdateBrand(int brandId,int userId, UpdateBrandModel model)
+        public async Task<Response<bool>> UpdateBrand(int brandId, int userId, UpdateBrandModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
@@ -106,7 +106,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
                 };
-            } 
+            }
         }
 
         public async Task<Response<bool>> DeleteBrand(int brandId, int userId)
@@ -117,7 +117,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                 var brand = await _context.Brands.FirstOrDefaultAsync(x => x.Id == brandId);
                 if (brand != null)
                 {
-                    if(brand.IsActive == false)
+                    if (brand.IsActive == false)
                     {
                         brand.IsActive = true;
                         brand.UpdatedBy = userId;
@@ -141,7 +141,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                             Message = "Nhà sản xuất ngưng hoạt động"
                         };
                     }
-                    
+
                 }
                 return new Response<bool>(false)
                 {
@@ -157,7 +157,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
                 };
-            } 
+            }
         }
 
         public async Task<Response<ViewBrandModel>> GetBrandById(int brandId)
@@ -215,7 +215,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     UpdatedBy = b.UpdatedBy,
                     IsActive = b.IsActive,
                 }).ToListAsync();
-                if(result.Count > 0)
+                if (result.Count > 0)
                 {
                     return new Response<List<ViewBrandModel>>(result)
                     {
@@ -237,7 +237,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
                 };
-            } 
+            }
         }
 
         //public async Task<bool> CheckBrand(int brandId)
@@ -289,7 +289,7 @@ namespace UtNhanDrug_BE.Services.BrandService
                     UpdatedBy = p.UpdatedBy,
                     IsActive = p.IsActive,
                 }).OrderByDescending(p => p.IsActive).ToListAsync();
-                if(data.Count > 0)
+                if (data.Count > 0)
                 {
                     foreach (var product in data)
                     {
@@ -309,14 +309,15 @@ namespace UtNhanDrug_BE.Services.BrandService
                     };
                 }
             }
-            catch(Exception){
+            catch (Exception)
+            {
                 return new Response<List<ViewProductModel>>(null)
                 {
                     StatusCode = 400,
                     Message = "Đã có lỗi xảy ra"
                 };
             }
-            
+
         }
 
         public async Task<Response<List<ViewModel>>> GetListBrand()

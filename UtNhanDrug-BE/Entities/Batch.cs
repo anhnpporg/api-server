@@ -11,10 +11,11 @@ namespace UtNhanDrug_BE.Entities
         {
             GoodsIssueNotes = new HashSet<GoodsIssueNote>();
             GoodsReceiptNotes = new HashSet<GoodsReceiptNote>();
+            InventorySystemReports = new HashSet<InventorySystemReport>();
         }
 
         public int Id { get; set; }
-        public string BatchBarcode { get; set; }
+        public string Barcode { get; set; }
         public int ProductId { get; set; }
         public DateTime? ManufacturingDate { get; set; }
         public DateTime? ExpiryDate { get; set; }
@@ -29,5 +30,6 @@ namespace UtNhanDrug_BE.Entities
         public virtual UserAccount UpdatedByNavigation { get; set; }
         public virtual ICollection<GoodsIssueNote> GoodsIssueNotes { get; set; }
         public virtual ICollection<GoodsReceiptNote> GoodsReceiptNotes { get; set; }
+        public virtual ICollection<InventorySystemReport> InventorySystemReports { get; set; }
     }
 }

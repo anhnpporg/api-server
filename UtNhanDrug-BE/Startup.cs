@@ -33,6 +33,7 @@ using UtNhanDrug_BE.Services.ShelfService;
 using UtNhanDrug_BE.Services.SupplierService;
 using UtNhanDrug_BE.Services.InvoiceService;
 using UtNhanDrug_BE.Services.DashBoardService;
+using UtNhanDrug_BE.Services.ProfileUserService;
 
 namespace UtNhanDrug_BE
 {
@@ -69,13 +70,14 @@ namespace UtNhanDrug_BE
 
             // register (Swagger) Module
             services.RegisterSwaggerModule();
-            
+
             //add scope
-            
+
             services.AddScoped<IAuthenticationSvc, AuthenticationSvc>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IInvoiceSvc, InvoiceSvc>();
             services.AddTransient<IUserSvc, UserSvc>();
+            services.AddTransient<IProfileUserSvc, ProfileUserSvc>();
             services.AddTransient<IBrandSvc, BrandSvc>();
             services.AddTransient<IShelfSvc, ShelfSvc>();
             services.AddTransient<IActiveSubstanceSvc, ActiveSubstanceSvc>();
@@ -102,7 +104,7 @@ namespace UtNhanDrug_BE
             // Register appsetting
             var appSettingsSection = Configuration.GetSection("FcmNotification");
             services.Configure<FcmNotificationSetting>(appSettingsSection);
-            
+
 
         }
 

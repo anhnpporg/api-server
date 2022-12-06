@@ -14,13 +14,15 @@ namespace UtNhanDrug_BE.Entities
         public int ProductUnitPriceId { get; set; }
         public int? Frequency { get; set; }
         public string Use { get; set; }
-        public bool? IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public int? UpdatedBy { get; set; }
+        public DateTime? DeletedAt { get; set; }
+        public int? DeletedBy { get; set; }
 
         public virtual UserAccount CreatedByNavigation { get; set; }
+        public virtual UserAccount DeletedByNavigation { get; set; }
         public virtual Product Product { get; set; }
         public virtual ProductUnitPrice ProductUnitPrice { get; set; }
         public virtual SamplePrescription SamplePrescription { get; set; }
