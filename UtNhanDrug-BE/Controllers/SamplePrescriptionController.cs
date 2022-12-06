@@ -7,7 +7,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.SamplePrescriptionModel;
+using UtNhanDrug_BE.Services.SamplePrescriptionDetailService;
 using UtNhanDrug_BE.Services.SamplePrescriptionService;
+using static UtNhanDrug_BE.Models.SamplePrescriptionDetailModel.SamplePrescriptionDetailViewModel;
 using static UtNhanDrug_BE.Models.SamplePrescriptionModel.SamplePrescriptionViewModel;
 
 namespace UtNhanDrug_BE.Controllers
@@ -18,10 +20,12 @@ namespace UtNhanDrug_BE.Controllers
     public class SamplePrescriptionController : ControllerBase
     {
         private readonly ISamplePrescriptionSvc _spSvc;
+        private readonly ISamplePrescriptionDetailSvc _spdSvc;
 
-        public SamplePrescriptionController(ISamplePrescriptionSvc spSvc)
+        public SamplePrescriptionController(ISamplePrescriptionSvc spSvc, ISamplePrescriptionDetailSvc spdSvc)
         {
             _spSvc = spSvc;
+            _spdSvc = spdSvc;
         }
 
         [Authorize]
@@ -109,7 +113,7 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPatch("sample-prescriptions/{samplePrescriptionId}")]
+        [HttpDelete("sample-prescriptions/{samplePrescriptionId}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteSamplePrescription([FromRoute] int samplePrescriptionId)
         {
@@ -122,6 +126,45 @@ namespace UtNhanDrug_BE.Controllers
                 userAccountId = Convert.ToInt32(claim[0].Value);
                 var deletedSamplePrescription = await _spSvc.DeleteSamplePrescription(samplePrescriptionId, userAccountId);
                 return StatusCode(deletedSamplePrescription.StatusCode, deletedSamplePrescription);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+        }
+
+        [Authorize(Roles = "MANAGER")]
+        [Route("sample-prescriptions/{samplePrescriptionId}/sample-prescription-details-for-manager")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetAllSamplePrescriptionDetail([FromRoute] int samplePrescriptionId)
+        {
+            try
+            {
+                var samplePrescriptionDetailsForManager = await _spdSvc.GetSamplePrescriptionDetailsForManager(samplePrescriptionId);
+                return StatusCode(samplePrescriptionDetailsForManager.StatusCode, samplePrescriptionDetailsForManager);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+        }
+
+        [Authorize(Roles = "STAFF")]
+        [Route("sample-prescriptions/{samplePrescriptionId}/sample-prescription-details-for-sale")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetAllSamplePrescriptionDetailForSale([FromRoute] int samplePrescriptionId, [FromForm] SamplePrescriptionDetailFilter filter)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+
+                var samplePrescriptionDetailsForStaff = await _spdSvc.GetSamplePrescriptionDetailsForStaff(samplePrescriptionId, filter);
+                return StatusCode(samplePrescriptionDetailsForStaff.StatusCode, samplePrescriptionDetailsForStaff);
             }
             catch (Exception)
             {

@@ -143,7 +143,7 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize(Roles = "MANAGER")]
-        [HttpPatch("diseases/{diseaseId}")]
+        [HttpDelete("diseases/{diseaseId}")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> DeleteDisease([FromRoute] int diseaseId)
         {

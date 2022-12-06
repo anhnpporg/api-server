@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UtNhanDrug_BE.Models.SamplePrescriptionDetailModel;
 using UtNhanDrug_BE.Services.SamplePrescriptionDetailService;
+using static UtNhanDrug_BE.Models.SamplePrescriptionDetailModel.SamplePrescriptionDetailViewModel;
 
 namespace UtNhanDrug_BE.Controllers
 {
@@ -22,94 +22,78 @@ namespace UtNhanDrug_BE.Controllers
             _spdSvc = spdSvc;
         }
 
-        [Authorize]
-        [Route("sample-prescription-details")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetAllSamplePrescription()
-        {
-            var result = await _spdSvc.GetAllSamplePrescriptionDetail();
-            return Ok(result);
-        }
-
-        [Authorize]
-        [Route("sample-prescription-details/{id}")]
-        [HttpGet]
-        [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetSamplePrescriptionDetailById([FromRoute] int id)
-        {
-            var result = await _spdSvc.GetSamplePrescriptionDetailById(id);
-            if (result == null) return NotFound(new { message = "Not found this sample prescription details" });
-            return Ok(result);
-        }
-
-        [Authorize]
+        [Authorize(Roles = "MANAGER")]
         [Route("sample-prescription-details")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreatePrescriptionDetail([FromForm] CreateSPDModel model)
+        public async Task<ActionResult> CreatePrescriptionDetail([FromForm] SamplePrescriptionDetailForCreation newSamplePrescriptionDetail)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
-            int userId;
+            int userAccountId;
+
             try
             {
-                userId = Convert.ToInt32(claim[0].Value);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+
+                userAccountId = Convert.ToInt32(claim[0].Value);
+                var updateSamplePrescription = await _spdSvc.CreateSamplePrescriptionDetail(newSamplePrescriptionDetail, userAccountId);
+                return StatusCode(updateSamplePrescription.StatusCode, updateSamplePrescription);
             }
             catch (Exception)
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var result = await _spdSvc.CreateSamplePrescriptionDetail(userId, model);
-            if (!result) return BadRequest(new { message = "Create sample prescription details fail" });
-            return Ok(new { message = "create successfully" });
         }
 
-        [Authorize]
-        [HttpPut("sample-prescription-details/{id}")]
+        [Authorize(Roles = "MANAGER")]
+        [HttpPut("sample-prescription-details/{samplePrescriptionDetailId}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> UpdateSamplePrescriptionDetail([FromRoute] int id, [FromForm] UpdateSPDModel model)
+        public async Task<ActionResult> UpdateSamplePrescriptionDetail([FromRoute] int samplePrescriptionDetailId, [FromForm] SamplePrescriptionDetailForUpdate newSamplePrescriptionDetail)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
-            int userId;
+            int userAccountId;
+
             try
             {
-                userId = Convert.ToInt32(claim[0].Value);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+
+                userAccountId = Convert.ToInt32(claim[0].Value);
+                var updateSamplePrescription = await _spdSvc.UpdateSamplePrescriptionDetail(samplePrescriptionDetailId, newSamplePrescriptionDetail, userAccountId);
+                return StatusCode(updateSamplePrescription.StatusCode, updateSamplePrescription);
             }
             catch (Exception)
             {
                 return BadRequest(new { message = "You are not login" });
             }
-            var isExit = await _spdSvc.CheckSamplePrescriptionDetail(id);
-            if (!isExit) return NotFound(new { message = "Not found this sample prescription details" });
-            var result = await _spdSvc.UpdateSamplePrescriptionDetail(id, userId, model);
-            if (!result) return BadRequest(new { message = "Update fail" });
-            return Ok(new { message = "update succesfully" });
         }
 
-        [Authorize]
-        [HttpPatch("sample-prescription-details/{id}")]
+        [Authorize(Roles = "MANAGER")]
+        [HttpDelete("sample-prescription-details/{samplePrescriptionDetailId}")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> DeleteSamplePrescriptionDetail([FromRoute] int id)
+        public async Task<ActionResult> DeleteSamplePrescriptionDetail([FromRoute] int samplePrescriptionDetailId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
-            int userId;
+            int userAccountId;
+
             try
             {
-                userId = Convert.ToInt32(claim[0].Value);
+                userAccountId = Convert.ToInt32(claim[0].Value);
+                var deletedSamplePrescription = await _spdSvc.DeleteSamplePrescriptionDetail(samplePrescriptionDetailId, userAccountId);
+                return StatusCode(deletedSamplePrescription.StatusCode, deletedSamplePrescription);
             }
             catch (Exception)
             {
                 return BadRequest(new { message = "You are not login" });
             }
-
-            var isExit = await _spdSvc.CheckSamplePrescriptionDetail(id);
-            if (!isExit) return NotFound(new { message = "Not found this sample prescription details" });
-            var result = await _spdSvc.DeleteSamplePrescriptionDetail(id, userId);
-            if (!result) return BadRequest(new { message = "Delete fail" });
-            return Ok(new { message = "Delete successfully" });
         }
     }
 }
