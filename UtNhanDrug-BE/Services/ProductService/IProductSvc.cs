@@ -15,7 +15,7 @@ namespace UtNhanDrug_BE.Services.ProductService
         Task<Response<bool>> UpdateProduct(int brandId, int userId, UpdateProductModel model);
         Task<Response<bool>> DeleteProduct(int brandId, int userId);
         Task<Response<ViewProductModel>> GetProductById(int id);
-        Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(int id);
+        Task<Response<List<ViewBatchModel>>> GetBatchesByProductId(SearchBatchRequest request);
         Task<Response<List<ViewProductModel>>> GetAllProduct();
         Task<Response<List<ViewProductModel>>> GetAllProduct(FilterProduct request);
         //Task<bool> CheckProduct(int brandId);

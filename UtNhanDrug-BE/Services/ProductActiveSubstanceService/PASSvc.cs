@@ -33,14 +33,24 @@ namespace UtNhanDrug_BE.Services.ProductActiveSubstanceService
             {
                 foreach(var i in model)
                 {
+                    var check = await CheckActiveSubstance(i.ProductId, i.ActiveSubstanceId);
+                    if(check == false)
+                    {
+                        await transaction.RollbackAsync();
+                        return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Trùng hoạt chất"
+                        };
+                    }
                     ProductActiveSubstance pas = new ProductActiveSubstance()
                     {
                         ProductId = i.ProductId,
                         ActiveSubstanceId = i.ActiveSubstanceId
                     };
                     _context.ProductActiveSubstances.Add(pas);
+                    await _context.SaveChangesAsync();
                 }
-                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return new Response<bool>(true)
                 {
@@ -56,6 +66,22 @@ namespace UtNhanDrug_BE.Services.ProductActiveSubstanceService
                     Message = "Đã có lỗi xảy ra"
                 };
             }
+        }
+
+        private async Task<bool> CheckActiveSubstance(int productId, int activeSubstanceId)
+        {
+            var query = from asc in _context.ProductActiveSubstances
+                        where asc.ProductId == productId
+                        select asc;
+            var data = await query.ToListAsync();
+            foreach(var i in data)
+            {
+                if(i.ActiveSubstanceId == activeSubstanceId)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public async Task<Response<bool>> RemovePAS(RemoveActiveSubstanceModel model)

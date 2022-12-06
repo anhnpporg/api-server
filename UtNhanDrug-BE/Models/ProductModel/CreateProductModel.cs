@@ -21,7 +21,7 @@ namespace UtNhanDrug_BE.Models.ProductModel
         [Required]
         public bool IsManagedInBatches { get; set; }
         [Required]
-        public List<int> ActiveSubstances { get; set; }
+        public List<int>? ActiveSubstances { get; set; }
 
         // create base unit
         public string Unit { get; set; }

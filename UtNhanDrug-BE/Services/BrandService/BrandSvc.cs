@@ -27,8 +27,8 @@ namespace UtNhanDrug_BE.Services.BrandService
         }
         private async Task<bool> CheckName(string name)
         {
-            var result = await _context.Brands.FirstOrDefaultAsync(x => x.Name == name);
-            if (result == null)
+            var result = await _context.Brands.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
+            if(result == null)
             {
                 return true;
             }

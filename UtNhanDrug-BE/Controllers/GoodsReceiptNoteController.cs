@@ -33,6 +33,27 @@ namespace UtNhanDrug_BE.Controllers
         }
 
         [Authorize]
+        [Route("staff/goods-receipt-notes")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGRNByStaff()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            IList<Claim> claim = identity.Claims.ToList();
+            int userId;
+            try
+            {
+                userId = Convert.ToInt32(claim[0].Value);
+            }
+            catch (Exception)
+            {
+                return BadRequest(new { message = "You are not login" });
+            }
+            var result = await _grnSvc.GetGoodsReceiptNoteByStaff(userId);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
         [Route("goods-receipt-note-type/{id}/goods-receipt-notes")]
         [HttpGet]
         [MapToApiVersion("1.0")]
