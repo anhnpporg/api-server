@@ -32,7 +32,7 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
 
         private async Task<bool> CheckName(string name)
         {
-            var result = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Name == name);
+            var result = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
             if (result == null)
             {
                 return true;

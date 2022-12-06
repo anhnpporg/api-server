@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Hepper;
+using UtNhanDrug_BE.Services.HandlerService;
 
 namespace UtNhanDrug_BE.Services.DashBoardService
 {
@@ -15,10 +16,11 @@ namespace UtNhanDrug_BE.Services.DashBoardService
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly DateTime today = LocalDateTime.DateTimeNow();
-
-        public DashBoardSvc(ut_nhan_drug_store_databaseContext context)
+        private readonly IHandlerSvc _handlerSvc;
+        public DashBoardSvc(ut_nhan_drug_store_databaseContext context, IHandlerSvc handlerSvc)
         {
             _context = context;
+            _handlerSvc = handlerSvc;
         }
 
         //public Task<Response<ChartModel>> GetChart(FilterChartModel request)
@@ -48,6 +50,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
         {
             try
             {
+                await _handlerSvc.CheckExpiryBatch();
                 if (request != null)
                 {
                     if (request.ByDay == true & request.ByMonth == false & request.ByYear == false)

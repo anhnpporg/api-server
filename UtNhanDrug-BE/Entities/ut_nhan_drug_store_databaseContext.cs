@@ -31,6 +31,7 @@ namespace UtNhanDrug_BE.Entities
         public virtual DbSet<GoodsReceiptNoteLog> GoodsReceiptNoteLogs { get; set; }
         public virtual DbSet<GoodsReceiptNoteType> GoodsReceiptNoteTypes { get; set; }
         public virtual DbSet<HashingAlgorithm> HashingAlgorithms { get; set; }
+        public virtual DbSet<InventorySystemReport> InventorySystemReports { get; set; }
         public virtual DbSet<Invoice> Invoices { get; set; }
         public virtual DbSet<Manager> Managers { get; set; }
         public virtual DbSet<OrderDetail> OrderDetails { get; set; }
@@ -288,15 +289,9 @@ namespace UtNhanDrug_BE.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
-                entity.Property(e => e.SoLanTichDiemToiThieu).HasColumnName("so_lan_tich_diem_toi_thieu");
+                entity.Property(e => e.ToMoney).HasColumnName("to_money");
 
-                entity.Property(e => e.TichDiemChoHoaDonGiamGiaBangDiemThuong).HasColumnName("tich_diem_cho_hoa_don_giam_gia_bang_diem_thuong");
-
-                entity.Property(e => e.TichDiemChoHoaDonThanhToanBangDiemThuong).HasColumnName("tich_diem_cho_hoa_don_thanh_toan_bang_diem_thuong");
-
-                entity.Property(e => e.TyLeQuyDoiDiemThuong).HasColumnName("ty_le_quy_doi_diem_thuong");
-
-                entity.Property(e => e.TyLeQuyDoiThanhTien).HasColumnName("ty_le_quy_doi_thanh_tien");
+                entity.Property(e => e.ToPoint).HasColumnName("to_point");
             });
 
             modelBuilder.Entity<Disease>(entity =>
@@ -529,6 +524,44 @@ namespace UtNhanDrug_BE.Entities
                     .HasMaxLength(10)
                     .IsUnicode(false)
                     .HasColumnName("name");
+            });
+
+            modelBuilder.Entity<InventorySystemReport>(entity =>
+            {
+                entity.ToTable("inventory_system_reports");
+
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.BatchId).HasColumnName("batch_id");
+
+                entity.Property(e => e.Content)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnName("content");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasColumnType("datetime")
+                    .HasColumnName("created_at")
+                    .HasDefaultValueSql("((getdate() AT TIME ZONE 'SE Asia Standard Time'))");
+
+                entity.Property(e => e.IsRead).HasColumnName("is_read");
+
+                entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+                entity.Property(e => e.Title)
+                    .IsRequired()
+                    .HasMaxLength(150)
+                    .HasColumnName("title");
+
+                entity.HasOne(d => d.Batch)
+                    .WithMany(p => p.InventorySystemReports)
+                    .HasForeignKey(d => d.BatchId)
+                    .HasConstraintName("FK__inventory__batch__625A9A57");
+
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.InventorySystemReports)
+                    .HasForeignKey(d => d.ProductId)
+                    .HasConstraintName("FK__inventory__produ__634EBE90");
             });
 
             modelBuilder.Entity<Invoice>(entity =>

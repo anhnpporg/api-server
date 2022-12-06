@@ -62,7 +62,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                if(model.GoodsIssueNoteTypeId == 1)
+                if (model.GoodsIssueNoteTypeId == 1)
                 {
                     //create invoice
                     Invoice i = new Invoice()
@@ -91,7 +91,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     {
                         var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == x.ProductId);
                         bool checkValidProduct = await CheckValidProduct(x.ProductId);
-                        if(checkValidProduct == false)
+                        if (checkValidProduct == false)
                         {
                             await transaction.RollbackAsync();
                             return new Response<InvoiceResponse>(null)
@@ -262,12 +262,13 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         await _handler.CheckQuantityOfProduct(x.ProductId);
                     }
                     await transaction.CommitAsync();
-                    
+
                     return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = i.Id })
                     {
                         Message = "Tạo hoá đơn thành công"
                     };
-                }else if (model.GoodsIssueNoteTypeId == 2)
+                }
+                else if (model.GoodsIssueNoteTypeId == 2)
                 {
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
@@ -328,7 +329,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         }
                     }
                     await transaction.CommitAsync();
-                    
+
                     return new Response<InvoiceResponse>(null)
                     {
                         Message = "Tạo hoá đơn thành công"
@@ -429,7 +430,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var query = from i in _context.Invoices
                         where i.CreatedBy == userId
                         select i;
-            var data = await query.Select(x => new ViewInvoiceModel()
+            var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
                 Barcode = x.Barcode,
@@ -479,12 +480,40 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Discount = x.Discount,
                 TotalPrice = x.TotalPrice
             }).FirstOrDefaultAsync();
-            if(data != null)
+            if (data != null)
             {
-                return new Response<ViewInvoiceModel>(data)
+                bool check = true;
+                var detail = await ViewOrderDetailByInvoiceId(data.Id);
+                foreach (var order in detail.Data)
                 {
-                    Message = "Thông tin hoá đơn"
-                };
+                    if (order.ConvertedQuantity == order.ReturnedQuantity)
+                    {
+                        check = true;
+                    }
+                    else
+                    {
+                        return new Response<ViewInvoiceModel>(data)
+                        {
+                            Message = "Thông tin hoá đơn"
+                        };
+                    }
+                }
+                if(check == true)
+                {
+                    return new Response<ViewInvoiceModel>(null)
+                    {
+                        StatusCode = 400,
+                        Message = "Hoá đơn này đã trả hết"
+                    };
+                }
+                else
+                {
+                    return new Response<ViewInvoiceModel>(data)
+                    {
+                        Message = "Thông tin hoá đơn"
+                    };
+                }
+                
             }
             else
             {
@@ -609,6 +638,11 @@ namespace UtNhanDrug_BE.Services.InvoiceService
 
         public async Task<Response<List<ViewOrderDetailModel>>> ViewOrderDetailByBarcode(string barcode)
         {
+            var check = await GetInvoiceByInvoiceBarcode(barcode);
+            if(check.Data == null)
+            {
+                return new Response<List<ViewOrderDetailModel>>(null);
+            }
             var query = from o in _context.OrderDetails
                         join g in _context.GoodsIssueNotes on o.Id equals g.OrderDetailId
                         where o.Invoice.Barcode == barcode
@@ -648,7 +682,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Use = x.o.Use
 
             }).ToListAsync();
-            foreach(var d in data)
+            foreach (var d in data)
             {
                 d.ReturnedQuantity = await GetReturnedQuantityOfInvoice(d.Batch.Id, invoiceId);
                 d.ViewBaseProductUnit = await GetBaseUnit(d.Product.Id);

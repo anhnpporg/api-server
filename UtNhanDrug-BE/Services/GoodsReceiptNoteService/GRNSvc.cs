@@ -60,7 +60,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             {
                                 var suplierQuery = from su in _context.Suppliers
                                                    select su;
-                                var supplierName = await suplierQuery.Where(x => x.Name == m.Supplier.Name).FirstOrDefaultAsync();
+                                var supplierName = await suplierQuery.Where(x => x.Name.ToLower() == m.Supplier.Name.ToLower()).FirstOrDefaultAsync();
                                 if (supplierName != null) return new Response<List<GRNResponse>>(null)
                                 {
                                     StatusCode = 400,
@@ -112,6 +112,13 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                             Message = "Sản phẩm này không quản lí theo lô, không thể tạo thêm lô"
                                         };
                                     }
+
+                                    var checkExitBatch = await CheckExitBath((DateTime)b.Batch.ExpiryDate, (int)b.Batch.ProductId);
+                                    if (checkExitBatch == true) return new Response<List<GRNResponse>>(null)
+                                    {
+                                        StatusCode = 400,
+                                        Message = "Lô có ngày hết hạn này đã tồn tại"
+                                    };
                                     Batch s = new Batch()
                                     {
                                         BatchBarcode = "#####",
@@ -326,23 +333,27 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
                             int point = (int)(totalPrice / toPoint);
                             var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
-                            //get customer total point
-                            var query2 = from c in _context.Customers
-                                         where c.Id == customer.Id
-                                         select c;
-                            float totalPoint = (float)await query2.Select(x => x.TotalPoint).FirstOrDefaultAsync();
-
-                            CustomerPointTransaction cpt = new CustomerPointTransaction()
+                            if(customer != null)
                             {
-                                CustomerId = (int)customer.Id,
-                                InvoiceId = (int)model.InvoiceId,
-                                Point = point,
-                                IsReciept = false,
-                            };
-                            await _context.CustomerPointTransactions.AddAsync(cpt);
+                                var query2 = from c in _context.Customers
+                                             where c.Id == customer.Id
+                                             select c;
+                                float totalPoint = (float)await query2.Select(x => x.TotalPoint).FirstOrDefaultAsync();
 
-                            totalPoint -= point;
-                            customer.TotalPoint = totalPoint;
+                                CustomerPointTransaction cpt = new CustomerPointTransaction()
+                                {
+                                    CustomerId = (int)customer.Id,
+                                    InvoiceId = (int)model.InvoiceId,
+                                    Point = point,
+                                    IsReciept = false,
+                                };
+                                await _context.CustomerPointTransactions.AddAsync(cpt);
+
+                                totalPoint -= point;
+                                customer.TotalPoint = totalPoint;
+                            }
+                            //get customer total point
+                            
                             await _context.SaveChangesAsync();
 
                             await transaction.CommitAsync();
@@ -390,6 +401,17 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //    var currentQuantity = totalQuantity - saledQuantity;
         //    return currentQuantity;
         //}
+        private async Task<bool> CheckExitBath(DateTime expiryDate, int productId)
+        {
+            var queryBatch = from b in _context.Batches
+                             where b.ProductId == productId & b.IsActive == true & b.ExpiryDate == expiryDate
+                             select b;
+            var data = await queryBatch.FirstOrDefaultAsync();
+
+            if (data != null) return true;
+            return false;
+        }
+
         public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetAllGoodsReceiptNote()
         {
             try
@@ -656,6 +678,73 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                 var query = from grn in _context.GoodsReceiptNotes
                             select grn;
                 var data = await query.OrderByDescending(x => x.CreatedAt).Where(x => x.GoodsReceiptNoteTypeId == type).Select(x => new ViewGoodsReceiptNoteModel()
+                {
+                    Id = x.Id,
+                    GoodsReceiptNoteType = new ViewModel()
+                    {
+                        Id = x.GoodsReceiptNoteType.Id,
+                        Name = x.GoodsReceiptNoteType.Name
+                    },
+                    Batch = new ViewBatch()
+                    {
+                        Id = x.Batch.Id,
+                        Barcode = x.Batch.BatchBarcode,
+                        ManufacturingDate = x.Batch.ManufacturingDate,
+                        ExpiryDate = x.Batch.ExpiryDate
+                    },
+                    Supplier = new ViewSupplierData()
+                    {
+                        Id = x.Supplier.Id,
+                        Name = x.Supplier.Name,
+                        IsActive = x.Supplier.IsActive
+                    },
+                    Quantity = x.Quantity,
+                    Unit = x.Unit,
+                    InvoiceId = x.InvoiceId,
+                    ConvertedQuantity = x.ConvertedQuantity,
+                    TotalPrice = x.TotalPrice,
+                    BaseUnitPrice = x.BaseUnitPrice,
+                    CreatedBy = x.CreatedBy,
+                    CreatedAt = x.CreatedAt,
+                }).ToListAsync();
+                if (data.Count > 0)
+                {
+                    foreach (var d in data)
+                    {
+                        var notes = await GetListNoteLog(d.Id);
+                        d.Note = notes.Data;
+                    }
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(data)
+                    {
+                        Message = "Thông tin tất cả phiếu nhập hàng"
+                    };
+                }
+                else
+                {
+                    return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                    {
+                        Message = "Không có phiếu nhập hàng nào"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<List<ViewGoodsReceiptNoteModel>>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
+        public async Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGoodsReceiptNoteByStaff(int staffId)
+        {
+            try
+            {
+                var query = from grn in _context.GoodsReceiptNotes
+                            where grn.CreatedBy == staffId
+                            select grn;
+                var data = await query.OrderByDescending(x => x.CreatedAt).Select(x => new ViewGoodsReceiptNoteModel()
                 {
                     Id = x.Id,
                     GoodsReceiptNoteType = new ViewModel()

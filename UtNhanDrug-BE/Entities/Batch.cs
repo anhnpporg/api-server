@@ -11,6 +11,7 @@ namespace UtNhanDrug_BE.Entities
         {
             GoodsIssueNotes = new HashSet<GoodsIssueNote>();
             GoodsReceiptNotes = new HashSet<GoodsReceiptNote>();
+            InventorySystemReports = new HashSet<InventorySystemReport>();
         }
 
         public int Id { get; set; }
@@ -29,5 +30,6 @@ namespace UtNhanDrug_BE.Entities
         public virtual UserAccount UpdatedByNavigation { get; set; }
         public virtual ICollection<GoodsIssueNote> GoodsIssueNotes { get; set; }
         public virtual ICollection<GoodsReceiptNote> GoodsReceiptNotes { get; set; }
+        public virtual ICollection<InventorySystemReport> InventorySystemReports { get; set; }
     }
 }

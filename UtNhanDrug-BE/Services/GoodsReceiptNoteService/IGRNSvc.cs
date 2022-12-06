@@ -13,6 +13,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //Task<bool> DeleteConsignment(int id, int userId);
         Task<Response<ViewGoodsReceiptNoteModel>> GetGoodsReceiptNoteById(int id);
         Task<Response<List<ViewGoodsReceiptNoteModel>>> GetAllGoodsReceiptNote();
+        Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGoodsReceiptNoteByStaff(int staffId);
         Task<Response<List<ViewGoodsReceiptNoteModel>>> GetGoodsReceiptNoteByType(int type);
         //Task<bool> CheckGoodsReceiptNote(int id);
         //Task<Response<List<NoteLog>>> GetListNoteLog(int id);

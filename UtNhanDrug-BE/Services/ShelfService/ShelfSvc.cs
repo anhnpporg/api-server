@@ -24,7 +24,7 @@ namespace UtNhanDrug_BE.Services.ShelfService
 
         private async Task<bool> CheckShelf(string name)
         {
-            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Name == name);
+            var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
             if (shelf == null) return true;
             return false;
         }

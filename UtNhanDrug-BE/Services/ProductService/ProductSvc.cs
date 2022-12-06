@@ -32,19 +32,24 @@ namespace UtNhanDrug_BE.Services.ProductService
             _productUnitSvc = productUnitSvc;
         }
 
-        //public async Task<bool> CheckProduct(int id)
-        //{
-        //    var result = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
-        //    if (result != null) return true;
-        //    return false;
-        //}
+        private async Task<bool> CheckDrugRegistrationNumber(string drugRegistrationNumber)
+        {
+            var result = await _context.Products.FirstOrDefaultAsync(x => x.DrugRegistrationNumber.ToLower() == drugRegistrationNumber.ToLower())  ;
+            if (result != null) return true;
+            return false;
+        }
 
         public async Task<Response<bool>> CreateProduct(int userId, CreateProductModel model)
         {
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-
+                var checkExit = await CheckDrugRegistrationNumber(model.DrugRegistrationNumber);
+                if (checkExit == true) return new Response<bool>(false)
+                {
+                    StatusCode = 400,
+                    Message = "Mã đăng kí của sản phẩm bị trùng"
+                };
                 Product product = new Product()
                 {
                     DrugRegistrationNumber = model.DrugRegistrationNumber,
@@ -121,8 +126,6 @@ namespace UtNhanDrug_BE.Services.ProductService
                 //        Message = "Đơn vị tính không hợp lệ"
                 //    };
                 //}
-
-
                 //_context.ProductUnitPrices.Add(du);
                 var unit = await _context.ProductUnitPrices.Where(x => x.ProductId == product.Id).ToListAsync();
                 if (model.ProductUnits != null)

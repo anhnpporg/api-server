@@ -1,20 +1,21 @@
-using Firebase.Auth;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using UtNhanDrug_BE.Configurations;
 
 namespace UtNhanDrug_BE
 {
     public class Program
     {
+        
         public static void Main(string[] args)
         {
+            //ScheduleConfig.IntervalInSeconds(22, 1, 100
+            //);
+
+            ////Schedule check exp
+            //ScheduleConfig.IntervalInDays(22, 44, 1);
             CreateHostBuilder(args).Build().Run();
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

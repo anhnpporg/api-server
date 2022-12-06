@@ -6,8 +6,8 @@ using UtNhanDrug_BE.Hepper;
 using System;
 using Microsoft.EntityFrameworkCore;
 using UtNhanDrug_BE.Models.FcmNoti;
-using UtNhanDrug_BE.Models.BatchModel;
-using System.Collections.Generic;
+using UtNhanDrug_BE.Models.HandlerModel;
+using UtNhanDrug_BE.Services.InventorySystemReportsService;
 
 namespace UtNhanDrug_BE.Services.HandlerService
 {
@@ -15,26 +15,57 @@ namespace UtNhanDrug_BE.Services.HandlerService
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
         private readonly INotificationService _noti;
+        private readonly IInventoryReport _iSvc;
         private readonly DateTime today = LocalDateTime.DateTimeNow();
-        public HandlerSvc(ut_nhan_drug_store_databaseContext context, INotificationService noti)
+        public HandlerSvc(ut_nhan_drug_store_databaseContext context, INotificationService noti, IInventoryReport iSvc)
         {
             _context = context;
             _noti = noti;
+            _iSvc = iSvc;
         }
         public async Task CheckExpiryBatch()
         {
             var query = from b in _context.Batches
-                        where b.ExpiryDate < today
                         select b;
-            var data = await query.ToListAsync();
-
-            foreach(var i in data)
+            var data = await query.Where(b => b.ExpiryDate < today & b.IsActive == true).ToListAsync();
+            foreach (var i in data)
             {
-                //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
+                var checkExit = await CheckExitNotiBatch(i.Id);
+                if(checkExit == true)
+                {
+                    //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
+                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "lô " + i.BatchBarcode + " đã hết hạn, vui lòng kiểm tra", Content = i.BatchBarcode + "" });
 
-                //Gửi thông báo cho manager
-               await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có "+ data.Count()+"lô đã hết hạn, vui lòng kiểm tra" });
+                    //Gửi thông báo cho manager
+                    await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô đã hết hạn, vui lòng kiểm tra" });
+                }
             }
+        }
+
+        private async Task<bool> CheckExitNoti(int productId)
+        {
+            var queryNoti = from i in _context.InventorySystemReports
+                            where i.ProductId == productId
+                            select i;
+            var data = await queryNoti.Where(x => x.CreatedAt.Date == today.Date).FirstOrDefaultAsync();
+            if (data != null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private async Task<bool> CheckExitNotiBatch(int batchId)
+        {
+            var queryNoti = from i in _context.InventorySystemReports
+                            where i.BatchId == batchId
+                            select i;
+            var data = await queryNoti.Where(x => x.CreatedAt.Date == today.Date & x.Batch.IsActive == true).FirstOrDefaultAsync();
+            if (data != null)
+            {
+                return false;
+            }
+            return true;
         }
 
         public async Task CheckQuantityOfProduct(int productId)
@@ -46,13 +77,19 @@ namespace UtNhanDrug_BE.Services.HandlerService
             foreach (var p in products)
             {
                 int currentQuantity = await GetCurrentQuantityOfProduct(p.Id);
-                if(currentQuantity < p.MininumInventory)
+                if (currentQuantity < p.MininumInventory)
                 {
                     // lưu vào bảng thông báo -> lọc trường hợp thông báo rồi
+                    var checkExit = await CheckExitNoti(productId);
+                    if (checkExit == true)
+                    {
+                        await _iSvc.SaveNoti(new SaveNotiRequest() { ProductId = p.Id, Title = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho", Content = p.MininumInventory + "" });
+                        NotificationModel notification = new NotificationModel { Title = "Sản phẩm dưới hạn mức tồn kho", Body = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho" };
+                        await _noti.SendNotification(notification);
+                    }
 
                     // Thông báo số lượng hiện tạo dưới hạn mức tồn kho
-                    NotificationModel notification = new NotificationModel { Title = "Sản phẩm dưới hạn mức tồn kho", Body = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho" };
-                    await _noti.SendNotification(notification);
+
                 }
             }
         }
