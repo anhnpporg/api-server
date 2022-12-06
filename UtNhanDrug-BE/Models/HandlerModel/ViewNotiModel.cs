@@ -5,10 +5,16 @@ namespace UtNhanDrug_BE.Models.HandlerModel
 {
     public class ViewNotiModel
     {
-        public string Title { get; set; }
-        public List<ListNoti> ListNoti { get; set; } 
+        public DateTime NotiDate { get; set; }    
+        public ListNoti ListNotiBatch { get; set; }
+        public ListNoti ListNotiQuantity { get; set; }
     }
-    public class ListNoti
+    public class ListNoti{
+        public string Title { get; set; }
+        public List<Noti> ListNotification { get; set; }
+    }
+
+    public class Noti
     {
         public int Id { get; set; }
         public int? BatchId { get; set; }

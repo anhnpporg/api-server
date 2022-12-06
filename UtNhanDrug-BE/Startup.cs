@@ -123,17 +123,27 @@ namespace UtNhanDrug_BE
                 // base Quartz scheduler, job and trigger configuration
                 q.UseMicrosoftDependencyInjectionScopedJobFactory();
                 // Just use the name of your job that you created in the Jobs folder.
+
+                var jobKey1 = new JobKey("CheckExpiryBatch3MonthSchedule");
+                q.AddJob<CheckExpiryBatch3MonthSchedule>(opts => opts.WithIdentity(jobKey1));
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey1)
+                    .WithIdentity("CheckExpiryBatch3MonthSchedule-trigger")
+                    .WithCronSchedule("0 11 1 * * ?", x => x
+                            .InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))
+
+                );
+
                 var jobKey = new JobKey("SendEmailJob");
                 q.AddJob<SchedulerService>(opts => opts.WithIdentity(jobKey));
-
                 q.AddTrigger(opts => opts
                     .ForJob(jobKey)
                     .WithIdentity("SendEmailJob-trigger")
-                    //This Cron interval can be described as "run every minute" (when second is zero)
-                    .WithCronSchedule("0 0 1 * * ?", x => x
+                    .WithCronSchedule("0 0 0 * * ?", x => x
                             .InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))
-                    
                 );
+
+
             });
 
             // ASP.NET Core hosting

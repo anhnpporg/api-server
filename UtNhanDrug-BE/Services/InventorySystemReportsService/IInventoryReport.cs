@@ -8,7 +8,8 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
     public interface IInventoryReport
     {
         Task SaveNoti(SaveNotiRequest request);
-        Task<Response<List<ViewNotiModel>>> ViewNoti();
+        Task<Response<List<ViewNotiModel>>> ViewAllNoti();
+        Task<Response<List<ViewNotiModel>>> ViewFilterNoti();
         Task CheckViewNoti(int id);
     }
 }

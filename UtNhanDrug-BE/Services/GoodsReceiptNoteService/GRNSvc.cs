@@ -193,7 +193,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                                        select gn;
                                     int grnQuantity = await invoiceQuery.Select(x => x.ConvertedQuantity).SumAsync();
 
-                                    if ((gin.ConvertedQuantity - grnQuantity) < b.Quantity * unit.ConversionValue)
+                                    if (b.Quantity * unit.ConversionValue > (gin.ConvertedQuantity - grnQuantity) )
                                     {
                                         await transaction.RollbackAsync();
                                         return new Response<List<GRNResponse>>(null)
@@ -254,29 +254,33 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 int point = (int)(totalPrice / toPoint);
                                 var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
                                 //get customer total point
-                                var query1 = from c in _context.Customers
-                                             where c.Id == customer.Id
-                                             select c;
-                                float totalPoint = (float)await query1.Select(x => x.TotalPoint).FirstOrDefaultAsync();
-
-                                CustomerPointTransaction cpt = new CustomerPointTransaction()
+                                if(customer != null)
                                 {
-                                    CustomerId = (int)customer.Id,
-                                    InvoiceId = (int)model.InvoiceId,
-                                    Point = point,
-                                    IsReciept = false,
-                                };
-                                await _context.CustomerPointTransactions.AddAsync(cpt);
+                                    var query1 = from c in _context.Customers
+                                                 where c.Id == customer.Id
+                                                 select c;
+                                    float totalPoint = (float)await query1.Select(x => x.TotalPoint).FirstOrDefaultAsync();
 
-                                totalPoint -= point;
+                                    CustomerPointTransaction cpt = new CustomerPointTransaction()
+                                    {
+                                        CustomerId = (int)customer.Id,
+                                        InvoiceId = (int)model.InvoiceId,
+                                        Point = point,
+                                        IsReciept = false,
+                                    };
+                                    await _context.CustomerPointTransactions.AddAsync(cpt);
 
-                                customer.TotalPoint = totalPoint;
+                                    totalPoint -= point;
+
+                                    customer.TotalPoint = totalPoint;
+                                }
+                                
                                 await _context.SaveChangesAsync();
 
                                 await transaction.CommitAsync();
                                 return new Response<List<GRNResponse>>(grns)
                                 {
-                                    Message = "nhập hàng từ hoá đơn thành công"
+                                    Message = "Nhập hàng từ hoá đơn thành công"
                                 };
                             }
                         }
@@ -360,7 +364,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             await transaction.CommitAsync();
                             return new Response<List<GRNResponse>>(grns)
                             {
-                                Message = "nhập hàng từ hoá đơn thành công"
+                                Message = "Nhập hàng từ hoá đơn thành công"
                             };
 
                         }
