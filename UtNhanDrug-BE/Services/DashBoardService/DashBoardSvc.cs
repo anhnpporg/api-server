@@ -23,29 +23,134 @@ namespace UtNhanDrug_BE.Services.DashBoardService
             _handlerSvc = handlerSvc;
         }
 
-        //public Task<Response<ChartModel>> GetChart(FilterChartModel request)
-        //{
-        //    try
-        //    {
-        //        if(request.ByWeek == true)
-        //        {
-        //            List<Double> data = new List<double>();
-        //            var query = from i in _context.Invoices
-        //                        select i;
-        //            for(var i = 0; i < 7; i++)
-        //            {
-        //                var turnover = query.Where(x => x.CreatedAt == today.AddDays(-i));
-        //            }
-        //        }
+        public async Task<Response<ChartModel>> GetChart(FilterChartModel request)
+        {
+            try
+            {
+                if (request.ByWeek == true)
+                {
+                    List<Double> data = new List<double>();
+                    var query = from i in _context.Invoices
+                                select i;
+                    var query1 = from i in _context.GoodsReceiptNotes
+                                 select i;
 
+                    List<DateChart> dateChart = new List<DateChart>();
+                    Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
+                    Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
+                    Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
+                    for (var i = 6; i >= 0; i--)
+                    {
+                        decimal turnover = await query.Where(x => x.CreatedAt.Date == today.AddDays(-i).Date).Select(x => x.TotalPrice).SumAsync();
 
-        //    }
-        //    catch (Exception)
-        //    {
+                        decimal cost = await query1.Where(x => x.CreatedAt.Date == today.AddDays(-i).Date).Select(x => x.TotalPrice).SumAsync();
 
-        //    }
-        //}
-        
+                        decimal profit = turnover - cost;
+
+                        dateChart.Add(new DateChart() { Date = today.AddDays(-i).Date });
+
+                        lineTurnover.Data.Add(turnover);
+                        lineCost.Data.Add(cost);
+                        lineProfit.Data.Add( profit );
+                    }
+                    List<Line> listChart = new List<Line>();
+                    listChart.Add(lineTurnover);
+                    listChart.Add(lineCost);
+                    listChart.Add(lineProfit);
+                    return new Response<ChartModel>(new ChartModel { ListLine = listChart, ListDate = dateChart })
+                    {
+                        Message = "Thông tin"
+                    };
+                }
+                if (request.ByMonth == true)
+                {
+                    List<Double> data = new List<double>();
+                    var query = from i in _context.Invoices
+                                select i;
+                    var query1 = from i in _context.GoodsReceiptNotes
+                                 select i;
+
+                    List<DateChart> dateChart = new List<DateChart>();
+                    Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
+                    Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
+                    Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
+                    var index = today.Month - 1;
+                    for (var i = index; i >= 0; i--)
+                    {
+                        decimal turnover = await query.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
+
+                        decimal cost = await query1.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
+
+                        decimal profit = turnover - cost;
+
+                        dateChart.Add(new DateChart() { Date = today.AddMonths(-i).Date });
+
+                        lineTurnover.Data.Add(turnover);
+                        lineCost.Data.Add(cost);
+                        lineProfit.Data.Add(profit);
+                    }
+                    List<Line> listChart = new List<Line>();
+                    listChart.Add(lineTurnover);
+                    listChart.Add(lineCost);
+                    listChart.Add(lineProfit);
+                    return new Response<ChartModel>(new ChartModel { ListLine = listChart, ListDate = dateChart })
+                    {
+                        Message = "Thông tin"
+                    };
+                }
+                if (request.ByYear == true)
+                {
+                    List<Double> data = new List<double>();
+                    var query = from i in _context.Invoices
+                                select i;
+                    var query1 = from i in _context.GoodsReceiptNotes
+                                 select i;
+
+                    List<DateChart> dateChart = new List<DateChart>();
+                    Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
+                    Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
+                    Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
+                    var index = 6;
+                    for (var i = index; i >= 0; i--)
+                    {
+                        decimal turnover = await query.Where(x => x.CreatedAt.Year == today.AddYears(-i).Year).Select(x => x.TotalPrice).SumAsync();
+
+                        decimal cost = await query1.Where(x => x.CreatedAt.Year == today.AddYears(-i).Year).Select(x => x.TotalPrice).SumAsync();
+
+                        decimal profit = turnover - cost;
+
+                        dateChart.Add(new DateChart() { Date = today.AddMonths(-i).Date });
+
+                        lineTurnover.Data.Add(turnover);
+                        lineCost.Data.Add(cost);
+                        lineProfit.Data.Add(profit);
+                    }
+                    List<Line> listChart = new List<Line>();
+                    listChart.Add(lineTurnover);
+                    listChart.Add(lineCost);
+                    listChart.Add(lineProfit);
+                    return new Response<ChartModel>(new ChartModel { ListLine = listChart, ListDate = dateChart })
+                    {
+                        Message = "Thông tin"
+                    };
+                }
+
+                return new Response<ChartModel>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Thông tin"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response<ChartModel>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Đã có lỗi xảy ra"
+                };
+            }
+        }
+
         public async Task<Response<List<RecentSalesModel>>> GetRecentSales(SearchModel request)
         {
             try
@@ -138,41 +243,19 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                 var query1 = from i in _context.GoodsReceiptNotes
                              select i;
                 var quantityOrderNow = await query.Where(x => x.CreatedAt >= todayConvert).CountAsync();
-                double percentQuantityOrder = 100;
-                var quantityOrderYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).CountAsync();
-                if(quantityOrderYesterday != 0)
-                {
-                    percentQuantityOrder = ((quantityOrderNow - quantityOrderYesterday) / quantityOrderYesterday) * 100;
-                }
 
                 var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
-                double percentTurnover = 100;
-                var turnoverYesterday = await query.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
-                if(turnoverYesterday != 0)
-                {
-                    percentTurnover = (double)(((turnoverNow - turnoverYesterday) / turnoverYesterday) * 100);
-                }
+
+
                 var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
-                double percentCost = 100;
-                var costYesterday = await query1.Where(x => x.CreatedAt >= todayConvert.AddDays(-1) & x.CreatedAt < todayConvert).Select(x => x.TotalPrice).SumAsync();
-                if(costYesterday != 0)
-                {
-                    percentCost = (double)(((costNow - costYesterday) / costYesterday) * 100);
-                }
+
+
                 decimal profitNow = turnoverNow - costNow;
-                double PercentProfit = 100;
-                decimal profitYesterday = turnoverYesterday - costYesterday;
-                if(profitYesterday != 0)
-                {
-                    PercentProfit = (double)(((profitNow - profitYesterday) / Math.Abs(profitYesterday)) * 100);
-                }
+
+
                 SaleModel saleModel = new SaleModel()
                 {
                     Cost = costNow,
-                    PercentCost = percentCost,
-                    PercentProfit = PercentProfit,
-                    PercentQuantityOrder = percentQuantityOrder,
-                    PercentTurnover = percentTurnover,
                     Profit = profitNow,
                     QuantityOrder = quantityOrderNow,
                     Turnover = turnoverNow
@@ -292,5 +375,6 @@ namespace UtNhanDrug_BE.Services.DashBoardService
             }).FirstOrDefaultAsync();
             return data;
         }
+
     }
 }

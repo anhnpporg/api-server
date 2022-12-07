@@ -47,5 +47,15 @@ namespace UtNhanDrug_BE.Controllers
             var result = await _dashboardSvc.GetSale();
             return StatusCode(result.StatusCode, result);
         }
+
+        [Authorize]
+        [Route("chart")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetChart([FromQuery] FilterChartModel request)
+        {
+            var result = await _dashboardSvc.GetChart(request);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

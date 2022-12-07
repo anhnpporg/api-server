@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using UtNhanDrug_BE.Models.FcmNoti;
 using UtNhanDrug_BE.Services.FcmNotificationService;
@@ -29,13 +30,23 @@ namespace UtNhanDrug_BE.Controllers
             return Ok(result);  
         }
 
+        //[Authorize]
+        //[Route("notification/filter")]
+        //[HttpGet]
+        //[MapToApiVersion("1.0")]
+        //public async Task<ActionResult> GetFilterNotification()
+        //{
+        //    var result = await _inventoryReport.ViewFilterNoti();
+        //    return StatusCode(result.StatusCode, result);
+        //}
+        
         [Authorize]
         [Route("notification/filter")]
         [HttpGet]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> GetFilterNotification()
+        public async Task<ActionResult> IGetFilterNotification()
         {
-            var result = await _inventoryReport.ViewFilterNoti();
+            var result = await _inventoryReport.ShowFilterNoti();
             return StatusCode(result.StatusCode, result);
         }
         
@@ -46,6 +57,16 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetAllNotification()
         {
             var result = await _inventoryReport.ViewAllNoti();
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [Authorize]
+        [Route("notification/{key}/detail")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetDetailNotification([FromRoute] DateTime key)
+        {
+            var result = await _inventoryReport.ViewDetailNoti(key);
             return StatusCode(result.StatusCode, result);
         }
 
