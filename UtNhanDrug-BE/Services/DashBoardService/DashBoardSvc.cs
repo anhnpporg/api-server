@@ -39,7 +39,9 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
                     Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
                     Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
-                    for (var i = 6; i >= 0; i--)
+
+                    var index = CheckMonday.MondayOfWeek(today);
+                    for (var i = index; i >= 0; i--)
                     {
                         decimal turnover = await query.Where(x => x.CreatedAt.Date == today.AddDays(-i).Date).Select(x => x.TotalPrice).SumAsync();
 
@@ -74,16 +76,16 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
                     Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
                     Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
-                    var index = today.Month - 1;
+                    var index = today.Day - 1;
                     for (var i = index; i >= 0; i--)
                     {
-                        decimal turnover = await query.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
+                        decimal turnover = await query.Where(x => x.CreatedAt.Date == today.AddDays(-i).Date).Select(x => x.TotalPrice).SumAsync();
 
-                        decimal cost = await query1.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
+                        decimal cost = await query1.Where(x => x.CreatedAt.Date == today.AddDays(-i).Date).Select(x => x.TotalPrice).SumAsync();
 
                         decimal profit = turnover - cost;
 
-                        dateChart.Add(new DateChart() { Date = today.AddMonths(-i).Date });
+                        dateChart.Add(new DateChart() { Date = today.AddDays(-i).Date });
 
                         lineTurnover.Data.Add(turnover);
                         lineCost.Data.Add(cost);
@@ -110,12 +112,12 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     Line lineTurnover = new Line() { Name = "Doanh thu", Type = "line", Data = new List<decimal>() };
                     Line lineCost = new Line() { Name = "Chi phí", Type = "line", Data = new List<decimal>() };
                     Line lineProfit = new Line() { Name = "Lợi nhuận", Type = "line", Data = new List<decimal>() };
-                    var index = 6;
+                    var index = today.Month - 1;
                     for (var i = index; i >= 0; i--)
                     {
-                        decimal turnover = await query.Where(x => x.CreatedAt.Year == today.AddYears(-i).Year).Select(x => x.TotalPrice).SumAsync();
+                        decimal turnover = await query.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
 
-                        decimal cost = await query1.Where(x => x.CreatedAt.Year == today.AddYears(-i).Year).Select(x => x.TotalPrice).SumAsync();
+                        decimal cost = await query1.Where(x => x.CreatedAt.Month == today.AddMonths(-i).Month).Select(x => x.TotalPrice).SumAsync();
 
                         decimal profit = turnover - cost;
 
