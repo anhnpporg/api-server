@@ -47,30 +47,17 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Response<List<ViewNotiModel>>> ViewAllNoti()
+        public async Task<Response<List<ShowNotiModel>>> ViewAllNoti()
         {
             var queryNoti = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.BatchId != null & x.ProductId == null)
               .GroupBy(x => x.CreatedAt.Date)
               .OrderByDescending(x => x.Key);
 
-            var data = queryNoti.Select(x => new ViewNotiModel()
+            var data = queryNoti.Select(x => new ShowNotiModel()
             {
                 NotiDate = x.Key,
-                ListNotiBatch = new ListNoti()
-                {
-                    Title = "Có " + x.Count() + " thông báo về tình trạng lô ngày " + x.Key.Day + "-" + x.Key.Month + "-" + x.Key.Year,
-                    ListNotification = x.Select(x => new Noti()
-                    {
-                        Id = x.Id,
-                        BatchId = x.BatchId,
-                        Title = x.Title,
-                        ProductId = x.ProductId,
-                        Content = x.Content,
-                        IsRead = x.IsRead,
-                        CreatedAt = x.CreatedAt
-                    }).ToList()
-                }
+                TitleBatch = "Có " + x.Count() + " thông báo về tình trạng lô"
             }).ToList();
 
             var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
@@ -78,23 +65,10 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
               .GroupBy(x => x.CreatedAt.Date)
               .OrderByDescending(x => x.Key);
 
-            var data1 = queryNoti1.Select(x => new ViewNotiModel()
+            var data1 = queryNoti1.Select(x => new ShowNotiModel()
             {
                 NotiDate = x.Key,
-                ListNotiQuantity = new ListNoti()
-                {
-                    Title = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm ngày " + x.Key.Day + "-" + x.Key.Month + "-" + x.Key.Year,
-                    ListNotification = x.Select(x => new Noti()
-                    {
-                        Id = x.Id,
-                        BatchId = x.BatchId,
-                        Title = x.Title,
-                        ProductId = x.ProductId,
-                        Content = x.Content,
-                        IsRead = x.IsRead,
-                        CreatedAt = x.CreatedAt
-                    }).ToList()
-                }
+                TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
             }).ToList();
 
             foreach (var x in data)
@@ -103,28 +77,29 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 {
                     if (x.NotiDate == y.NotiDate)
                     {
-                        x.ListNotiQuantity = y.ListNotiQuantity;
+                        x.TitleQuantity = y.TitleQuantity;
                     }
                 }
             }
 
-            return new Response<List<ViewNotiModel>>(data);
+            return new Response<List<ShowNotiModel>>(data);
         }
 
 
-        public async Task<Response<List<ViewNotiModel>>> ViewFilterNoti()
+        public async Task<Response<List<ViewNotiModel>>> ViewDetailNoti(DateTime key)
         {
             var queryNoti = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.BatchId != null & x.ProductId == null)
               .GroupBy(x => x.CreatedAt.Date)
-              .OrderByDescending(x => x.Key);
+              .OrderByDescending(x => x.Key).Where(x => x.Key == key);
+
             
             var data = queryNoti.Take(5).Select(x => new ViewNotiModel()
             {
                 NotiDate = x.Key,
                 ListNotiBatch = new ListNoti()
                 {
-                    Title = "Có " + x.Count() + " thông báo về tình trạng lô ngày " + x.Key.Day + "-" + x.Key.Month + "-" + x.Key.Year,
+                    Title = "Có " + x.Count() + " thông báo về tình trạng lô",
                     ListNotification = x.Select(x => new Noti()
                     {
                         Id = x.Id,
@@ -141,14 +116,14 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
             var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.ProductId != null & x.BatchId == null)
               .GroupBy(x => x.CreatedAt.Date)
-              .OrderByDescending(x => x.Key);
+              .OrderByDescending(x => x.Key).Where(x => x.Key == key);
 
             var data1 = queryNoti1.Take(5).Select(x => new ViewNotiModel()
             {
                 NotiDate = x.Key,
                 ListNotiQuantity = new ListNoti()
                 {
-                    Title = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm ngày " + x.Key.Day + "-" + x.Key.Month + "-" + x.Key.Year,
+                    Title = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm",
                     ListNotification = x.Select(x => new Noti()
                     {
                         Id = x.Id,
@@ -173,6 +148,44 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
             }
 
             return new Response<List<ViewNotiModel>>(data);
+        }
+
+        public async Task<Response<List<ShowNotiModel>>> ShowFilterNoti()
+        {
+            var queryNoti = _context.InventorySystemReports.AsEnumerable()
+                .Where(x => x.BatchId != null & x.ProductId == null)
+              .GroupBy(x => x.CreatedAt.Date)
+              .OrderByDescending(x => x.Key);
+
+            var data = queryNoti.Take(5).Select(x => new ShowNotiModel()
+            {
+                NotiDate = x.Key,
+                TitleBatch = "Có " + x.Count() + " thông báo về tình trạng lô "
+            }).ToList();
+
+            var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
+                .Where(x => x.ProductId != null & x.BatchId == null)
+              .GroupBy(x => x.CreatedAt.Date)
+              .OrderByDescending(x => x.Key);
+
+            var data1 = queryNoti1.Take(5).Select(x => new ShowNotiModel()
+            {
+                NotiDate = x.Key,
+                TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
+            }).ToList();
+
+            foreach (var x in data)
+            {
+                foreach (var y in data1)
+                {
+                    if (x.NotiDate == y.NotiDate)
+                    {
+                        x.TitleQuantity = y.TitleQuantity;
+                    }
+                }
+            }
+
+            return new Response<List<ShowNotiModel>>(data);
         }
     }
 }
