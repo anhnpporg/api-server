@@ -833,7 +833,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     }).Distinct().ToListAsync();
 
                     var data = query.Distinct();
-                    var result = await data.Where(x => x.Brand.IsActive == true & x.IsActive == true).Select(p => new ViewProductModel()
+                    var result = await data.Where(x => x.Brand.IsActive == true /*& x.IsActive == true*/).Select(p => new ViewProductModel()
                     {
                         Id = p.Id,
                         DrugRegistrationNumber = p.DrugRegistrationNumber,

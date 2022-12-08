@@ -629,6 +629,11 @@ namespace UtNhanDrug_BE.Entities
 
                 entity.Property(e => e.Id).HasColumnName("id");
 
+                entity.Property(e => e.FcmToken)
+                    .HasMaxLength(200)
+                    .IsUnicode(false)
+                    .HasColumnName("fcm_token");
+
                 entity.Property(e => e.UserAccountId).HasColumnName("user_account_id");
 
                 entity.HasOne(d => d.UserAccount)

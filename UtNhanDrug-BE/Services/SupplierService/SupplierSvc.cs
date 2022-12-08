@@ -133,6 +133,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 {
                     Id = s.Id,
                     Name = s.Name,
+                    PhoneNumber = s.PhoneNumber,
                     CreatedAt = s.CreatedAt,
                     CreatedBy = s.CreatedBy,
                     UpdatedAt = s.UpdatedAt,
@@ -211,6 +212,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     {
                         Id = supplier.Id,
                         Name = supplier.Name,
+                        PhoneNumber = supplier.PhoneNumber,
                         IsActive = supplier.IsActive,
                         CreatedAt = supplier.CreatedAt,
                         CreatedBy = supplier.CreatedBy,
@@ -253,6 +255,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                         Message = "Tên nhà cung cấp đã tồn tại"
                     };
                     supplier.Name = model.Name;
+                    supplier.PhoneNumber = model.Name;
                     supplier.UpdatedAt = DateTime.Now;
                     supplier.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
@@ -335,6 +338,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 {
                     Id = s.Id,
                     Name = s.Name,
+                    
                 }).ToListAsync();
                 if (result.Count > 0)
                 {
