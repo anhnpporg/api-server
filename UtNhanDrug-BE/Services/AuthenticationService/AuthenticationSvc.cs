@@ -31,17 +31,34 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
             var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.LoginName == model.Username);
             var staff = await _context.Staffs.FirstOrDefaultAsync(x => x.UserAccountId == userLogin.UserAccountId);
             var manager = await _context.Managers.FirstOrDefaultAsync(x => x.UserAccountId == userLogin.UserAccountId);
+            var userAccount = await _context.UserAccounts.FirstOrDefaultAsync(x => x.Id == userLogin.UserAccountId);
+            if(userAccount != null)
+            {
+                if(userAccount.IsActive == false)
+                {
+                    return new AccessTokenModel()
+                    {
+                        AccessToken = "",
+                        Message = "Tài khoản đã bị cấm"
+                    };
+                }
+            }
             bool isAdmin = true;
             if(staff != null)
             {
                 isAdmin = false;
             }
-            if (checkLogin == -1) return new AccessTokenModel() { AccessToken = "", Message = "Not found username" };
-            if (checkLogin == 0) return new AccessTokenModel() { AccessToken = "", Message = "Password incorrect" };
+            if (checkLogin == -1) return new AccessTokenModel() { AccessToken = "", Message = "Không tìm thấy tên đăng nhặp" };
+            if (checkLogin == 0) return new AccessTokenModel() { AccessToken = "", Message = "Mật khẩu không đúng" };
             if (checkLogin == 1)
             {
+                if(isAdmin == true)
+                {
+                    manager.FcmToken = model.FCMToken;
+                    await _context.SaveChangesAsync();
+                }
                 var accessToken = await CreateToken(model);
-                return new AccessTokenModel() { Message = "Successfully", 
+                return new AccessTokenModel() { Message = "Thành công", 
                                                 AccessToken = accessToken.Trim(),
                                                 IsAdmin = isAdmin
                 };
@@ -63,7 +80,8 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 {
                         new Claim("userId", userLogin.UserAccountId.ToString()),
                         staff != null ? new Claim("roleUserId", staff.Id.ToString()) : new Claim("roleUserId", manager.Id.ToString()),
-                        staff != null ? new Claim(ClaimTypes.Role, "STAFF") : new Claim(ClaimTypes.Role, "MANAGER")
+                        staff != null ? new Claim(ClaimTypes.Role, "STAFF") : new Claim(ClaimTypes.Role, "MANAGER"),
+                        new Claim("FCMToken", model.FCMToken)
                     }),
                 Expires = DateTime.UtcNow.AddDays(14),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

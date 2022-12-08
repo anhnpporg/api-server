@@ -34,7 +34,7 @@ namespace UtNhanDrug_BE.Services.HandlerService
                 if(checkExit == true)
                 {
                     //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
-                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô " + i.Barcode + " đã hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
+                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô đã hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
 
                     //Gửi thông báo cho manager
                     await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô đã hết hạn, vui lòng kiểm tra" });
@@ -53,7 +53,7 @@ namespace UtNhanDrug_BE.Services.HandlerService
                 if (checkExit == true)
                 {
                     //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
-                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô " + i.Barcode + " sắp hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
+                    await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô sắp hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
 
                     //Gửi thông báo cho manager
                     await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô sắp hết hạn, vui lòng kiểm tra" });
@@ -114,7 +114,7 @@ namespace UtNhanDrug_BE.Services.HandlerService
                     var checkExit = await CheckExitNoti(productId);
                     if (checkExit == true)
                     {
-                        await _iSvc.SaveNoti(new SaveNotiRequest() { ProductId = p.Id, Title = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho", Content = p.MininumInventory + "" });
+                        await _iSvc.SaveNoti(new SaveNotiRequest() { ProductId = p.Id, Title = "Sản phẩm dưới hạn mức tồn kho", Content = p.Name + "" });
                         NotificationModel notification = new NotificationModel { Title = "Sản phẩm dưới hạn mức tồn kho", Body = "Sản phẩm " + p.Name + " dưới hạn mức tồn kho" };
                         await _noti.SendNotification(notification);
                     }
