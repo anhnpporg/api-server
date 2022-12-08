@@ -255,7 +255,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                         Message = "Tên nhà cung cấp đã tồn tại"
                     };
                     supplier.Name = model.Name;
-                    supplier.PhoneNumber = model.Name;
+                    supplier.PhoneNumber = model.PhoneNumber;
                     supplier.UpdatedAt = DateTime.Now;
                     supplier.UpdatedBy = userId;
                     await _context.SaveChangesAsync();
