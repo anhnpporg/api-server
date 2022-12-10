@@ -1,5 +1,0 @@
-"TwilioConfig": {
-    "AccountSID": "ACd19f5ea46cb0cafd8ed547732dc8a95e",
-    "AuthToken": "f120b085a947040b69037c9145ae41f8",
-    "ServiceSID": "VA59b93d4fcbbdb0fa1b275ec9e15cd27b"
-  }
