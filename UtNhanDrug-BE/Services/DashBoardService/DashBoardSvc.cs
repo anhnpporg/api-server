@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using UtNhanDrug_BE.Models.ModelHelper;
 using UtNhanDrug_BE.Hepper;
 using UtNhanDrug_BE.Services.HandlerService;
+using System.Net.Mail;
+using System.Net;
 
 namespace UtNhanDrug_BE.Services.DashBoardService
 {
@@ -22,7 +24,6 @@ namespace UtNhanDrug_BE.Services.DashBoardService
             _context = context;
             _handlerSvc = handlerSvc;
         }
-
         public async Task<Response<ChartModel>> GetChart(FilterChartModel request)
         {
             try

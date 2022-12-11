@@ -757,7 +757,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 var result = await _context.SaveChangesAsync();
                 if (result > 0)
                 {
-                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification email", userLogin.ConfirmationToken);
+                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Mã xác thực email", "Mã xác thực email của bạn là: "+ userLogin.ConfirmationToken +"\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai");
                     await _senderService.SendEmail(message);
 
                     return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
@@ -903,7 +903,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     var result = await _context.SaveChangesAsync();
                     if (result > 0)
                     {
-                        var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Code verification password", userLogin.PasswordRecoveryToken);
+                        var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Mã xác thực mật khẩu", "\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai"+ userLogin.PasswordRecoveryToken);
                         await _senderService.SendEmail(message);
 
                         return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
