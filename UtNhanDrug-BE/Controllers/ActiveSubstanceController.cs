@@ -52,12 +52,14 @@ namespace UtNhanDrug_BE.Controllers
         public async Task<ActionResult> GetProducts([FromRoute] int id)
         {
             var products = await _activeSubstanceSvc.GetListProducts(id);
-            foreach (var product in products.Data)
+            if(products.Data != null)
             {
-                var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
-                product.ActiveSubstances = activeSubstance.Data;
+                foreach (var product in products.Data)
+                {
+                    var activeSubstance = await _productSvc.GetListActiveSubstances(product.Id);
+                    product.ActiveSubstances = activeSubstance.Data;
+                }
             }
-
             return StatusCode(products.StatusCode, products);
         }
 

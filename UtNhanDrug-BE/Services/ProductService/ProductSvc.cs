@@ -15,6 +15,7 @@ using UtNhanDrug_BE.Services.ProductUnitService;
 using UtNhanDrug_BE.Services.BatchService;
 using UtNhanDrug_BE.Models.ActiveSubstanceModel;
 using UtNhanDrug_BE.Hepper;
+using System.Text.RegularExpressions;
 
 namespace UtNhanDrug_BE.Services.ProductService
 {
@@ -373,9 +374,26 @@ namespace UtNhanDrug_BE.Services.ProductService
         {
             var query = from p in _context.Products
                         join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                        //join b in _context.Batches on p.Id equals b.ProductId
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                        select p;
+             //
+            if(Regex.IsMatch(request.SearchValue, "BAT+[0-9]{10}"))
+            {
+                query = from p in _context.Products
+                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
                         join b in _context.Batches on p.Id equals b.ProductId
                         where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue) || b.Barcode.Contains(request.SearchValue)
                         select p;
+            }
+            else
+            {
+                query = from p in _context.Products
+                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                        //join b in _context.Batches on p.Id equals b.ProductId
+                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                        select p;
+            }
             var query1 = from pa in _context.ProductActiveSubstances
                          select pa;
             var query2 = from g in _context.GoodsReceiptNotes
@@ -464,7 +482,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                     product.ProductUnits = productUnits.Data;
                     List<ViewBatchModel> batches;
-                    if (request.SearchValue.Contains("BAT"))
+                    if (Regex.IsMatch(request.SearchValue, "BAT+[0-9]{10}"))
                     {
                         batches = new List<ViewBatchModel>();
                         var batch = await _batchSvc.GetBatchesByBarcode(request.SearchValue);

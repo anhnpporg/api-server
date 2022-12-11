@@ -254,6 +254,7 @@ namespace UtNhanDrug_BE.Services.SupplierService
                     //    StatusCode = 400,
                     //    Message = "Tên nhà cung cấp đã tồn tại"
                     //};
+
                     supplier.Name = model.Name;
                     supplier.PhoneNumber = model.PhoneNumber;
                     supplier.UpdatedAt = DateTime.Now;

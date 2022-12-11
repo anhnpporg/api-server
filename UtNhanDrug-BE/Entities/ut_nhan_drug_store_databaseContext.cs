@@ -92,19 +92,19 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.ActiveSubstanceCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__active_su__creat__68487DD7");
+                    .HasConstraintName("FK__active_su__creat__5629CD9C");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.ActiveSubstanceUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__active_su__updat__693CA210");
+                    .HasConstraintName("FK__active_su__updat__571DF1D5");
             });
 
             modelBuilder.Entity<Batch>(entity =>
             {
                 entity.ToTable("batches");
 
-                entity.HasIndex(e => e.Barcode, "UQ__batches__C16E36F8D784A73B")
+                entity.HasIndex(e => e.Barcode, "UQ__batches__C16E36F8273BDA0E")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -147,18 +147,18 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.BatchCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__batches__created__7B5B524B");
+                    .HasConstraintName("FK__batches__created__693CA210");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.Batches)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__batches__product__787EE5A0");
+                    .HasConstraintName("FK__batches__product__66603565");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.BatchUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__batches__updated__7C4F7684");
+                    .HasConstraintName("FK__batches__updated__6A30C649");
             });
 
             modelBuilder.Entity<Brand>(entity =>
@@ -194,19 +194,19 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.BrandCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__brands__created___4F7CD00D");
+                    .HasConstraintName("FK__brands__created___3D5E1FD2");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.BrandUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__brands__updated___5070F446");
+                    .HasConstraintName("FK__brands__updated___3E52440B");
             });
 
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.ToTable("customers");
 
-                entity.HasIndex(e => e.PhoneNumber, "UQ__customer__A1936A6B6227D918")
+                entity.HasIndex(e => e.PhoneNumber, "UQ__customer__A1936A6B56C0E437")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -245,12 +245,12 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.CustomerCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__customers__creat__09A971A2");
+                    .HasConstraintName("FK__customers__creat__778AC167");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.CustomerUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__customers__updat__0A9D95DB");
+                    .HasConstraintName("FK__customers__updat__787EE5A0");
             });
 
             modelBuilder.Entity<CustomerPointTransaction>(entity =>
@@ -274,13 +274,13 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.CustomerPointTransactions)
                     .HasForeignKey(d => d.CustomerId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__customer___custo__2A164134");
+                    .HasConstraintName("FK__customer___custo__17F790F9");
 
                 entity.HasOne(d => d.Invoice)
                     .WithMany(p => p.CustomerPointTransactions)
                     .HasForeignKey(d => d.InvoiceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__customer___invoi__2B0A656D");
+                    .HasConstraintName("FK__customer___invoi__18EBB532");
             });
 
             modelBuilder.Entity<DataSettingSystemCustomerPoint>(entity =>
@@ -328,17 +328,17 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.DiseaseCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__diseases__create__2FCF1A8A");
+                    .HasConstraintName("FK__diseases__create__1DB06A4F");
 
                 entity.HasOne(d => d.DeletedByNavigation)
                     .WithMany(p => p.DiseaseDeletedByNavigations)
                     .HasForeignKey(d => d.DeletedBy)
-                    .HasConstraintName("FK__diseases__delete__31B762FC");
+                    .HasConstraintName("FK__diseases__delete__1F98B2C1");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.DiseaseUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__diseases__update__30C33EC3");
+                    .HasConstraintName("FK__diseases__update__1EA48E88");
             });
 
             modelBuilder.Entity<EmailValidationStatus>(entity =>
@@ -383,18 +383,18 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.BatchId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_iss__batch__2739D489");
+                    .HasConstraintName("FK__goods_iss__batch__151B244E");
 
                 entity.HasOne(d => d.GoodsIssueNoteType)
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.GoodsIssueNoteTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_iss__goods__25518C17");
+                    .HasConstraintName("FK__goods_iss__goods__1332DBDC");
 
                 entity.HasOne(d => d.OrderDetail)
                     .WithMany(p => p.GoodsIssueNotes)
                     .HasForeignKey(d => d.OrderDetailId)
-                    .HasConstraintName("FK__goods_iss__order__2645B050");
+                    .HasConstraintName("FK__goods_iss__order__14270015");
             });
 
             modelBuilder.Entity<GoodsIssueNoteType>(entity =>
@@ -451,29 +451,29 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.BatchId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__batch__14270015");
+                    .HasConstraintName("FK__goods_rec__batch__02084FDA");
 
                 entity.HasOne(d => d.CreatedByNavigation)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__creat__17F790F9");
+                    .HasConstraintName("FK__goods_rec__creat__05D8E0BE");
 
                 entity.HasOne(d => d.GoodsReceiptNoteType)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.GoodsReceiptNoteTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__goods__1332DBDC");
+                    .HasConstraintName("FK__goods_rec__goods__01142BA1");
 
                 entity.HasOne(d => d.Invoice)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.InvoiceId)
-                    .HasConstraintName("FK__goods_rec__invoi__151B244E");
+                    .HasConstraintName("FK__goods_rec__invoi__02FC7413");
 
                 entity.HasOne(d => d.Supplier)
                     .WithMany(p => p.GoodsReceiptNotes)
                     .HasForeignKey(d => d.SupplierId)
-                    .HasConstraintName("FK__goods_rec__suppl__160F4887");
+                    .HasConstraintName("FK__goods_rec__suppl__03F0984C");
             });
 
             modelBuilder.Entity<GoodsReceiptNoteLog>(entity =>
@@ -499,12 +499,12 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.GoodsReceiptNoteLogs)
                     .HasForeignKey(d => d.GoodsReceiptNoteId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__goods_rec__goods__1AD3FDA4");
+                    .HasConstraintName("FK__goods_rec__goods__08B54D69");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.GoodsReceiptNoteLogs)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__goods_rec__updat__1BC821DD");
+                    .HasConstraintName("FK__goods_rec__updat__09A971A2");
             });
 
             modelBuilder.Entity<GoodsReceiptNoteType>(entity =>
@@ -562,19 +562,19 @@ namespace UtNhanDrug_BE.Entities
                 entity.HasOne(d => d.Batch)
                     .WithMany(p => p.InventorySystemReports)
                     .HasForeignKey(d => d.BatchId)
-                    .HasConstraintName("FK__inventory__batch__43D61337");
+                    .HasConstraintName("FK__inventory__batch__31B762FC");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.InventorySystemReports)
                     .HasForeignKey(d => d.ProductId)
-                    .HasConstraintName("FK__inventory__produ__44CA3770");
+                    .HasConstraintName("FK__inventory__produ__32AB8735");
             });
 
             modelBuilder.Entity<Invoice>(entity =>
             {
                 entity.ToTable("invoices");
 
-                entity.HasIndex(e => e.Barcode, "UQ__invoices__C16E36F85176E871")
+                entity.HasIndex(e => e.Barcode, "UQ__invoices__C16E36F84DE0D42F")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -612,19 +612,19 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__invoices__create__10566F31");
+                    .HasConstraintName("FK__invoices__create__7E37BEF6");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Invoices)
                     .HasForeignKey(d => d.CustomerId)
-                    .HasConstraintName("FK__invoices__custom__0E6E26BF");
+                    .HasConstraintName("FK__invoices__custom__7C4F7684");
             });
 
             modelBuilder.Entity<Manager>(entity =>
             {
                 entity.ToTable("managers");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__managers__1918BBDB083EC6CE")
+                entity.HasIndex(e => e.UserAccountId, "UQ__managers__1918BBDB04FF5BBC")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -640,14 +640,14 @@ namespace UtNhanDrug_BE.Entities
                     .WithOne(p => p.Manager)
                     .HasForeignKey<Manager>(d => d.UserAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__managers__user_a__3B75D760");
+                    .HasConstraintName("FK__managers__user_a__29572725");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>
             {
                 entity.ToTable("order_detail");
 
-                entity.HasIndex(e => new { e.InvoiceId, e.ProductId }, "UQ__order_de__B1FDDA975EEB1E0A")
+                entity.HasIndex(e => new { e.InvoiceId, e.ProductId }, "UQ__order_de__B1FDDA97C214C6F9")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -676,23 +676,23 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.InvoiceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__order_det__invoi__1F98B2C1");
+                    .HasConstraintName("FK__order_det__invoi__0D7A0286");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__order_det__produ__208CD6FA");
+                    .HasConstraintName("FK__order_det__produ__0E6E26BF");
             });
 
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.ToTable("products");
 
-                entity.HasIndex(e => e.Barcode, "UQ__products__C16E36F8452F4342")
+                entity.HasIndex(e => e.Barcode, "UQ__products__C16E36F84A8B50F7")
                     .IsUnique();
 
-                entity.HasIndex(e => e.DrugRegistrationNumber, "UQ__products__EF7E0909293322A7")
+                entity.HasIndex(e => e.DrugRegistrationNumber, "UQ__products__EF7E09098E5D5F97")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -748,36 +748,36 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.BrandId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__products__brand___5CD6CB2B");
+                    .HasConstraintName("FK__products__brand___4AB81AF0");
 
                 entity.HasOne(d => d.CreatedByNavigation)
                     .WithMany(p => p.ProductCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__products__create__628FA481");
+                    .HasConstraintName("FK__products__create__5070F446");
 
                 entity.HasOne(d => d.RouteOfAdministration)
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.RouteOfAdministrationId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__products__route___5EBF139D");
+                    .HasConstraintName("FK__products__route___4CA06362");
 
                 entity.HasOne(d => d.Shelf)
                     .WithMany(p => p.Products)
                     .HasForeignKey(d => d.ShelfId)
-                    .HasConstraintName("FK__products__shelf___5DCAEF64");
+                    .HasConstraintName("FK__products__shelf___4BAC3F29");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.ProductUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__products__update__6383C8BA");
+                    .HasConstraintName("FK__products__update__5165187F");
             });
 
             modelBuilder.Entity<ProductActiveSubstance>(entity =>
             {
                 entity.ToTable("product_active_substance");
 
-                entity.HasIndex(e => new { e.ProductId, e.ActiveSubstanceId }, "UQ__product___12D3DF522A402413")
+                entity.HasIndex(e => new { e.ProductId, e.ActiveSubstanceId }, "UQ__product___12D3DF522AA60C2F")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -790,13 +790,13 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.ProductActiveSubstances)
                     .HasForeignKey(d => d.ActiveSubstanceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__product_a__activ__6E01572D");
+                    .HasConstraintName("FK__product_a__activ__5BE2A6F2");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.ProductActiveSubstances)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__product_a__produ__6D0D32F4");
+                    .HasConstraintName("FK__product_a__produ__5AEE82B9");
             });
 
             modelBuilder.Entity<ProductUnitPrice>(entity =>
@@ -846,18 +846,18 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.ProductUnitPriceCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__product_u__creat__73BA3083");
+                    .HasConstraintName("FK__product_u__creat__619B8048");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.ProductUnitPrices)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__product_u__produ__70DDC3D8");
+                    .HasConstraintName("FK__product_u__produ__5EBF139D");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.ProductUnitPriceUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__product_u__updat__74AE54BC");
+                    .HasConstraintName("FK__product_u__updat__628FA481");
             });
 
             modelBuilder.Entity<RouteOfAdministration>(entity =>
@@ -908,23 +908,23 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.SamplePrescriptionCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__creat__367C1819");
+                    .HasConstraintName("FK__sample_pr__creat__245D67DE");
 
                 entity.HasOne(d => d.DeletedByNavigation)
                     .WithMany(p => p.SamplePrescriptionDeletedByNavigations)
                     .HasForeignKey(d => d.DeletedBy)
-                    .HasConstraintName("FK__sample_pr__delet__3864608B");
+                    .HasConstraintName("FK__sample_pr__delet__2645B050");
 
                 entity.HasOne(d => d.Disease)
                     .WithMany(p => p.SamplePrescriptions)
                     .HasForeignKey(d => d.DiseaseId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__disea__3493CFA7");
+                    .HasConstraintName("FK__sample_pr__disea__22751F6C");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.SamplePrescriptionUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__sample_pr__updat__37703C52");
+                    .HasConstraintName("FK__sample_pr__updat__25518C17");
             });
 
             modelBuilder.Entity<SamplePrescriptionDetail>(entity =>
@@ -970,35 +970,35 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.SamplePrescriptionDetailCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__creat__3F115E1A");
+                    .HasConstraintName("FK__sample_pr__creat__2CF2ADDF");
 
                 entity.HasOne(d => d.DeletedByNavigation)
                     .WithMany(p => p.SamplePrescriptionDetailDeletedByNavigations)
                     .HasForeignKey(d => d.DeletedBy)
-                    .HasConstraintName("FK__sample_pr__delet__40F9A68C");
+                    .HasConstraintName("FK__sample_pr__delet__2EDAF651");
 
                 entity.HasOne(d => d.Product)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.ProductId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__produ__3C34F16F");
+                    .HasConstraintName("FK__sample_pr__produ__2A164134");
 
                 entity.HasOne(d => d.ProductUnitPrice)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.ProductUnitPriceId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__produ__3D2915A8");
+                    .HasConstraintName("FK__sample_pr__produ__2B0A656D");
 
                 entity.HasOne(d => d.SamplePrescription)
                     .WithMany(p => p.SamplePrescriptionDetails)
                     .HasForeignKey(d => d.SamplePrescriptionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__sample_pr__sampl__3B40CD36");
+                    .HasConstraintName("FK__sample_pr__sampl__29221CFB");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.SamplePrescriptionDetailUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__sample_pr__updat__40058253");
+                    .HasConstraintName("FK__sample_pr__updat__2DE6D218");
             });
 
             modelBuilder.Entity<Shelf>(entity =>
@@ -1034,19 +1034,19 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.ShelfCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__shelves__created__5535A963");
+                    .HasConstraintName("FK__shelves__created__4316F928");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.ShelfUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__shelves__updated__5629CD9C");
+                    .HasConstraintName("FK__shelves__updated__440B1D61");
             });
 
             modelBuilder.Entity<Staff>(entity =>
             {
                 entity.ToTable("staffs");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__staffs__1918BBDB984FD859")
+                entity.HasIndex(e => e.UserAccountId, "UQ__staffs__1918BBDBBAA3D08C")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -1074,7 +1074,7 @@ namespace UtNhanDrug_BE.Entities
                     .WithOne(p => p.Staff)
                     .HasForeignKey<Staff>(d => d.UserAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__staffs__user_acc__3F466844");
+                    .HasConstraintName("FK__staffs__user_acc__2D27B809");
             });
 
             modelBuilder.Entity<Supplier>(entity =>
@@ -1115,12 +1115,12 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.SupplierCreatedByNavigations)
                     .HasForeignKey(d => d.CreatedBy)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__suppliers__creat__02FC7413");
+                    .HasConstraintName("FK__suppliers__creat__70DDC3D8");
 
                 entity.HasOne(d => d.UpdatedByNavigation)
                     .WithMany(p => p.SupplierUpdatedByNavigations)
                     .HasForeignKey(d => d.UpdatedBy)
-                    .HasConstraintName("FK__suppliers__updat__03F0984C");
+                    .HasConstraintName("FK__suppliers__updat__71D1E811");
             });
 
             modelBuilder.Entity<UserAccount>(entity =>
@@ -1149,10 +1149,10 @@ namespace UtNhanDrug_BE.Entities
             {
                 entity.ToTable("user_login_data");
 
-                entity.HasIndex(e => e.UserAccountId, "UQ__user_log__1918BBDB926AE834")
+                entity.HasIndex(e => e.UserAccountId, "UQ__user_log__1918BBDB1525BCB9")
                     .IsUnique();
 
-                entity.HasIndex(e => e.LoginName, "UQ__user_log__F6D56B578920F8C4")
+                entity.HasIndex(e => e.LoginName, "UQ__user_log__F6D56B572A2971AF")
                     .IsUnique();
 
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -1204,19 +1204,19 @@ namespace UtNhanDrug_BE.Entities
                     .WithMany(p => p.UserLoginData)
                     .HasForeignKey(d => d.EmailValidationStatusId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__user_logi__email__4AB81AF0");
+                    .HasConstraintName("FK__user_logi__email__38996AB5");
 
                 entity.HasOne(d => d.HashingAlgorithm)
                     .WithMany(p => p.UserLoginData)
                     .HasForeignKey(d => d.HashingAlgorithmId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__user_logi__hashi__48CFD27E");
+                    .HasConstraintName("FK__user_logi__hashi__36B12243");
 
                 entity.HasOne(d => d.UserAccount)
                     .WithOne(p => p.UserLoginDatum)
                     .HasForeignKey<UserLoginDatum>(d => d.UserAccountId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__user_logi__user___47DBAE45");
+                    .HasConstraintName("FK__user_logi__user___35BCFE0A");
             });
 
             OnModelCreatingPartial(modelBuilder);
