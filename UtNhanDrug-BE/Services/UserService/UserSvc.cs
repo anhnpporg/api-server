@@ -275,16 +275,16 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 Message = "Mật khẩu hiện tại khớp",
             };
         }
-        public async Task<Response<bool>> ChangePassword(int userId, ChangePasswordModel model)
+        public async Task<Response<bool>> ChangePassword(ChangePasswordModel model)
         {
-            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            var checkCode = await CheckVerifyPassword(userId, model.TokenRecovery);
+            var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == model.UserId);
+            var checkCode = await CheckVerifyPassword(model.UserId, model.TokenRecovery);
             if (checkCode == false) return new Response<bool>(false)
             {
                 StatusCode = 400,
                 Message = "Mã xác thực mật khẩu sai"
             };
-            var checkTime = await CheckTimeVerifyPassword(userId);
+            var checkTime = await CheckTimeVerifyPassword(model.UserId);
             if (checkTime == false) return new Response<bool>(false)
             {
                 StatusCode = 400,
@@ -297,8 +297,8 @@ namespace UtNhanDrug_BE.Services.ManagerService
             };
             if (userData != null)
             {
-                var checkCurrentPassword = await CheckCurrentPassword(userId, model.CurrentPassword);
-                if (checkCurrentPassword.Data == false) return checkCurrentPassword;
+                //var checkCurrentPassword = await CheckCurrentPassword(userId, model.CurrentPassword);
+                //if (checkCurrentPassword.Data == false) return checkCurrentPassword;
                 string passwordEncode;
                 Random rnd = new Random();
                 int hashingId = rnd.Next(1, 3);
@@ -321,7 +321,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                 {
                     return new Response<bool>(true)
                     {
-                        Message = "Đổi mật khẩu thành công"
+                        Message = "Cập nhật mật khẩu thành công"
                     };
                 }
                 else return new Response<bool>(false)
@@ -504,33 +504,34 @@ namespace UtNhanDrug_BE.Services.ManagerService
             using IDbContextTransaction transaction = _context.Database.BeginTransaction();
             try
             {
-                if (!model.Password.Equals(model.PasswordConfirm)) {
-                    return new Response<bool>(false)
-                    {
-                        StatusCode = 400,
-                        Message = "Mật khẩu xác nhận không khớp"
-                    };
-                }
+                //if (!model.Password.Equals(model.PasswordConfirm)) {
+                //    return new Response<bool>(false)
+                //    {
+                //        StatusCode = 400,
+                //        Message = "Mật khẩu xác nhận không khớp"
+                //    };
+                //}
                 var isExits = await FindStaff(model.LoginName);
                 if (isExits == false)
                 {
                     var userId = await CreateUser(model.Fullname);
                     if (userId.Data > 0)
                     {
+                        string password = KeyGenerator.GetUniqueKey(6);
                         string passwordEncode;
                         Random rnd = new Random();
                         int hashingId = rnd.Next(1, 3);
                         if (hashingId == 1)
                         {
-                            passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(model.Password);
+                            passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(password);
                         }
                         else if (hashingId == 2)
                         {
-                            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(model.Password);
+                            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(password);
                         }
                         else
                         {
-                            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(model.Password);
+                            passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(password);
                         }
                         String avatar;
                         if (model.Avatar != null)
@@ -557,6 +558,8 @@ namespace UtNhanDrug_BE.Services.ManagerService
                             };
                             _context.Staffs.Add(s);
                             await _context.SaveChangesAsync();
+                            var message = new MessageModel(new string[] { model.Email }, "Thông tin tài khoản của bạn", "Tên đăng nhập: " + model.LoginName + "\n Mật khẩu: " + password);
+                            await _senderService.SendEmail(message);
                             await transaction.CommitAsync();
                             return new Response<bool>(true)
                             {
@@ -696,86 +699,117 @@ namespace UtNhanDrug_BE.Services.ManagerService
 
         public async Task<Response<string>> RecoveryPassword(int userId)
         {
-            string newPassword = "123456";
-
-            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            if (userLogin != null)
+            using IDbContextTransaction transaction = _context.Database.BeginTransaction();
+            try
             {
-                string passwordEncode;
-                Random rnd = new Random();
-                int hashingId = rnd.Next(1, 3);
-                if (hashingId == 1)
+                string newPassword = "123456";
+
+                var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+                if (userLogin != null)
                 {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(newPassword);
+                    string passwordEncode;
+                    Random rnd = new Random();
+                    int hashingId = rnd.Next(1, 3);
+                    if (hashingId == 1)
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashMD5(newPassword);
+                    }
+                    else if (hashingId == 2)
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(newPassword);
+                    }
+                    else
+                    {
+                        passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(newPassword);
+                    }
+                    userLogin.HashingAlgorithmId = hashingId;
+                    userLogin.PasswordHash = passwordEncode;
+                    await _context.SaveChangesAsync();
+
+                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Thông tin tài khoản của bạn", "Tên đăng nhập: " + userLogin.LoginName + "\n Mật khẩu: " + newPassword);
+                    await _senderService.SendEmail(message);
+                    await transaction.CommitAsync();
+                    return new Response<string>(newPassword)
+                    {
+                        Message = "Đã gửi tới email " + userLogin.EmailAddressRecovery + " của nhân viên"
+                    };
                 }
-                else if (hashingId == 2)
+                return new Response<string>(null)
                 {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA1(newPassword);
-                }
-                else
-                {
-                    passwordEncode = HashingAlgorithmPassword.PasswordHashSHA512(newPassword);
-                }
-                userLogin.HashingAlgorithmId = hashingId;
-                userLogin.PasswordHash = passwordEncode;
-                var result = await _context.SaveChangesAsync();
-                if (result > 0) return new Response<string>(newPassword)
-                {
-                    Message = "Tạo mật khẩu mới thành công"
+                    StatusCode = 400,
+                    Message = "Đặt lại mật khẩu thất bại"
                 };
             }
-            return new Response<string>(null)
+            catch (Exception)
             {
-                StatusCode = 400,
-                Message = "Tạo mật khẩu mới thất bại"
-            };
+                await transaction.RollbackAsync();
+                return new Response<string>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đặt lại mật khẩu thất bại"
+                };
+            }
+            
         }
 
         public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyEmail(int userId)
         {
-            var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            if(userLogin != null)
+            try
             {
-                if(userLogin.EmailValidationStatusId == 1)
+                var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
+                if (userLogin != null)
                 {
-                    return new Response<TokenVerifyResponse>()
+                    if (userLogin.EmailValidationStatusId == 1)
                     {
-                        StatusCode = 400,
-                        Message = "Tài khoản không có email"
-                    };
-                }
-                else if(userLogin.EmailValidationStatusId == 3) 
-                {
-                    return new Response<TokenVerifyResponse>()
+                        return new Response<TokenVerifyResponse>()
+                        {
+                            StatusCode = 400,
+                            Message = "Tài khoản không có email"
+                        };
+                    }
+                    else if (userLogin.EmailValidationStatusId == 3)
                     {
-                        StatusCode = 400,
-                        Message = "Email đã được xác thực"
-                    };
-                }
-                userLogin.ConfirmationToken = KeyGenerator.GetUniqueKey(6);
-                userLogin.TokenGenerationTime = DateTime.Now;
-                var result = await _context.SaveChangesAsync();
-                if (result > 0)
-                {
-                    var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Mã xác thực email", "Mã xác thực email của bạn là: "+ userLogin.ConfirmationToken +"\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai");
-                    await _senderService.SendEmail(message);
+                        return new Response<TokenVerifyResponse>()
+                        {
+                            StatusCode = 400,
+                            Message = "Email đã được xác thực"
+                        };
+                    }
+                    userLogin.ConfirmationToken = KeyGenerator.GetUniqueKey(6);
+                    userLogin.TokenGenerationTime = today;
+                    var result = await _context.SaveChangesAsync();
+                    if (result > 0)
+                    {
+                        var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Mã xác thực email", "Mã xác thực email của bạn là: " + userLogin.ConfirmationToken + "\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai");
+                        await _senderService.SendEmail(message);
 
-                    return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
-                    {
-                        Token = userLogin.ConfirmationToken,
-                        CreateAt = userLogin.TokenGenerationTime
-                    }){
-                        Message = "Gửi mã xác thực thành công"
-                    };
+                        return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
+                        {
+                            Token = userLogin.ConfirmationToken,
+                            CreateAt = userLogin.TokenGenerationTime
+                        })
+                        {
+                            Message = "Gửi mã xác thực thành công"
+                        };
+                    }
+
                 }
-                
+
+                return new Response<TokenVerifyResponse>()
+                {
+                    StatusCode = 400,
+                    Message = "Gửi mã xác thực thất bại"
+                };
             }
-
-            return new Response<TokenVerifyResponse>()
+            catch (Exception)
             {
-                StatusCode = 400,
-                Message = "Gửi mã xác thực thất bại"
-            };
+                return new Response<TokenVerifyResponse>()
+                {
+                    StatusCode = 400,
+                    Message = "Gửi mã xác thực thất bại"
+                };
+            }
+            
         }
 
         public async Task<Response<bool>> CheckTokenVerifyEmail(int userId, TokenVerifyModel model)
@@ -869,7 +903,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
         private async Task<bool> CheckTimeVerifyEmail(int userId)
         {
             var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            var s = (DateTime.Now - userData.TokenGenerationTime);
+            var s = (today - userData.TokenGenerationTime);
             if (s.Value.Minutes > 5) return false;
             return true;
         }
@@ -877,19 +911,22 @@ namespace UtNhanDrug_BE.Services.ManagerService
         private async Task<bool> CheckTimeVerifyPassword(int userId)
         {
             var userData = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-            var s = (DateTime.Now - userData.RecoveryTokenTime);
+            var s = (today - userData.RecoveryTokenTime);
             if (s.Value.Minutes > 5) return false;
             return true;
         }
 
-        public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyPassword(int userId)
+        public async Task<Response<TokenVerifyResponse>> CreateTokenVerifyPassword(ForgotPasswordModel request)
         {
             try
             {
-                var userLogin = await _context.UserLoginData.FirstOrDefaultAsync(x => x.UserAccountId == userId);
-                if (userLogin != null)
+                var query = from u in _context.UserLoginData
+                            where u.LoginName.Equals(request.UserAccount)
+                            select u;
+                var data = await query.FirstOrDefaultAsync();
+                if (data != null)
                 {
-                    if (userLogin.EmailValidationStatusId != 3)
+                    if (data.EmailValidationStatusId != 3)
                     {
                         return new Response<TokenVerifyResponse>()
                         {
@@ -898,18 +935,19 @@ namespace UtNhanDrug_BE.Services.ManagerService
                         };
                     }
 
-                    userLogin.PasswordRecoveryToken = KeyGenerator.GetUniqueKey(6);
-                    userLogin.RecoveryTokenTime = DateTime.Now;
+                    data.PasswordRecoveryToken = KeyGenerator.GetUniqueKey(6);
+                    data.RecoveryTokenTime = today;
                     var result = await _context.SaveChangesAsync();
                     if (result > 0)
                     {
-                        var message = new MessageModel(new string[] { userLogin.EmailAddressRecovery }, "Mã xác thực mật khẩu", "\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai"+ userLogin.PasswordRecoveryToken);
+                        var message = new MessageModel(new string[] { data.EmailAddressRecovery }, "Mã xác thực mật khẩu", "Mã xác thực mật khẩu của bạn là: " + data.PasswordRecoveryToken+ "\n Mã xác thực có hiệu lực 5 phút, không chia sẻ mã xác thực với bất kì ai");
                         await _senderService.SendEmail(message);
 
                         return new Response<TokenVerifyResponse>(new TokenVerifyResponse()
                         {
-                            Token = userLogin.PasswordRecoveryToken,
-                            CreateAt = userLogin.RecoveryTokenTime
+                            Token = data.PasswordRecoveryToken,
+                            CreateAt = data.RecoveryTokenTime,
+                            UserId = data.UserAccountId,
                         })
                         {
                             Message = "Đã gửi mã xác thực thành công"
@@ -1163,6 +1201,53 @@ namespace UtNhanDrug_BE.Services.ManagerService
             return new Response<bool>(true)
             {
             };
+        }
+
+        public async Task<Response<ForgotPasswordResponse>> GetUserForgotPassword(ForgotPasswordModel request)
+        {
+            try
+            {
+                var query = from u in _context.UserLoginData
+                            where u.LoginName.Equals(request.UserAccount)
+                            select u;
+                var data = await query.FirstOrDefaultAsync();
+                
+                if(data != null)
+                {
+                    if (data.EmailValidationStatusId != 3)
+                    {
+                        return new Response<ForgotPasswordResponse>(null)
+                        {
+                            StatusCode = 400,
+                            Message = "Email chưa được xác thực"
+                        };
+                    }
+                    else
+                    {
+
+                        return new Response<ForgotPasswordResponse>(new ForgotPasswordResponse { UserId = data.UserAccountId, Email = data.EmailAddressRecovery })
+                        {
+                            Message = "Gửi mã xác thực tới email " + data.EmailAddressRecovery + " thành công"
+                        };
+                    } 
+                }
+                else
+                {
+                    return new Response<ForgotPasswordResponse>(null)
+                    {
+                        StatusCode = 400,
+                        Message = "Không tìm thấy tên tài khoản này"
+                    };
+                }
+            }
+            catch (Exception)
+            {
+                return new Response<ForgotPasswordResponse>(null)
+                {
+                    StatusCode = 500,
+                    Message = "Có lỗi xảy ra, không thể tìm lại mật khẩu"
+                };
+            }
         }
     }
 }
