@@ -114,7 +114,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         };
                                     }
 
-                                    var checkExitBatch = await CheckExitBath((DateTime)b.Batch.ExpiryDate, (int)b.Batch.ProductId);
+                                    var checkExitBatch = await CheckExitBath(b.Batch.ExpiryDate, (int)b.Batch.ProductId);
                                     if (checkExitBatch == true) return new Response<List<GRNResponse>>(null)
                                     {
                                         StatusCode = 400,
@@ -405,7 +405,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
         //    var currentQuantity = totalQuantity - saledQuantity;
         //    return currentQuantity;
         //}
-        private async Task<bool> CheckExitBath(DateTime expiryDate, int productId)
+        private async Task<bool> CheckExitBath(DateTime? expiryDate, int productId)
         {
             var queryBatch = from b in _context.Batches
                              where b.ProductId == productId & b.IsActive == true & b.ExpiryDate == expiryDate

@@ -30,7 +30,7 @@ namespace UtNhanDrug_BE.Controllers
         {
             var result = await _authenticationService.Authenticate(model);
             if(result.AccessToken == null) return BadRequest(model);
-            return Ok(result);
+            return StatusCode(result.StatusCode, result);
         }
     }
 }

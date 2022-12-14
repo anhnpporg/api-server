@@ -35,7 +35,8 @@ namespace UtNhanDrug_BE.Services.HandlerService
                 {
                     //lưu các lô hết hạn vào bảng thông báo để không thông báo lại lần sau
                     await _iSvc.SaveNoti(new SaveNotiRequest() { BatchId = i.Id, Title = "Lô đã hết hạn, vui lòng kiểm tra", Content = i.Barcode + "" });
-
+                    i.IsActive = false;
+                    await _context.SaveChangesAsync();
                     //Gửi thông báo cho manager
                     await _noti.SendNotification(new NotificationModel { Title = "Lô sản phẩm hết hạn sử dụng", Body = "Có " + data.Count() + "lô đã hết hạn, vui lòng kiểm tra" });
                 }

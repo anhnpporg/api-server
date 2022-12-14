@@ -338,7 +338,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 }).ToListAsync();
                 if(request.IsSale == true)
                 {
-                    data = data.Where(x => x.ExpiryDate > today || x.ExpiryDate == null).ToList();
+                    data = data.Where(x => x.ExpiryDate.Value.Date >= today.Date || x.ExpiryDate == null).ToList();
                 }
                 foreach (var x in data)
                 {
@@ -373,9 +373,9 @@ namespace UtNhanDrug_BE.Services.ProductService
         public async Task<PageResult<ViewProductModel>> GetProductFilter(ProductFilterRequest request)
         {
             var query = from p in _context.Products
-                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
-                        //join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                        //join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                        ////join b in _context.Batches on p.Id equals b.ProductId
+                        //where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
                         select p;
              //
             if(Regex.IsMatch(request.SearchValue, "BAT+[0-9]{10}"))
