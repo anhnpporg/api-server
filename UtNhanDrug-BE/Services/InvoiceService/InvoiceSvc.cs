@@ -551,6 +551,25 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Discount = x.Discount,
                 TotalPrice = x.TotalPrice
             }).ToListAsync();
+            if (data != null)
+            {
+                foreach (var i in data)
+                {
+                    var detail = await ViewOrderDetailByInvoiceId(i.Id);
+                    if (detail.Data.Select(x => x.ReturnedQuantity).Sum() == 0)
+                    {
+                        i.IsReturn = 1;
+                    }
+                    else if (detail.Data.Select(x => x.ReturnedQuantity).Sum() == detail.Data.Select(x => x.ConvertedQuantity).Sum())
+                    {
+                        i.IsReturn = 3;
+                    }
+                    else
+                    {
+                        i.IsReturn = 2;
+                    }
+                }
+            }
             return new Response<List<ViewInvoiceModel>>(data);
         }
 

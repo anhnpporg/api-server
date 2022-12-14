@@ -20,14 +20,14 @@ namespace UtNhanDrug_BE.Services.ManagerService
         Task<Response<bool>> UnBanAccount(int UserId);
         Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffModel model);
         Task<Response<bool>> UpdateStaffProfile(int userId, UpdateStaffBaseModel model);
-        Task<Response<bool>> ChangePassword(int userId, ChangePasswordModel model);
+        Task<Response<bool>> ChangePassword(ChangePasswordModel model);
         Task<Response<bool>> ChangePasswordByUserId(int userId, ChangePasswordByIdModel model);
         Task<Response<Customer>> CreateCustomer(int UserId, CreateCustomerModel model);
         Task<Response<bool>> CreateStaff(CreateStaffModel model);
         Task<Response<object>> GetUserProfile(int userId);
         Task<Response<TokenVerifyResponse>> CreateTokenVerifyEmail(int userId);
         Task<Response<bool>> CheckTokenVerifyEmail(int userId, TokenVerifyModel model);
-        Task<Response<TokenVerifyResponse>> CreateTokenVerifyPassword(int userId);
+        Task<Response<TokenVerifyResponse>> CreateTokenVerifyPassword(ForgotPasswordModel request);
         Task<Response<bool>> UpdateEmail(int userId, string email);
         Task<Response<CustomerViewModel>> GetCustomerProfile(int id);
         Task<PageResult<CustomerViewModel>> SearchCustomer(CustomerPagingRequest request);
@@ -39,5 +39,6 @@ namespace UtNhanDrug_BE.Services.ManagerService
         //Task<Response<bool>> CheckUser(int userId);
         Task<Response<string>> RecoveryPassword(int userId);
         //Task<bool> UpdateManagerProfile(int userId, UpdateManagerModel model);
+        //Task<Response<ForgotPasswordResponse>> GetUserForgotPassword(ForgotPasswordModel request);
     }
 }

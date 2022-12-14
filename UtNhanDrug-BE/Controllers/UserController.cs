@@ -190,24 +190,24 @@ namespace UtNhanDrug_BE.Controllers
             return StatusCode(token.StatusCode, token);
         }
 
-        [Authorize]
+        //[Authorize]
         [Route("token-verify-password")]
         [HttpPost]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult> CreateTokenVerifyPassword()
+        public async Task<ActionResult> CreateTokenVerifyPassword([FromBody] ForgotPasswordModel request)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[0].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "Bạn chưa đăng nhập" });
-            }
-            var token = await _userSvc.CreateTokenVerifyPassword(userId);
+            //var identity = HttpContext.User.Identity as ClaimsIdentity;
+            //IList<Claim> claim = identity.Claims.ToList();
+            //int userId;
+            //try
+            //{
+            //    userId = Convert.ToInt32(claim[0].Value);
+            //}
+            //catch (Exception)
+            //{
+            //    return BadRequest(new { message = "Bạn chưa đăng nhập" });
+            //}
+            var token = await _userSvc.CreateTokenVerifyPassword(request);
             return StatusCode(token.StatusCode, token);
         }
 
@@ -281,22 +281,22 @@ namespace UtNhanDrug_BE.Controllers
             return StatusCode(result.StatusCode, result);
         }
         
-        [Authorize]
+        //[Authorize]
         [HttpPut("accounts/reset-password")]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> ChangePassword([FromForm] ChangePasswordModel model)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            IList<Claim> claim = identity.Claims.ToList();
-            int userId;
-            try
-            {
-                userId = Convert.ToInt32(claim[0].Value);
-            }
-            catch (Exception)
-            {
-                return BadRequest(new { message = "Bạn chưa đăng nhập" });
-            }
+            //var identity = HttpContext.User.Identity as ClaimsIdentity;
+            //IList<Claim> claim = identity.Claims.ToList();
+            //int userId;
+            //try
+            //{
+            //    userId = Convert.ToInt32(claim[0].Value);
+            //}
+            //catch (Exception)
+            //{
+            //    return BadRequest(new { message = "Bạn chưa đăng nhập" });
+            //}
 
             ////check email
             //var user = await _userSvc.CheckUser(userId);
@@ -313,7 +313,7 @@ namespace UtNhanDrug_BE.Controllers
             //var checkToken = await _userSvc.CheckVerifyPassword(userId, model.TokenRecovery);
             //if (checkToken == false) return BadRequest(new { message = "Mã xác thực sai" });
             //check change password
-            var result = await _userSvc.ChangePassword(userId, model);
+            var result = await _userSvc.ChangePassword(model);
             return StatusCode(result.StatusCode, result);
         }
 

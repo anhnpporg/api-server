@@ -38,6 +38,7 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 {
                     return new AccessTokenModel()
                     {
+                        StatusCode = 400,
                         AccessToken = "",
                         Message = "Tài khoản đã bị cấm"
                     };
@@ -48,8 +49,8 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
             {
                 isAdmin = false;
             }
-            if (checkLogin == -1) return new AccessTokenModel() { AccessToken = "", Message = "Không tìm thấy tên đăng nhặp" };
-            if (checkLogin == 0) return new AccessTokenModel() { AccessToken = "", Message = "Mật khẩu không đúng" };
+            if (checkLogin == -1) return new AccessTokenModel() {StatusCode = 400, AccessToken = "", Message = "Không tìm thấy tên đăng nhặp" };
+            if (checkLogin == 0) return new AccessTokenModel() {StatusCode = 400, AccessToken = "", Message = "Mật khẩu không đúng" };
             if (checkLogin == 1)
             {
                 if(isAdmin == true)
@@ -60,10 +61,11 @@ namespace UtNhanDrug_BE.Services.AuthenticationService
                 var accessToken = await CreateToken(model);
                 return new AccessTokenModel() { Message = "Thành công", 
                                                 AccessToken = accessToken.Trim(),
-                                                IsAdmin = isAdmin
+                                                IsAdmin = isAdmin,
+                                                StatusCode = 200
                 };
             }
-            return new AccessTokenModel() { Message = "Fail", AccessToken = "" };
+            return new AccessTokenModel() {StatusCode = 400, Message = "Fail", AccessToken = "" };
         }
 
         private async Task<String> CreateToken(LoginModel model)
