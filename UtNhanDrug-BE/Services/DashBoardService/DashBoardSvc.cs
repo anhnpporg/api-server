@@ -287,7 +287,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     if (request.ByDay == true & request.ByMonth == false & request.ByYear == false)
                     {
                         var query = from g in _context.GoodsIssueNotes
-                                    where g.OrderDetail.Invoice.CreatedAt.Date == today.Date
+                                    where g.OrderDetail.Invoice.CreatedAt.Date == today.Date & g.GoodsIssueNoteTypeId == 1
                                     select g;
                         var result = query.Select(x => x.Batch.Product).Distinct();
                         var data = await result.Take(request.Size).Select(y => new TopSellingModel()
@@ -310,7 +310,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                         var month = today.Month;
                         var year = today.Year;
                         var query = from g in _context.GoodsIssueNotes
-                                    where g.OrderDetail.Invoice.CreatedAt.Month == month & g.OrderDetail.Invoice.CreatedAt.Year == year
+                                    where g.OrderDetail.Invoice.CreatedAt.Month == month & g.OrderDetail.Invoice.CreatedAt.Year == year & g.GoodsIssueNoteTypeId == 1
                                     select g;
                         var result = query.Select(x => x.Batch.Product).Distinct();
                         var data = await result.Take(request.Size).Select(y => new TopSellingModel()
@@ -332,7 +332,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     {
                         var year = today.Year;
                         var query = from g in _context.GoodsIssueNotes
-                                    where g.OrderDetail.Invoice.CreatedAt.Year == year
+                                    where g.OrderDetail.Invoice.CreatedAt.Year == year & g.GoodsIssueNoteTypeId == 1
                                     select g;
                         var result = query.Select(x => x.Batch.Product).Distinct();
                         var data = await result.Take(request.Size).Select(y => new TopSellingModel()
