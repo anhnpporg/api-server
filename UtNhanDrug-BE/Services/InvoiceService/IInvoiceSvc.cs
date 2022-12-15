@@ -15,5 +15,6 @@ namespace UtNhanDrug_BE.Services.InvoiceService
         Task<Response<List<ViewOrderDetailModel>>> ViewOrderDetailByInvoiceId(int id);
         Task<Response<List<ViewOrderDetailModel>>> ViewOrderDetailByBarcode(string barcode);
         Task<Response<ViewInvoiceModel>> GetInvoiceByInvoiceBarcode(string invoiceBarcode);
+        Task<Response<List<ViewGoodsIssueNoteModel>>> GetViewGoodsIssueNoteModel(List<int> GINId);
     }
 }

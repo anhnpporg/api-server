@@ -270,9 +270,43 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 }
                 else if (model.GoodsIssueNoteTypeId == 2)
                 {
+                    //List<int> GINId = new List<int>();
+                    Invoice i = new Invoice()
+                    {
+                        CustomerId = model.CustomerId,
+                        BodyWeight = model.BodyWeight,
+                        Barcode = "####",
+                        DayUse = model.DayUse,
+                        Discount = 0,
+                        TotalPrice = 0,
+                        CreatedBy = UserId,
+                        CreatedAt = today
+                    };
+                    _context.Invoices.Add(i);
+                    await _context.SaveChangesAsync();
+
+                    if (i != null)
+                    {
+                        var barcode = GenaralBarcode.CreateEan13GIN(i.Id + "");
+                        i.Barcode = barcode;
+                        await _context.SaveChangesAsync();
+                    }
                     //add product ro order detail
                     foreach (OrderDetailModel x in model.Product)
                     {
+                        OrderDetail o = new OrderDetail()
+                        {
+                            InvoiceId = i.Id,
+                            ProductId = x.ProductId,
+                            Dose = x.Dose,
+                            UnitDose = x.UnitDose,
+                            Frequency = x.Frequency,
+                            DayUse = x.DayUse,
+                            Use = x.Use,
+                            TotalPrice = 0,
+                        };
+                        _context.OrderDetails.Add(o);
+                        await _context.SaveChangesAsync();
                         if (x.GoodsIssueNote.Count() == 0)
                         {
                             await transaction.RollbackAsync();
@@ -318,6 +352,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             GoodsIssueNote g = new GoodsIssueNote()
                             {
                                 GoodsIssueNoteTypeId = model.GoodsIssueNoteTypeId,
+                                OrderDetailId = o.Id,
                                 BatchId = goods.BatchId,
                                 Quantity = goods.Quantity,
                                 Unit = unit.Unit,
@@ -325,14 +360,19 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                                 ConvertedQuantity = ConvertedQuantity,
                             };
                             _context.GoodsIssueNotes.Add(g);
+                            o.TotalPrice += g.UnitPrice * g.Quantity;
+                            //i.TotalPrice += o.TotalPrice;
                             await _context.SaveChangesAsync();
+                            //GINId.Add(g.Id);
                         }
+                        i.TotalPrice += o.TotalPrice;
+                        await _context.SaveChangesAsync();
                     }
                     await transaction.CommitAsync();
 
-                    return new Response<InvoiceResponse>(null)
+                    return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = i.Id })
                     {
-                        Message = "Tạo hoá đơn thành công"
+                        Message = "Xuất hỏng sản phẩm thành công"
                     };
                 }
                 await transaction.RollbackAsync();
@@ -729,6 +769,32 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 BaseUnitPrice = x.Price
             }).FirstOrDefaultAsync();
             return data;
+        }
+
+        public async Task<Response<List<ViewGoodsIssueNoteModel>>> GetViewGoodsIssueNoteModel(List<int> GINId)
+        {
+            List<ViewGoodsIssueNoteModel> ginm = new List<ViewGoodsIssueNoteModel>();
+            var query = from gin in _context.GoodsIssueNotes
+                        where gin.GoodsIssueNoteTypeId == 2
+                        select gin;
+            var data = await query.ToListAsync();
+            foreach(var i in GINId)
+            {
+                var result = data.Where(x => x.Id == i).Select(x => new ViewGoodsIssueNoteModel()
+                {
+                    Id = x.Id,
+                    BatchId = x.BatchId,
+                    ConvertedQuantity = x.ConvertedQuantity,
+                    Quantity = x.Quantity,
+                    Unit = x.Unit,
+                    UnitPrice = x.UnitPrice
+                }).FirstOrDefault();
+                ginm.Add(result);
+            }
+            return new Response<List<ViewGoodsIssueNoteModel>>(ginm)
+            {
+                Message = "Thông tin xuất hàng"
+            };
         }
     }
 }

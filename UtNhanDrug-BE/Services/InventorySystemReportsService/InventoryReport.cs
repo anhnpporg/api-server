@@ -60,6 +60,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 TitleBatch = "Có " + x.Count() + " thông báo về tình trạng lô"
             }).ToList();
 
+            var key = data.Select(x => x.NotiDate).ToList();
             var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.ProductId != null & x.BatchId == null)
               .GroupBy(x => x.CreatedAt.Date)
@@ -70,19 +71,33 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 NotiDate = x.Key,
                 TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
             }).ToList();
+            var key1 = data1.Select(x => x.NotiDate).ToList();
+            var unionLKey = key.Union(key1).ToList();
 
-            foreach (var x in data)
+            var result = new List<ShowNotiModel>();
+            foreach (var x in unionLKey)
             {
-                foreach (var y in data1)
+                result.Add(new ShowNotiModel() { NotiDate = x });
+            }
+            foreach (var x in result)
+            {
+                foreach (var y in data)
                 {
                     if (x.NotiDate == y.NotiDate)
                     {
-                        x.TitleQuantity = y.TitleQuantity;
+                        x.TitleBatch = y.TitleBatch;
+                    }
+                }
+                foreach (var z in data1)
+                {
+                    if (x.NotiDate == z.NotiDate)
+                    {
+                        x.TitleQuantity = z.TitleQuantity;
                     }
                 }
             }
 
-            return new Response<List<ShowNotiModel>>(data);
+            return new Response<List<ShowNotiModel>>(result);
         }
 
 
@@ -93,7 +108,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
               .GroupBy(x => x.CreatedAt.Date)
               .OrderByDescending(x => x.Key).Where(x => x.Key == key);
 
-            
+
             var data = queryNoti.Take(5).Select(x => new ViewNotiModel()
             {
                 NotiDate = x.Key,
@@ -137,10 +152,11 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 }
             }).ToList();
 
-            foreach(var x in data){
-                foreach( var y in data1)
+            foreach (var x in data)
+            {
+                foreach (var y in data1)
                 {
-                    if(x.NotiDate == y.NotiDate)
+                    if (x.NotiDate == y.NotiDate)
                     {
                         x.ListNotiQuantity = y.ListNotiQuantity;
                     }
@@ -162,7 +178,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 NotiDate = x.Key,
                 TitleBatch = "Có " + x.Count() + " thông báo về tình trạng lô "
             }).ToList();
-
+            var key = data.Select(x => x.NotiDate).ToList();
             var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.ProductId != null & x.BatchId == null)
               .GroupBy(x => x.CreatedAt.Date)
@@ -173,19 +189,33 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 NotiDate = x.Key,
                 TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
             }).ToList();
+            var key1 = data1.Select(x => x.NotiDate).ToList();
+            var unionLKey = key.Union(key1).ToList().Distinct();
 
-            foreach (var x in data)
+            var result = new List<ShowNotiModel>();
+            foreach (var x in unionLKey)
             {
-                foreach (var y in data1)
+                result.Add(new ShowNotiModel() { NotiDate = x });
+            }
+            foreach (var x in result)
+            {
+                foreach (var y in data)
                 {
                     if (x.NotiDate == y.NotiDate)
                     {
-                        x.TitleQuantity = y.TitleQuantity;
+                        x.TitleBatch = y.TitleBatch;
+                    }
+                }
+                foreach (var z in data1)
+                {
+                    if (x.NotiDate == z.NotiDate)
+                    {
+                        x.TitleQuantity = z.TitleQuantity;
                     }
                 }
             }
 
-            return new Response<List<ShowNotiModel>>(data);
+            return new Response<List<ShowNotiModel>>(result);
         }
     }
 }
