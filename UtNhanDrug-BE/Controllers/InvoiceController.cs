@@ -64,6 +64,16 @@ namespace UtNhanDrug_BE.Controllers
         }
         
         [Authorize]
+        [Route("goods-issue-note")]
+        [HttpGet]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult> GetGoodsIssueNote([FromQuery] List<int> request)
+        {
+            var result = await _invoiceSvc.GetViewGoodsIssueNoteModel(request);
+            return StatusCode(result.StatusCode, result);
+        }
+        
+        [Authorize]
         [Route("customers/{id}/invoices")]
         [HttpGet]
         [MapToApiVersion("1.0")]
