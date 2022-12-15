@@ -164,7 +164,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     if (request.ByDay == true & request.ByMonth == false & request.ByYear == false)
                     {
                         var query = from i in _context.Invoices
-                                    where i.CreatedAt == DateTime.Now
+                                    where i.CreatedAt == DateTime.Now & i.Barcode.Contains("INV")
                                     select i;
                         var data = await query.OrderByDescending(x => x.CreatedAt).Take(request.Size).Select(x => new RecentSalesModel()
                         {
@@ -183,7 +183,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                         var month = DateTime.Now.Month;
                         var year = DateTime.Now.Year;
                         var query = from i in _context.Invoices
-                                    where i.CreatedAt.Month == month & i.CreatedAt.Year == year
+                                    where i.CreatedAt.Month == month & i.CreatedAt.Year == year & i.Barcode.Contains("INV")
                                     select i;
                         var data = await query.OrderByDescending(x => x.CreatedAt).Take(request.Size).Select(x => new RecentSalesModel()
                         {
@@ -202,7 +202,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                     {
                         var year = DateTime.Now.Year;
                         var query = from i in _context.Invoices
-                                    where i.CreatedAt.Year == year
+                                    where i.CreatedAt.Year == year & i.Barcode.Contains("INV")
                                     select i;
                         var data = await query.OrderByDescending(x => x.CreatedAt).Take(request.Size).Select(x => new RecentSalesModel()
                         {
@@ -245,12 +245,12 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                             select i;
                 var query1 = from i in _context.GoodsReceiptNotes
                              select i;
-                var quantityOrderNow = await query.Where(x => x.CreatedAt >= todayConvert).CountAsync();
+                var quantityOrderNow = await query.Where(x => x.CreatedAt >= todayConvert & x.Barcode.Contains("INV")).CountAsync();
 
-                var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
+                var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert & x.Barcode.Contains("INV")).Select(x => x.TotalPrice).SumAsync();
 
 
-                var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
+                var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync() + await query.Where(x => x.CreatedAt >= todayConvert & x.Barcode.Contains("GIN")).Select(x => x.TotalPrice).SumAsync();
 
 
                 decimal profitNow = turnoverNow - costNow;

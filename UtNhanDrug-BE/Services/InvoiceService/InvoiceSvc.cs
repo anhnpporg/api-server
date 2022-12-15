@@ -352,6 +352,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             GoodsIssueNote g = new GoodsIssueNote()
                             {
                                 GoodsIssueNoteTypeId = model.GoodsIssueNoteTypeId,
+                                OrderDetailId = o.Id,
                                 BatchId = goods.BatchId,
                                 Quantity = goods.Quantity,
                                 Unit = unit.Unit,
@@ -359,9 +360,13 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                                 ConvertedQuantity = ConvertedQuantity,
                             };
                             _context.GoodsIssueNotes.Add(g);
+                            o.TotalPrice += g.UnitPrice * g.Quantity;
+                            //i.TotalPrice += o.TotalPrice;
                             await _context.SaveChangesAsync();
                             //GINId.Add(g.Id);
                         }
+                        i.TotalPrice += o.TotalPrice;
+                        await _context.SaveChangesAsync();
                     }
                     await transaction.CommitAsync();
 
