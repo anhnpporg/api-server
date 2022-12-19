@@ -101,7 +101,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
         }
 
 
-        public async Task<Response<List<ViewNotiModel>>> ViewDetailNoti(DateTime key)
+        public async Task<Response<ViewNotiModel>> ViewDetailNoti(DateTime key)
         {
             var queryNoti = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.BatchId != null & x.ProductId == null)
@@ -109,7 +109,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
               .OrderByDescending(x => x.Key).Where(x => x.Key == key);
 
 
-            var data = queryNoti.Take(5).Select(x => new ViewNotiModel()
+            var data = queryNoti.Select(x => new ViewNotiModel()
             {
                 NotiDate = x.Key,
                 ListNotiBatch = new ListNoti()
@@ -126,14 +126,27 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                         CreatedAt = x.CreatedAt
                     }).ToList()
                 }
-            }).ToList();
+            }).FirstOrDefault();
+            if(data == null)
+            {
+                data = new ViewNotiModel()
+                {
+                    NotiDate = key,
+                    ListNotiBatch = new ListNoti()
+                    {
+                        Title = "Có 0 thông báo về tình trạng lô",
+                        ListNotification = null
+                    }
+                };
+            }
+
 
             var queryNoti1 = _context.InventorySystemReports.AsEnumerable()
                 .Where(x => x.ProductId != null & x.BatchId == null)
               .GroupBy(x => x.CreatedAt.Date)
               .OrderByDescending(x => x.Key).Where(x => x.Key == key);
 
-            var data1 = queryNoti1.Take(5).Select(x => new ViewNotiModel()
+            var data1 = queryNoti1.Select(x => new ViewNotiModel()
             {
                 NotiDate = x.Key,
                 ListNotiQuantity = new ListNoti()
@@ -150,20 +163,40 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                         CreatedAt = x.CreatedAt
                     }).ToList()
                 }
-            }).ToList();
-
-            foreach (var x in data)
+            }).FirstOrDefault();
+            if (data1 == null)
             {
-                foreach (var y in data1)
+                data1 = new ViewNotiModel()
                 {
-                    if (x.NotiDate == y.NotiDate)
+                    NotiDate = key,
+                    ListNotiQuantity = new ListNoti()
                     {
-                        x.ListNotiQuantity = y.ListNotiQuantity;
+                        Title = "Có 0 thông báo về tình trạng số lượng sản phẩm",
+                        ListNotification = null
                     }
-                }
+                };
             }
+            //List<ViewNotiModel> result = new List<ViewNotiModel>();
 
-            return new Response<List<ViewNotiModel>>(data);
+            ViewNotiModel view = new ViewNotiModel()
+            {
+                NotiDate = key,
+                ListNotiBatch = data.ListNotiBatch,
+                ListNotiQuantity = data1.ListNotiQuantity
+            };
+
+            //foreach (var x in data)
+            //{
+            //    view.ListNotiBatch = x.ListNotiBatch;
+            //}
+            //foreach (var y in data1)
+            //{
+            //    view.ListNotiQuantity = y.ListNotiQuantity;
+            //}
+
+            //result.Add(view);
+
+            return new Response<ViewNotiModel>(view);
         }
 
         public async Task<Response<List<ShowNotiModel>>> ShowFilterNoti()
@@ -189,6 +222,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 NotiDate = x.Key,
                 TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
             }).ToList();
+
             var key1 = data1.Select(x => x.NotiDate).ToList();
             var unionLKey = key.Union(key1).ToList().Distinct();
 

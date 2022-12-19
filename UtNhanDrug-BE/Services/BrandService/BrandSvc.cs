@@ -77,11 +77,15 @@ namespace UtNhanDrug_BE.Services.BrandService
                 var brand = await _context.Brands.FirstOrDefaultAsync(x => x.Id == brandId);
                 if (brand != null)
                 {
-                    if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                    if (brand.Name != model.Name)
                     {
-                        StatusCode = 400,
-                        Message = "Tên nhà sản xuất này đã tồn tại"
-                    };
+                        if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Tên nhà sản xuất này đã tồn tại"
+                        };
+                    }
+                    
                     brand.Name = model.Name;
                     brand.UpdatedAt = today;
                     brand.UpdatedBy = userId;

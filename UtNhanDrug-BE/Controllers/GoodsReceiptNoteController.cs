@@ -89,6 +89,11 @@ namespace UtNhanDrug_BE.Controllers
         [MapToApiVersion("1.0")]
         public async Task<ActionResult> CreateGRN([FromBody] CreateGoodsReceiptNoteModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(400, new {mess = "aa"});
+            }
+            
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             IList<Claim> claim = identity.Claims.ToList();
             int userId;

@@ -10,7 +10,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
     {
         Task SaveNoti(SaveNotiRequest request);
         Task<Response<List<ShowNotiModel>>> ViewAllNoti();
-        Task<Response<List<ViewNotiModel>>> ViewDetailNoti(DateTime key);
+        Task<Response<ViewNotiModel>> ViewDetailNoti(DateTime key);
         Task<Response<List<ShowNotiModel>>> ShowFilterNoti();
         Task CheckViewNoti(int id);
     }

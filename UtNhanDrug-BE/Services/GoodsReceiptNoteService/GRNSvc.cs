@@ -379,9 +379,17 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Message = "Không tìm thấy sản phẩm để nhập hàng"
                 };
             }
-            catch
+            catch(Exception e)
             {
                 await transaction.RollbackAsync();
+                if (e.InnerException.Message.Contains("Arithmetic overflow error converting numeric to data type money"))
+                {
+                    return new Response<List<GRNResponse>>(null)
+                    {
+                        StatusCode = 500,
+                        Message = "Tiền nhập vào hệ thống không hợp lệ"
+                    };
+                }
                 return new Response<List<GRNResponse>>(null)
                 {
                     StatusCode = 500,

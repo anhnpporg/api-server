@@ -285,11 +285,14 @@ namespace UtNhanDrug_BE.Services.ShelfService
                 var shelf = await _context.Shelves.FirstOrDefaultAsync(x => x.Id == categoryId);
                 if (shelf != null)
                 {
-                    if (await CheckShelf(model.Name) == false) return new Response<bool>(false)
+                    if (shelf.Name != model.Name)
                     {
-                        StatusCode = 400,
-                        Message = "Tên kệ hàng đã tồn tại"
-                    };
+                        if (await CheckShelf(model.Name) == false) return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Tên kệ hàng đã tồn tại"
+                        };
+                    }
                     shelf.Name = model.Name;
                     shelf.UpdatedAt = today;
                     shelf.UpdatedBy = userId;
