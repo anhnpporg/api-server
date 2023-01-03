@@ -175,6 +175,44 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     Message = "Vui lòng chọn sản phẩm để trả"
                                 };
                             }
+                            //Convert point
+                            //decimal toMoney = 1000;
+                            //decimal toPoint = (decimal)await _context.DataSettingSystemCustomerPoints.Select(x => x.ToPoint).FirstOrDefaultAsync();
+
+                            //int point = (int)(totalPrice / toPoint);
+                            var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
+
+                            var queryGRN = from g in _context.GoodsReceiptNotes
+                                           where g.InvoiceId == model.InvoiceId
+                                           select g;
+                            var dataGRN = await queryGRN.FirstOrDefaultAsync();
+                            if (dataGRN == null)
+                            {
+                                if (customer != null)
+                                {
+                                    int point = (int)await _context.CustomerPointTransactions.Where(x => x.InvoiceId == model.InvoiceId & x.IsReciept == true).Select(x => x.Point).FirstOrDefaultAsync();
+                                    var query1 = from c in _context.Customers
+                                                 where c.Id == customer.Id
+                                                 select c;
+                                    float totalPoint = (float)await query1.Select(x => x.TotalPoint).FirstOrDefaultAsync();
+
+                                    CustomerPointTransaction cpt = new CustomerPointTransaction()
+                                    {
+                                        CustomerId = (int)customer.Id,
+                                        InvoiceId = (int)model.InvoiceId,
+                                        Point = point,
+                                        IsReciept = false,
+                                    };
+                                    await _context.CustomerPointTransactions.AddAsync(cpt);
+
+                                    totalPoint -= point;
+
+                                    customer.TotalPoint = totalPoint;
+                                }
+                            }
+
+                            await _context.SaveChangesAsync();
+
                             decimal totalPrice = 0;
                             List<GRNResponse> grns = new List<GRNResponse>();
                             foreach (var m in model.CreateModel)
@@ -187,7 +225,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                                 where g.OrderDetail.InvoiceId == model.InvoiceId
                                                 select g;
                                     var gin = await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).FirstOrDefaultAsync();
-
+                                    double unitPrice = (double)((await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.UnitPrice).FirstOrDefaultAsync() * await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.Quantity).FirstOrDefaultAsync())  / await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.ConvertedQuantity).FirstOrDefaultAsync());
                                     var invoiceQuery = from gn in _context.GoodsReceiptNotes
                                                        where gn.InvoiceId == model.InvoiceId & gn.GoodsReceiptNoteTypeId == 2 & gn.BatchId == b.BatchId
                                                        select gn;
@@ -234,7 +272,8 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         InvoiceId = model.InvoiceId,
                                         Quantity = (int)b.Quantity,
                                         Unit = unit.Unit,
-                                        TotalPrice = (decimal)b.TotalPrice,
+                                        //TotalPrice = (decimal)b.TotalPrice,
+                                        TotalPrice = (decimal)(unitPrice *b.Quantity),
                                         ConvertedQuantity = convertedQuantity,
                                         BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
                                         CreatedBy = userId,
@@ -247,34 +286,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                     totalPrice += grn.ConvertedQuantity * grn.BaseUnitPrice;
                                 }
                             }
-                            //Convert point
-                            //decimal toMoney = 1000;
-                            decimal toPoint = 10000;
-
-                            int point = (int)(totalPrice / toPoint);
-                            var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
-                            //get customer total point
-                            if (customer != null)
-                            {
-                                var query1 = from c in _context.Customers
-                                             where c.Id == customer.Id
-                                             select c;
-                                float totalPoint = (float)await query1.Select(x => x.TotalPoint).FirstOrDefaultAsync();
-
-                                CustomerPointTransaction cpt = new CustomerPointTransaction()
-                                {
-                                    CustomerId = (int)customer.Id,
-                                    InvoiceId = (int)model.InvoiceId,
-                                    Point = point,
-                                    IsReciept = false,
-                                };
-                                await _context.CustomerPointTransactions.AddAsync(cpt);
-
-                                totalPoint -= point;
-
-                                customer.TotalPoint = totalPoint;
-                            }
-
+                            
                             await _context.SaveChangesAsync();
 
                             await transaction.CommitAsync();
@@ -333,12 +345,13 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
 
                             //Convert point
                             //decimal toMoney = 1000;
-                            decimal toPoint = 10000;
+                            //decimal toPoint = 10000;
 
-                            int point = (int)(totalPrice / toPoint);
+                            //int point = (int)(totalPrice / toPoint);
                             var customer = await _context.Invoices.Where(x => x.Id == model.InvoiceId).Select(x => x.Customer).FirstOrDefaultAsync();
                             if(customer != null)
                             {
+                                int point = (int)await _context.CustomerPointTransactions.Where(x => x.InvoiceId == model.InvoiceId & x.IsReciept == true).Select(x => x.Point).FirstOrDefaultAsync();
                                 var query2 = from c in _context.Customers
                                              where c.Id == customer.Id
                                              select c;

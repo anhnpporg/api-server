@@ -72,7 +72,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 TitleQuantity = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm"
             }).ToList();
             var key1 = data1.Select(x => x.NotiDate).ToList();
-            var unionLKey = key.Union(key1).ToList();
+            var unionLKey = key.Union(key1).OrderByDescending(x => x.Date).ToList();
 
             var result = new List<ShowNotiModel>();
             foreach (var x in unionLKey)
@@ -115,6 +115,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 ListNotiBatch = new ListNoti()
                 {
                     Title = "Có " + x.Count() + " thông báo về tình trạng lô",
+                    IsNotReadCount = x.Where(x => x.IsRead == false).Count(),
                     ListNotification = x.Select(x => new Noti()
                     {
                         Id = x.Id,
@@ -152,6 +153,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                 ListNotiQuantity = new ListNoti()
                 {
                     Title = "Có " + x.Count() + " thông báo về tình trạng số lượng sản phẩm",
+                    IsNotReadCount = x.Where(x => x.IsRead == false).Count(),
                     ListNotification = x.Select(x => new Noti()
                     {
                         Id = x.Id,
@@ -224,7 +226,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
             }).ToList();
 
             var key1 = data1.Select(x => x.NotiDate).ToList();
-            var unionLKey = key.Union(key1).ToList().Distinct();
+            var unionLKey = key.Union(key1).OrderByDescending(x => x.Date).ToList().Distinct();
 
             var result = new List<ShowNotiModel>();
             foreach (var x in unionLKey)
@@ -248,6 +250,7 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                     }
                 }
             }
+            result.OrderBy(x => x.NotiDate);
 
             return new Response<List<ShowNotiModel>>(result);
         }

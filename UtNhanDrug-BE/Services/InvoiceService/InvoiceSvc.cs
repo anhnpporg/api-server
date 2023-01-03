@@ -237,7 +237,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add point
                     if (model.CustomerId != null)
                     {
-                        int point = (int)(i.TotalPrice / toPoint);
+                        int point = (int)( (i.TotalPrice - i.Discount) / toPoint);
                         // save transaction use point
                         CustomerPointTransaction cpt1 = new CustomerPointTransaction()
                         {
@@ -526,6 +526,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     Name = x.CreatedByNavigation.FullName
                 },
                 BodyWeight = x.BodyWeight,
+                ReturnPoin = (int?)x.CustomerPointTransactions.Where(x => x.IsReciept == true).Select(x => x.Point).FirstOrDefault(),
                 CreatedAt = x.CreatedAt,
                 Customer = new ViewCustomer()
                 {
@@ -734,7 +735,8 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Batch = new ViewModel()
                 {
                     Id = x.g.Batch.Id,
-                    Name = x.g.Batch.Barcode
+                    Name = x.g.Batch.Barcode,
+                    IsManageInBatch = x.g.Batch.Product.IsManagedInBatches
                 },
                 Quantity = x.g.Quantity,
                 Unit = x.g.Unit,
@@ -744,6 +746,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 DayUse = x.o.DayUse,
                 Dose = x.o.Dose,
                 Frequency = x.o.Frequency,
+                CurrentUnitPrice = x.o.TotalPrice/x.g.ConvertedQuantity,
                 GoodsIssueNoteType = new ViewModel()
                 {
                     Id = x.g.GoodsIssueNoteType.Id,
@@ -782,6 +785,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         select pu;
             var data = await query.Where(x => x.IsBaseUnit == true).Select(x => new ViewBaseProductUnit()
             {
+                BaseUnitId = x.Id,
                 BaseUnit = x.Unit,
                 BaseUnitPrice = x.Price
             }).FirstOrDefaultAsync();

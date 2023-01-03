@@ -13,6 +13,7 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public decimal TotalPrice { get; set; }
         public decimal Discount { get; set; }
         public int IsReturn { get; set; }
+        public int? ReturnPoin { get; set; }
         public DateTime CreatedAt { get; set; }
         public ViewModel CreatedBy { get; set; }
     }
