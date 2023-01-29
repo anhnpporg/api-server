@@ -10,7 +10,7 @@ using UtNhanDrug_BE.Models.HandlerModel;
 using UtNhanDrug_BE.Services.InventorySystemReportsService;
 
 namespace UtNhanDrug_BE.Services.HandlerService
-{
+{   
     public class HandlerSvc : IHandlerSvc
     {
         private readonly ut_nhan_drug_store_databaseContext _context;
