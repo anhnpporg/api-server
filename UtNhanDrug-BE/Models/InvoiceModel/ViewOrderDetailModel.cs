@@ -22,10 +22,12 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
         public int ReturnedQuantity { get; set; }
         public ViewBaseProductUnit? ViewBaseProductUnit { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal? CurrentUnitPrice { get; set; }
         //public DateTime CreatTime { get; set; }
     }
     public class ViewBaseProductUnit
     {
+        public int BaseUnitId { get; set; }
         public string? BaseUnit { get; set; }
         public decimal? BaseUnitPrice { get; set; }
     }

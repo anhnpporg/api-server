@@ -611,7 +611,7 @@ namespace UtNhanDrug_BE.Services.ManagerService
                     PasswordHash = passwordEncode,
                     HashingAlgorithmId = hashAlgorithmsId,
                     EmailAddressRecovery = email,
-                    EmailValidationStatusId = 2
+                    EmailValidationStatusId = 3
                 };
                 _context.UserLoginData.Add(u);
 

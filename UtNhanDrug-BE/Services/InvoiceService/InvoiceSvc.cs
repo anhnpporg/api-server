@@ -237,7 +237,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     //add point
                     if (model.CustomerId != null)
                     {
-                        int point = (int)(i.TotalPrice / toPoint);
+                        int point = (int)( (i.TotalPrice - i.Discount) / toPoint);
                         // save transaction use point
                         CustomerPointTransaction cpt1 = new CustomerPointTransaction()
                         {
@@ -382,9 +382,17 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     Message = "Thất bại, không có gì để thanh toán"
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 await transaction.RollbackAsync();
+                if (e.InnerException.Message.Contains("Arithmetic overflow error converting numeric to data type money"))
+                {
+                    return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = -1 })
+                    {
+                        StatusCode = 500,
+                        Message = "Tiền nhập vào hệ thống không hợp lệ"
+                    };
+                }
                 return new Response<InvoiceResponse>(new InvoiceResponse() { InvoiceId = -1 })
                 {
                     StatusCode = 500,
@@ -499,6 +507,15 @@ namespace UtNhanDrug_BE.Services.InvoiceService
             var query = from i in _context.Invoices
                         where i.Barcode == invoiceBarcode
                         select i;
+            var offset = today.Date - await query.Select(x => x.CreatedAt.Date).FirstOrDefaultAsync();
+            if(offset.Days > 7)
+            {
+                return new Response<ViewInvoiceModel>(null)
+                {
+                    StatusCode = 400,
+                    Message = "Đơn hàng đã quá hạn, không thể trả"
+                };
+            }
             var data = await query.Select(x => new ViewInvoiceModel()
             {
                 Id = x.Id,
@@ -509,6 +526,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                     Name = x.CreatedByNavigation.FullName
                 },
                 BodyWeight = x.BodyWeight,
+                ReturnPoin = (int?)x.CustomerPointTransactions.Where(x => x.IsReciept == true).Select(x => x.Point).FirstOrDefault(),
                 CreatedAt = x.CreatedAt,
                 Customer = new ViewCustomer()
                 {
@@ -717,7 +735,8 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 Batch = new ViewModel()
                 {
                     Id = x.g.Batch.Id,
-                    Name = x.g.Batch.Barcode
+                    Name = x.g.Batch.Barcode,
+                    IsManageInBatch = x.g.Batch.Product.IsManagedInBatches
                 },
                 Quantity = x.g.Quantity,
                 Unit = x.g.Unit,
@@ -727,6 +746,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                 DayUse = x.o.DayUse,
                 Dose = x.o.Dose,
                 Frequency = x.o.Frequency,
+                CurrentUnitPrice = x.o.TotalPrice/x.g.ConvertedQuantity,
                 GoodsIssueNoteType = new ViewModel()
                 {
                     Id = x.g.GoodsIssueNoteType.Id,
@@ -765,6 +785,7 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                         select pu;
             var data = await query.Where(x => x.IsBaseUnit == true).Select(x => new ViewBaseProductUnit()
             {
+                BaseUnitId = x.Id,
                 BaseUnit = x.Unit,
                 BaseUnitPrice = x.Price
             }).FirstOrDefaultAsync();

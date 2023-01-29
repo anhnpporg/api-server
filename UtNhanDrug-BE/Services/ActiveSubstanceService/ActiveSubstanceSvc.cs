@@ -275,11 +275,14 @@ namespace UtNhanDrug_BE.Services.ActiveSubstanceService
                 var result = await _context.ActiveSubstances.FirstOrDefaultAsync(x => x.Id == id);
                 if (result != null)
                 {
-                    if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                    if (result.Name != model.Name)
                     {
-                        StatusCode = 400,
-                        Message = "Tên hoạt chất đã tồn tại"
-                    };
+                        if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Tên hoạt chất đã tồn tại"
+                        };
+                    }
                     result.Name = model.Name;
                     result.UpdatedAt = today;
                     result.UpdatedBy = userId;

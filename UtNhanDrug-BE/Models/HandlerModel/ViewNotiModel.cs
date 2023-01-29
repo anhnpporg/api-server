@@ -11,6 +11,7 @@ namespace UtNhanDrug_BE.Models.HandlerModel
     }
     public class ListNoti{
         public string Title { get; set; }
+        public int IsNotReadCount { get; set; }
         public List<Noti> ListNotification { get; set; }
         public int IsNotReadCount { get; set; }
     }

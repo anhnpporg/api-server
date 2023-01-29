@@ -35,7 +35,7 @@ namespace UtNhanDrug_BE.Services.ProductService
 
         private async Task<bool> CheckDrugRegistrationNumber(string drugRegistrationNumber)
         {
-            var result = await _context.Products.FirstOrDefaultAsync(x => x.DrugRegistrationNumber.ToLower() == drugRegistrationNumber.ToLower())  ;
+            var result = await _context.Products.FirstOrDefaultAsync(x => x.DrugRegistrationNumber.ToLower() == drugRegistrationNumber.ToLower());
             if (result != null) return true;
             return false;
         }
@@ -173,9 +173,17 @@ namespace UtNhanDrug_BE.Services.ProductService
                     Message = "Tạo sản phẩm thành công"
                 };
             }
-            catch
+            catch(Exception e)
             {
                 await transaction.RollbackAsync();
+                if (e.InnerException.Message.Contains("Arithmetic overflow error converting numeric to data type money"))
+                {
+                    return new Response<bool>(false)
+                    {
+                        StatusCode = 500,
+                        Message = "Tiền nhập vào hệ thống không hợp lệ"
+                    };
+                }
                 return new Response<bool>(false)
                 {
                     StatusCode = 400,
@@ -242,7 +250,7 @@ namespace UtNhanDrug_BE.Services.ProductService
             {
                 var query = from p in _context.Products
                             select p;
-                var data = await query.Select(p => new ViewProductModel()
+                var data = await query.OrderByDescending(x => x.CreatedAt).Select(p => new ViewProductModel()
                 {
                     Id = p.Id,
                     DrugRegistrationNumber = p.DrugRegistrationNumber,
@@ -284,7 +292,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                         product.ActiveSubstances = activeSubstance.Data;
                         var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                         product.ProductUnits = productUnits.Data;
-                        var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id});
+                        var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id });
                         product.Batches = batches.Data;
                     }
                     return new Response<List<ViewProductModel>>(data)
@@ -336,9 +344,17 @@ namespace UtNhanDrug_BE.Services.ProductService
                         Name = x.CreatedByNavigation.FullName
                     },
                 }).ToListAsync();
-                if(request.IsSale == true)
+                if (request.IsSale == true)
                 {
-                    data = data.Where(x => x.ExpiryDate.Value.Date >= today.Date || x.ExpiryDate == null).ToList();
+                    if (data.Select(x => x.ExpiryDate).FirstOrDefault() != null)
+                    {
+                        data = data.Where(x => x.ExpiryDate.Value.Date >= today.Date || x.ExpiryDate == null).ToList();
+                    }
+                    else
+                    {
+                        data = data.Where(x => x.ExpiryDate == null).ToList();
+                    }
+
                 }
                 foreach (var x in data)
                 {
@@ -373,27 +389,34 @@ namespace UtNhanDrug_BE.Services.ProductService
         public async Task<PageResult<ViewProductModel>> GetProductFilter(ProductFilterRequest request)
         {
             var query = from p in _context.Products
-                        //join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
-                        ////join b in _context.Batches on p.Id equals b.ProductId
-                        //where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                            //join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                            ////join b in _context.Batches on p.Id equals b.ProductId
+                            //where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
                         select p;
-             //
-            if(Regex.IsMatch(request.SearchValue, "BAT+[0-9]{10}"))
+            //
+            if (Regex.IsMatch(request.SearchValue, "BAT+[0-9]{10}"))
             {
                 query = from p in _context.Products
-                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                            //join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
                         join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue) || b.Barcode.Contains(request.SearchValue)
+                        where p.Name.Contains(request.SearchValue) /*|| p.Barcode.Contains(request.SearchValue)*/ /*|| pas.ActiveSubstance.Name.Contains(request.SearchValue)*/ || b.Barcode.Contains(request.SearchValue)
                         select p;
             }
             else
             {
                 query = from p in _context.Products
-                        join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
-                        //join b in _context.Batches on p.Id equals b.ProductId
-                        where p.Name.Contains(request.SearchValue) || p.Barcode.Contains(request.SearchValue) || pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                            //join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                            //join b in _context.Batches on p.Id equals b.ProductId
+                        where p.Name.Contains(request.SearchValue) /*|| p.Barcode.Contains(request.SearchValue)*/ /*|| pas.ActiveSubstance.Name.Contains(request.SearchValue) */
                         select p;
             }
+
+            var querypas = from p in _context.Products
+                           join pas in _context.ProductActiveSubstances on p.Id equals pas.ProductId
+                           //join b in _context.Batches on p.Id equals b.ProductId
+                           where /*p.Name.Contains(request.SearchValue)*/ /*|| p.Barcode.Contains(request.SearchValue) ||*/ pas.ActiveSubstance.Name.Contains(request.SearchValue)
+                           select p;
+
             var query1 = from pa in _context.ProductActiveSubstances
                          select pa;
             var query2 = from g in _context.GoodsReceiptNotes
@@ -410,7 +433,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 Name = x.Batch.Product.Barcode
             }).Distinct().ToListAsync();
 
-            var data = query.Distinct();
+            var data = query.Union(querypas.Distinct()).Distinct();
             var result = await data.Where(x => x.Brand.IsActive == true & x.IsActive == true).Select(p => new ViewProductModel()
             {
                 Id = p.Id,
@@ -486,7 +509,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     {
                         batches = new List<ViewBatchModel>();
                         var batch = await _batchSvc.GetBatchesByBarcode(request.SearchValue);
-                        if(batch.Data.ExpiryDate <= today)
+                        if (batch.Data.ExpiryDate <= today)
                         {
                             return new PageResult<ViewProductModel>()
                             {
@@ -503,7 +526,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     }
                     else
                     {
-                        var b = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id, IsSale = request.IsSale});
+                        var b = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id, IsSale = request.IsSale });
                         batches = b.Data;
                     }
                     product.Batches = batches;
@@ -526,14 +549,14 @@ namespace UtNhanDrug_BE.Services.ProductService
         private async Task<List<ViewQuantityModel>> GetCurrentQuantity(int batchId)
         {
             var ba = from b in _context.Batches
-                        where b.Id == batchId
-                        select b;
+                     where b.Id == batchId
+                     select b;
             var p = await ba.Select(x => x.Product).FirstOrDefaultAsync();
             var query = from g in _context.GoodsReceiptNotes
                         where g.BatchId == batchId
                         select g;
             var data2 = await query.ToListAsync();
-            if(data2.Count == 0)
+            if (data2.Count == 0)
             {
                 if (p.IsManagedInBatches == false)
                 {
@@ -694,7 +717,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     data.ActiveSubstances = activeSubstance.Data;
                     var productUnits = await _productUnitSvc.GetProductUnitByProductId(data.Id);
                     data.ProductUnits = productUnits.Data;
-                    var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = data.Id});
+                    var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = data.Id });
                     data.Batches = batches.Data;
                     return new Response<ViewProductModel>(data)
                     {
@@ -728,6 +751,15 @@ namespace UtNhanDrug_BE.Services.ProductService
                 var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
                 if (product != null)
                 {
+                    if(product.DrugRegistrationNumber != model.DrugRegistrationNumber)
+                    {
+                        var checkExit = await CheckDrugRegistrationNumber(model.DrugRegistrationNumber);
+                        if (checkExit == true) return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Mã đăng kí của sản phẩm bị trùng"
+                        };
+                    }
                     product.DrugRegistrationNumber = model.DrugRegistrationNumber;
                     product.Name = model.Name;
                     product.BrandId = model.BrandId;
@@ -851,7 +883,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     }).Distinct().ToListAsync();
 
                     var data = query.Distinct();
-                    var result = await data.Where(x => x.Brand.IsActive == true /*& x.IsActive == true*/).Select(p => new ViewProductModel()
+                    var result = await data.OrderByDescending(x => x.CreatedAt).Where(x => x.Brand.IsActive == true /*& x.IsActive == true*/).Select(p => new ViewProductModel()
                     {
                         Id = p.Id,
                         DrugRegistrationNumber = p.DrugRegistrationNumber,
@@ -921,7 +953,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                             product.ActiveSubstances = activeSubstance.Data;
                             var productUnits = await _productUnitSvc.GetProductUnitByProductId(product.Id);
                             product.ProductUnits = productUnits.Data;
-                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id});
+                            var batches = await GetBatchesByProductId(new SearchBatchRequest { ProductId = product.Id });
                             product.Batches = batches.Data;
                         }
                         return new Response<List<ViewProductModel>>(result)
@@ -941,7 +973,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 //get product is deactive by brand
                 if (request.IsBrandActive == true)
                 {
-                    var data = await query.Where(x => x.Brand.IsActive == false).Select(p => new ViewProductModel()
+                    var data = await query.Where(x => x.Brand.IsActive == false).OrderByDescending(x => x.CreatedAt).Select(p => new ViewProductModel()
                     {
                         Id = p.Id,
                         DrugRegistrationNumber = p.DrugRegistrationNumber,
@@ -1039,7 +1071,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                     }).Distinct().ToListAsync();
                     if (data != null)
                     {
-                        foreach (var product in data)
+                        foreach (var product in data.OrderByDescending(x => x.CreatedAt))
                         {
                             var activeSubstance = await GetListActiveSubstances(product.Id);
                             product.ActiveSubstances = activeSubstance.Data;
@@ -1065,7 +1097,7 @@ namespace UtNhanDrug_BE.Services.ProductService
                 //get product by supplier deactive
                 if (request.IsSupplierActive == true)
                 {
-                    var data = await query2.Where(x => x.Supplier.IsActive == false).Select(p => new ViewProductModel()
+                    var data = await query2.Where(x => x.Supplier.IsActive == false).OrderByDescending(x => x.CreatedAt).Select(p => new ViewProductModel()
                     {
                         Id = p.Batch.Product.Id,
                         DrugRegistrationNumber = p.Batch.Product.DrugRegistrationNumber,

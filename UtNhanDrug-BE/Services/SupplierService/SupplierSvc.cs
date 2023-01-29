@@ -249,12 +249,14 @@ namespace UtNhanDrug_BE.Services.SupplierService
                 var supplier = await _context.Suppliers.FirstOrDefaultAsync(x => x.Id == supplierId);
                 if (supplier != null)
                 {
-                    //if (await CheckName(model.Name) == false) return new Response<bool>(false)
-                    //{
-                    //    StatusCode = 400,
-                    //    Message = "Tên nhà cung cấp đã tồn tại"
-                    //};
-
+                    if(supplier.Name != model.Name)
+                    {
+                        if (await CheckName(model.Name) == false) return new Response<bool>(false)
+                        {
+                            StatusCode = 400,
+                            Message = "Tên nhà cung cấp đã tồn tại"
+                        };
+                    }
                     supplier.Name = model.Name;
                     supplier.PhoneNumber = model.PhoneNumber;
                     supplier.UpdatedAt = DateTime.Now;

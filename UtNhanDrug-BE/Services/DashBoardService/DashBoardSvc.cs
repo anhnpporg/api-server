@@ -250,7 +250,7 @@ namespace UtNhanDrug_BE.Services.DashBoardService
                 var turnoverNow = await query.Where(x => x.CreatedAt >= todayConvert & x.Barcode.Contains("INV")).Select(x => x.TotalPrice).SumAsync();
 
 
-                var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync() + await query.Where(x => x.CreatedAt >= todayConvert & x.Barcode.Contains("GIN")).Select(x => x.TotalPrice).SumAsync();
+                var costNow = await query1.Where(x => x.CreatedAt >= todayConvert).Select(x => x.TotalPrice).SumAsync();
 
 
                 decimal profitNow = turnoverNow - costNow;
