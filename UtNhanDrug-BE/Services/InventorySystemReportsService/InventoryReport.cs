@@ -126,7 +126,6 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                         IsRead = x.IsRead,
                         CreatedAt = x.CreatedAt
                     }).ToList(),
-                    IsNotReadCount = x.Select(x => x.IsRead == false).Count()
                 }
             }).FirstOrDefault();
             if(data == null)
@@ -165,7 +164,6 @@ namespace UtNhanDrug_BE.Services.InventorySystemReportsService
                         IsRead = x.IsRead,
                         CreatedAt = x.CreatedAt
                     }).ToList(),
-                    IsNotReadCount = x.Select(x => x.IsRead == false).Count()
                 }
             }).FirstOrDefault();
             if (data1 == null)
