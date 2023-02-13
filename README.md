@@ -2,20 +2,23 @@
 
 Medicine Server is a API server for MMS (Medicine Management System)
 
-# Database
+#### Database
 
-### SQL Server
+ SQL Server
 
-# Technology
+#### Technology
 
-### ASP.Net Core
+ ASP.Net Core
 
-# Nuget Packages
+#### Nuget Packages
 
-### Entity Framework
-### Firebase Notification
-### Mailjet
-### Quartz
+ Entity Framework
+ 
+ Firebase Notification
+ 
+ Mailjet
+ 
+ Quartz
 
 
 
