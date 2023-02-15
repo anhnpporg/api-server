@@ -87,14 +87,14 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 };
                             }
 
-                            
+
                             //batches 
                             foreach (var b in m.Batches)
                             {
                                 var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
                                 if (b.BatchId == null)
                                 {
-                                    if(b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
+                                    if (b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
                                     {
                                         await transaction.RollbackAsync();
                                         return new Response<List<GRNResponse>>(null)
@@ -104,7 +104,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                         };
                                     }
                                     var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == b.Batch.ProductId);
-                                    if(product.IsManagedInBatches == false)
+                                    if (product.IsManagedInBatches == false)
                                     {
                                         await transaction.RollbackAsync();
                                         return new Response<List<GRNResponse>>(null)
@@ -152,7 +152,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 };
                                 _context.GoodsReceiptNotes.Add(grn);
                                 await _context.SaveChangesAsync();
-                                grns.Add(new GRNResponse { GRNId = grn.Id});
+                                grns.Add(new GRNResponse { GRNId = grn.Id });
                                 b.BatchId = null;
                             }
                         }
@@ -223,73 +223,77 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                                 //batches 
                                 foreach (var b in m.Batches)
                                 {
-                                    var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
-                                    var query = from g in _context.GoodsIssueNotes
-                                                where g.OrderDetail.InvoiceId == model.InvoiceId
-                                                select g;
-                                    var gin = await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).FirstOrDefaultAsync();
-                                    double unitPrice = (double)((await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.UnitPrice).FirstOrDefaultAsync() * await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.Quantity).FirstOrDefaultAsync())  / await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.ConvertedQuantity).FirstOrDefaultAsync());
-                                    var invoiceQuery = from gn in _context.GoodsReceiptNotes
-                                                       where gn.InvoiceId == model.InvoiceId & gn.GoodsReceiptNoteTypeId == 2 & gn.BatchId == b.BatchId
-                                                       select gn;
-                                    int grnQuantity = await invoiceQuery.Select(x => x.ConvertedQuantity).SumAsync();
-
-                                    if (b.Quantity * unit.ConversionValue > (gin.ConvertedQuantity - grnQuantity) )
+                                    if (b.Quantity > 0)
                                     {
-                                        await transaction.RollbackAsync();
-                                        return new Response<List<GRNResponse>>(null)
-                                        {
-                                            StatusCode = 400,
-                                            Message = "Số lượng nhập lại từ khách hàng không hợp lệ"
-                                        };
-                                    }
+                                        var unit = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
+                                        var query = from g in _context.GoodsIssueNotes
+                                                    where g.OrderDetail.InvoiceId == model.InvoiceId
+                                                    select g;
+                                        var gin = await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).FirstOrDefaultAsync();
+                                        double unitPrice = (double)((await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.UnitPrice).FirstOrDefaultAsync() * await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.Quantity).FirstOrDefaultAsync()) / await query.Where(x => x.BatchId == b.BatchId & x.GoodsIssueNoteTypeId == 1).Select(x => x.ConvertedQuantity).FirstOrDefaultAsync());
+                                        var invoiceQuery = from gn in _context.GoodsReceiptNotes
+                                                           where gn.InvoiceId == model.InvoiceId & gn.GoodsReceiptNoteTypeId == 2 & gn.BatchId == b.BatchId
+                                                           select gn;
+                                        int grnQuantity = await invoiceQuery.Select(x => x.ConvertedQuantity).SumAsync();
 
-                                    var query2 = from batch in _context.Batches
-                                                 where batch.Id == b.BatchId
-                                                 select batch;
-                                    var productId = await query2.Select(x => x.ProductId).FirstOrDefaultAsync();
-                                    var baseUnit = await _pu.GetBaseUnit(productId);
-                                    if (b.BatchId == null)
-                                    {
-                                        Batch s = new Batch()
+                                        if (b.Quantity * unit.ConversionValue > (gin.ConvertedQuantity - grnQuantity))
                                         {
-                                            Barcode = "#####",
-                                            ProductId = (int)b.Batch.ProductId,
-                                            ManufacturingDate = b.Batch.ManufacturingDate,
-                                            ExpiryDate = b.Batch.ExpiryDate,
+                                            await transaction.RollbackAsync();
+                                            return new Response<List<GRNResponse>>(null)
+                                            {
+                                                StatusCode = 400,
+                                                Message = "Số lượng nhập lại từ khách hàng không hợp lệ"
+                                            };
+                                        }
+
+                                        var query2 = from batch in _context.Batches
+                                                     where batch.Id == b.BatchId
+                                                     select batch;
+                                        var productId = await query2.Select(x => x.ProductId).FirstOrDefaultAsync();
+                                        var baseUnit = await _pu.GetBaseUnit(productId);
+                                        if (b.BatchId == null)
+                                        {
+                                            Batch s = new Batch()
+                                            {
+                                                Barcode = "#####",
+                                                ProductId = (int)b.Batch.ProductId,
+                                                ManufacturingDate = b.Batch.ManufacturingDate,
+                                                ExpiryDate = b.Batch.ExpiryDate,
+                                                CreatedBy = userId,
+                                                CreatedAt = today
+                                            };
+                                            var batch = _context.Batches.Add(s);
+                                            await _context.SaveChangesAsync();
+                                            s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                            await _context.SaveChangesAsync();
+                                            b.BatchId = s.Id;
+                                        }
+                                        int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
+                                        //decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
+                                        GoodsReceiptNote grn = new GoodsReceiptNote()
+                                        {
+                                            GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
+                                            BatchId = (int)b.BatchId,
+                                            InvoiceId = model.InvoiceId,
+                                            Quantity = (int)b.Quantity,
+                                            Unit = unit.Unit,
+                                            //TotalPrice = (decimal)b.TotalPrice,
+                                            TotalPrice = (decimal)(unitPrice * b.Quantity),
+                                            ConvertedQuantity = convertedQuantity,
+                                            BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
                                             CreatedBy = userId,
                                             CreatedAt = today
                                         };
-                                        var batch = _context.Batches.Add(s);
+                                        _context.GoodsReceiptNotes.Add(grn);
                                         await _context.SaveChangesAsync();
-                                        s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
-                                        await _context.SaveChangesAsync();
-                                        b.BatchId = s.Id;
+                                        grns.Add(new GRNResponse { GRNId = grn.Id, ReturnPoint = point, CustomerPoint = customerPoint });
+                                        b.BatchId = null;
+                                        totalPrice += grn.ConvertedQuantity * grn.BaseUnitPrice;
                                     }
-                                    int convertedQuantity = (int)(b.Quantity * unit.ConversionValue);
-                                    //decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
-                                    GoodsReceiptNote grn = new GoodsReceiptNote()
-                                    {
-                                        GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
-                                        BatchId = (int)b.BatchId,
-                                        InvoiceId = model.InvoiceId,
-                                        Quantity = (int)b.Quantity,
-                                        Unit = unit.Unit,
-                                        //TotalPrice = (decimal)b.TotalPrice,
-                                        TotalPrice = (decimal)(unitPrice *b.Quantity),
-                                        ConvertedQuantity = convertedQuantity,
-                                        BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
-                                        CreatedBy = userId,
-                                        CreatedAt = today
-                                    };
-                                    _context.GoodsReceiptNotes.Add(grn);
-                                    await _context.SaveChangesAsync();
-                                    grns.Add(new GRNResponse { GRNId = grn.Id, ReturnPoint = point, CustomerPoint = customerPoint });
-                                    b.BatchId = null;
-                                    totalPrice += grn.ConvertedQuantity * grn.BaseUnitPrice;
+
                                 }
                             }
-                            
+
                             await _context.SaveChangesAsync();
 
                             await transaction.CommitAsync();
@@ -300,7 +304,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                         }
                         else
                         {
-                            
+
                             var queryGRN = from g in _context.GoodsReceiptNotes
                                            where g.InvoiceId == model.InvoiceId
                                            select g;
@@ -357,31 +361,34 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                             List<GRNResponse> grns = new List<GRNResponse>();
                             foreach (var o in gin)
                             {
-                                var query1 = from b in _context.Batches
-                                             where b.Id == o.BatchId
-                                             select b;
-                                var productId = await query1.Select(x => x.ProductId).FirstOrDefaultAsync();
-                                var baseUnit = await _pu.GetBaseUnit(productId);
-                                GoodsReceiptNote grn = new GoodsReceiptNote()
+                                if (o.Quantity != 0)
                                 {
-                                    GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
-                                    BatchId = o.BatchId,
-                                    InvoiceId = model.InvoiceId,
-                                    Quantity = (int)o.Quantity,
-                                    Unit = o.Unit,
-                                    TotalPrice = (decimal)o.UnitPrice * o.Quantity,
-                                    ConvertedQuantity = o.ConvertedQuantity,
-                                    BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
-                                    CreatedBy = userId,
-                                    CreatedAt = today
-                                };
-                                _context.GoodsReceiptNotes.Add(grn);
-                                await _context.SaveChangesAsync();
-                                grns.Add(new GRNResponse { GRNId = grn.Id ,ReturnPoint = point, CustomerPoint = customerPoint });
-                                totalPrice += grn.TotalPrice;
+                                    var query1 = from b in _context.Batches
+                                                 where b.Id == o.BatchId
+                                                 select b;
+                                    var productId = await query1.Select(x => x.ProductId).FirstOrDefaultAsync();
+                                    var baseUnit = await _pu.GetBaseUnit(productId);
+                                    GoodsReceiptNote grn = new GoodsReceiptNote()
+                                    {
+                                        GoodsReceiptNoteTypeId = model.GoodsReceiptNoteTypeId,
+                                        BatchId = o.BatchId,
+                                        InvoiceId = model.InvoiceId,
+                                        Quantity = (int)o.Quantity,
+                                        Unit = o.Unit,
+                                        TotalPrice = (decimal)o.UnitPrice * o.Quantity,
+                                        ConvertedQuantity = o.ConvertedQuantity,
+                                        BaseUnitPrice = (decimal)baseUnit.Data.BasePrice,
+                                        CreatedBy = userId,
+                                        CreatedAt = today
+                                    };
+                                    _context.GoodsReceiptNotes.Add(grn);
+                                    await _context.SaveChangesAsync();
+                                    grns.Add(new GRNResponse { GRNId = grn.Id, ReturnPoint = point, CustomerPoint = customerPoint });
+                                    totalPrice += grn.TotalPrice;
+                                }
                             }
 
-                            
+
                             await _context.SaveChangesAsync();
 
                             await transaction.CommitAsync();
@@ -403,7 +410,7 @@ namespace UtNhanDrug_BE.Services.GoodsReceiptNoteService
                     Message = "Không tìm thấy sản phẩm để nhập hàng"
                 };
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await transaction.RollbackAsync();
                 if (e.InnerException.Message.Contains("Arithmetic overflow error converting numeric to data type money"))
