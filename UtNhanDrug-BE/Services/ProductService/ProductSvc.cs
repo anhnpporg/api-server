@@ -180,108 +180,109 @@ namespace UtNhanDrug_BE.Services.ProductService
 
                 //create GRN
                 //List<GRNResponse> grns = new List<GRNResponse>();
-                foreach (var m in model.CreateModel)
+                if(model.CreateModel != null)
                 {
-
-
-                    // add supplier id, if null add object supplier
-                    if (m.SupplierId == null)
+                    foreach (var m in model.CreateModel)
                     {
-                        var suplierQuery = from su in _context.Suppliers
-                                           select su;
-                        var supplierName = await suplierQuery.Where(x => x.Name.ToLower() == m.Supplier.Name.ToLower()).FirstOrDefaultAsync();
-                        if (supplierName != null) return new Response<bool>(false)
+                        // add supplier id, if null add object supplier
+                        if (m.SupplierId == null)
                         {
-                            StatusCode = 400,
-                            Message = "Nhà sản xuất đã tồn tại"
-                        };
-                        Supplier s = new Supplier()
-                        {
-                            Name = m.Supplier.Name,
-                            PhoneNumber = m.Supplier.PhoneNumber,
-                            CreatedBy = userId,
-                            CreatedAt = today
-                        };
-                        var supplier = _context.Suppliers.Add(s);
-                        await _context.SaveChangesAsync();
-                        m.SupplierId = s.Id;
-                    }
-                    if (m.SupplierId == null)
-                    {
-                        await transaction.RollbackAsync();
-                        return new Response<bool>(false)
-                        {
-                            StatusCode = 400,
-                            Message = "Vui lòng nhập nhà cung cấp"
-                        };
-                    }
-
-
-                    //batches 
-                    foreach (var b in m.Batches)
-                    {
-                        //var unit1 = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
-                        if (b.BatchId == null)
-                        {
-                            if (b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
-                            {
-                                await transaction.RollbackAsync();
-                                return new Response<bool>(false)
-                                {
-                                    StatusCode = 400,
-                                    Message = "Ngày sản xuất phải lớn hơn ngày hết hạn"
-                                };
-                            }
-                            var product1 = await _context.Products.FirstOrDefaultAsync(x => x.Id == b.Batch.ProductId);
-                            if (product1.IsManagedInBatches == false)
-                            {
-                                await transaction.RollbackAsync();
-                                return new Response<bool>(false)
-                                {
-                                    StatusCode = 400,
-                                    Message = "Sản phẩm này không quản lí theo lô, không thể tạo thêm lô"
-                                };
-                            }
-
-                            var checkExitBatch = await CheckExitBath(b.Batch.ExpiryDate, (int)b.Batch.ProductId);
-                            if (checkExitBatch == true) return new Response<bool>(false)
+                            var suplierQuery = from su in _context.Suppliers
+                                               select su;
+                            var supplierName = await suplierQuery.Where(x => x.Name.ToLower() == m.Supplier.Name.ToLower()).FirstOrDefaultAsync();
+                            if (supplierName != null) return new Response<bool>(false)
                             {
                                 StatusCode = 400,
-                                Message = "Lô có ngày hết hạn này đã tồn tại"
+                                Message = "Nhà sản xuất đã tồn tại"
                             };
-                            Batch s = new Batch()
+                            Supplier s = new Supplier()
                             {
-                                Barcode = "#####",
-                                ProductId = (int)b.Batch.ProductId,
-                                ManufacturingDate = b.Batch.ManufacturingDate,
-                                ExpiryDate = b.Batch.ExpiryDate,
+                                Name = m.Supplier.Name,
+                                PhoneNumber = m.Supplier.PhoneNumber,
                                 CreatedBy = userId,
                                 CreatedAt = today
                             };
-                            var batch = _context.Batches.Add(s);
+                            var supplier = _context.Suppliers.Add(s);
                             await _context.SaveChangesAsync();
-                            s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
-                            await _context.SaveChangesAsync();
-                            b.BatchId = s.Id;
+                            m.SupplierId = s.Id;
                         }
-                        //int convertedQuantity = (int)(b.Quantity * unit1.ConversionValue);
-                        //decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
-                        GoodsReceiptNote grn = new GoodsReceiptNote()
+                        if (m.SupplierId == null)
                         {
-                            GoodsReceiptNoteTypeId = 1,
-                            BatchId = (int)b.BatchId,
-                            SupplierId = m.SupplierId,
-                            Quantity = (int)b.Quantity,
-                            Unit = pu.Unit,
-                            TotalPrice = (decimal)b.TotalPrice,
-                            ConvertedQuantity = (int)pu.ConversionValue,
-                            BaseUnitPrice = (decimal)pu.Price,
-                            CreatedBy = userId,
-                            CreatedAt = today
-                        };
-                        _context.GoodsReceiptNotes.Add(grn);
-                        await _context.SaveChangesAsync();
-                        b.BatchId = null;
+                            await transaction.RollbackAsync();
+                            return new Response<bool>(false)
+                            {
+                                StatusCode = 400,
+                                Message = "Vui lòng nhập nhà cung cấp"
+                            };
+                        }
+
+
+                        //batches 
+                        foreach (var b in m.Batches)
+                        {
+                            //var unit1 = await _context.ProductUnitPrices.FirstOrDefaultAsync(x => x.Id == b.ProductUnitPriceId);
+                            if (b.BatchId == null)
+                            {
+                                if (b.Batch.ManufacturingDate > b.Batch.ExpiryDate || b.Batch.ManufacturingDate == b.Batch.ExpiryDate)
+                                {
+                                    await transaction.RollbackAsync();
+                                    return new Response<bool>(false)
+                                    {
+                                        StatusCode = 400,
+                                        Message = "Ngày sản xuất phải lớn hơn ngày hết hạn"
+                                    };
+                                }
+                                var product1 = await _context.Products.FirstOrDefaultAsync(x => x.Id == b.Batch.ProductId);
+                                if (product1.IsManagedInBatches == false)
+                                {
+                                    await transaction.RollbackAsync();
+                                    return new Response<bool>(false)
+                                    {
+                                        StatusCode = 400,
+                                        Message = "Sản phẩm này không quản lí theo lô, không thể tạo thêm lô"
+                                    };
+                                }
+
+                                var checkExitBatch = await CheckExitBath(b.Batch.ExpiryDate, (int)b.Batch.ProductId);
+                                if (checkExitBatch == true) return new Response<bool>(false)
+                                {
+                                    StatusCode = 400,
+                                    Message = "Lô có ngày hết hạn này đã tồn tại"
+                                };
+                                Batch s = new Batch()
+                                {
+                                    Barcode = "#####",
+                                    ProductId = (int)b.Batch.ProductId,
+                                    ManufacturingDate = b.Batch.ManufacturingDate,
+                                    ExpiryDate = b.Batch.ExpiryDate,
+                                    CreatedBy = userId,
+                                    CreatedAt = today
+                                };
+                                var batch = _context.Batches.Add(s);
+                                await _context.SaveChangesAsync();
+                                s.Barcode = GenaralBarcode.CreateEan13Batch(s.Id + "");
+                                await _context.SaveChangesAsync();
+                                b.BatchId = s.Id;
+                            }
+                            //int convertedQuantity = (int)(b.Quantity * unit1.ConversionValue);
+                            //decimal baseUnitPrice = (decimal)(b.TotalPrice / convertedQuantity);
+                            GoodsReceiptNote grn = new GoodsReceiptNote()
+                            {
+                                GoodsReceiptNoteTypeId = 1,
+                                BatchId = (int)b.BatchId,
+                                SupplierId = m.SupplierId,
+                                Quantity = (int)b.Quantity,
+                                Unit = pu.Unit,
+                                TotalPrice = (decimal)b.TotalPrice,
+                                ConvertedQuantity = (int)pu.ConversionValue,
+                                BaseUnitPrice = (decimal)pu.Price,
+                                CreatedBy = userId,
+                                CreatedAt = today
+                            };
+                            _context.GoodsReceiptNotes.Add(grn);
+                            await _context.SaveChangesAsync();
+                            b.BatchId = null;
+                        }
                     }
                 }
                 //end create GRN
