@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using UtNhanDrug_BE.Models.BatchModel;
 using UtNhanDrug_BE.Models.ProductUnitModel;
+using UtNhanDrug_BE.Models.SupplierModel;
 
 namespace UtNhanDrug_BE.Models.ProductModel
 {
@@ -33,11 +35,30 @@ namespace UtNhanDrug_BE.Models.ProductModel
         [Required]
         public bool IsUseDose { get; set; }
         public DoseUnitPrice DoseUnitPrice { get; set; }
+        //GRN model
+        public List<GoodsReceiptNoteCreateModel>? CreateModel { get; set; }
     }
     public class DoseUnitPrice
     {
         public string DoseUnit { get; set; }
         public double ConversionValue { get; set; }
+    }
+
+    //GRN model
+
+    public class GoodsReceiptNoteCreateModel
+    {
+        public int? SupplierId { get; set; }
+        public List<BatchesModel> Batches { get; set; }
+        public CreateSupplierModel? Supplier { get; set; }
+    }
+    public class BatchesModel
+    {
+        public int? BatchId { get; set; }
+        public int? Quantity { get; set; }
+        public int? ProductUnitPriceId { get; set; }
+        public decimal? TotalPrice { get; set; }
+        public CreateBatchModel? Batch { get; set; }
     }
 
 }
