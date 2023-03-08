@@ -36,7 +36,7 @@ namespace UtNhanDrug_BE.Models.ProductModel
         public bool IsUseDose { get; set; }
         public DoseUnitPrice DoseUnitPrice { get; set; }
         //GRN model
-        public List<GoodsReceiptNoteCreateModel>? CreateModel { get; set; }
+        public List<GoodsReceiptNoteCreateModel1>? CreateModel1 { get; set; }
     }
     public class DoseUnitPrice
     {
@@ -46,13 +46,13 @@ namespace UtNhanDrug_BE.Models.ProductModel
 
     //GRN model
 
-    public class GoodsReceiptNoteCreateModel
+    public class GoodsReceiptNoteCreateModel1
     {
         public int? SupplierId { get; set; }
-        public List<BatchesModel> Batches { get; set; }
+        public List<BatchesModel1>? Batches { get; set; }
         public CreateSupplierModel? Supplier { get; set; }
     }
-    public class BatchesModel
+    public class BatchesModel1
     {
         public int? BatchId { get; set; }
         public int? Quantity { get; set; }

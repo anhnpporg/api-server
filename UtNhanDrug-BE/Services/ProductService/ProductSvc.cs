@@ -180,9 +180,10 @@ namespace UtNhanDrug_BE.Services.ProductService
 
                 //create GRN
                 //List<GRNResponse> grns = new List<GRNResponse>();
-                if(model.CreateModel != null)
+
+                if (model.CreateModel1 != null)
                 {
-                    foreach (var m in model.CreateModel)
+                    foreach (var m in model.CreateModel1)
                     {
                         // add supplier id, if null add object supplier
                         if (m.SupplierId == null)
