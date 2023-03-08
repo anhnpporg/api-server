@@ -17,7 +17,7 @@ namespace UtNhanDrug_BE.Models.GoodsReceiptNoteModel
     public class GoodsReceiptNoteCreateModel
     {
         public int? SupplierId { get; set; }
-        public List<BatchesModel> Batches { get; set; }
+        public List<BatchesModel>? Batches { get; set; }
         public CreateSupplierModel? Supplier { get; set; }
     }
     public class BatchesModel

@@ -167,7 +167,14 @@ namespace UtNhanDrug_BE.Services.InvoiceService
                             };
                             _context.GoodsIssueNotes.Add(g);
                             await _context.SaveChangesAsync();
-                            o.TotalPrice += g.UnitPrice * g.Quantity;
+                            if (goods.TotalPriceUnit != (g.UnitPrice * g.Quantity))
+                            {
+                                o.TotalPrice += goods.TotalPriceUnit;
+                            }
+                            else
+                            {
+                                o.TotalPrice += g.UnitPrice * g.Quantity;
+                            }
                             //i.TotalPrice += o.TotalPrice;
                             await _context.SaveChangesAsync();
                         }

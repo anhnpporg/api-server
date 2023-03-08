@@ -33,6 +33,7 @@ namespace UtNhanDrug_BE.Models.InvoiceModel
     {
         public int Quantity { get; set; }
         public int Unit { get; set; }
+        public decimal TotalPriceUnit { get; set; }
         public int BatchId { get; set; }
     }
 }
